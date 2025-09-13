@@ -1,8 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, Home, ChevronLeft, ChevronRight } from "lucide-react"; // Import Chevron icons
+import { Trophy, Home, ChevronLeft, ChevronRight, Users } from "lucide-react"; // Import Users icon
 import { cn } from "@/lib/utils";
 import { useChampionshipTheme } from "@/contexts/ThemeContext";
-import { Button } from "@/components/ui/button"; // Import Button
+import { Button } from "@/components/ui/button";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -18,6 +18,11 @@ const Sidebar = ({ isCollapsed, toggleCollapsed }: SidebarProps) => {
       href: "/dashboard",
       icon: <Home className="h-4 w-4" />,
       label: "Dashboard",
+    },
+    {
+      href: "/officials", // New link for Officials
+      icon: <Users className="h-4 w-4" />,
+      label: "Mesários",
     },
   ];
 

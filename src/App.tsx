@@ -8,11 +8,12 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ChampionshipDetail from "./pages/ChampionshipDetail";
-import ChampionshipTheme from "./pages/ChampionshipTheme"; // Import the new page
+import ChampionshipTheme from "./pages/ChampionshipTheme";
 import Profile from "./pages/Profile";
+import Officials from "./pages/Officials"; // Import the new Officials page
 import { SessionProvider } from "./components/SessionProvider";
 import MainLayout from "./components/MainLayout";
-import { ThemeProvider } from "./contexts/ThemeContext"; // Import ThemeProvider
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +24,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <SessionProvider>
-          <ThemeProvider> {/* Wrap with ThemeProvider */}
+          <ThemeProvider>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
@@ -31,8 +32,9 @@ const App = () => (
               <Route element={<MainLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/championship/:id" element={<ChampionshipDetail />} />
-                <Route path="/championship/:id/theme" element={<ChampionshipTheme />} /> {/* New route */}
+                <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/officials" element={<Officials />} /> {/* New route for Officials */}
               </Route>
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
