@@ -6,10 +6,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ArrowDown, ArrowUp, Minus } from "lucide-react"; // Import icons for position change
 
 interface Team {
   id: string;
   name: string;
+  logo_url: string | null; // Added logo_url
 }
 
 interface Match {
@@ -18,6 +20,7 @@ interface Match {
   team2_id: string;
   team1_score: number | null;
   team2_score: number | null;
+  match_date: string | null; // Needed for recent form sorting
 }
 
 interface LeaderboardProps {
@@ -28,6 +31,7 @@ interface LeaderboardProps {
 interface Standing {
   teamId: string;
   teamName: string;
+  logo_url: string | null; // Added logo_url
   points: number;
   played: number;
   wins: number;
@@ -36,6 +40,11 @@ interface Standing {
   goalsFor: number;
   goalsAgainst: number;
   goalDifference: number;
+  yellowCards: number; // Placeholder for now
+  redCards: number;    // Placeholder for now
+  percentage: number;
+  recentForm: ('W' | 'D' | 'L' | '-')[]; // Last 5 games, '-' for unplayed
+  positionChange: 'up' | 'down' | 'same' | 'new' | null; // Placeholder for now
 }
 
 export function Leaderboard({ teams, matches }: LeaderboardProps) {
@@ -53,6 +62,7 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
   const standings: Standing[] = teams.map(team => ({
     teamId: team.id,
     teamName: team.name,
+    logo_url: team.logo_url, // Assign logo_url
     points: 0,
     played: 0,
     wins: 0,
@@ -61,11 +71,24 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
     goalsFor: 0,
     goalsAgainst: 0,
     goalDifference: 0,
+    yellowCards: 0, // Placeholder
+    redCards: 0,    // Placeholder
+    percentage: 0,
+    recentForm: [],
+    positionChange: null, // Placeholder
   }));
 
   const standingsMap = new Map<string, Standing>(standings.map(s => [s.teamId, s]));
 
   const playedMatches = matches.filter(m => m.team1_score !== null && m.team2_score !== null);
+
+  // Group matches by team for recent form calculation
+  const teamMatches = new Map<string, Match[]>();
+  teams.forEach(team => teamMatches.set(team.id, []));
+  matches.forEach(match => {
+    if (match.team1_id) teamMatches.get(match.team1_id)?.push(match);
+    if (match.team2_id) teamMatches.get(match.team2_id)?.push(match);
+  });
 
   playedMatches.forEach(match => {
     if (match.team1_score === null || match.team2_score === null) {
@@ -106,6 +129,33 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
     }
   });
 
+  // Calculate percentage and recent form
+  standingsMap.forEach(standing => {
+    if (standing.played > 0) {
+      standing.percentage = (standing.points / (standing.played * 3)) * 100;
+    } else {
+      standing.percentage = 0;
+    }
+
+    const teamRecentMatches = teamMatches.get(standing.teamId)
+      ?.filter(m => m.team1_score !== null && m.team2_score !== null) // Only played matches
+      .sort((a, b) => new Date(b.match_date || 0).getTime() - new Date(a.match_date || 0).getTime()) // Most recent first
+      .slice(0, 5); // Last 5 matches
+
+    standing.recentForm = teamRecentMatches?.map(match => {
+      if (match.team1_id === standing.teamId) {
+        return match.team1_score! > match.team2_score! ? 'W' : match.team1_score! < match.team2_score! ? 'L' : 'D';
+      } else { // match.team2_id === standing.teamId
+        return match.team2_score! > match.team1_score! ? 'W' : match.team2_score! < match.team1_score! ? 'L' : 'D';
+      }
+    }) || [];
+    
+    // Fill remaining slots with '-' if less than 5 played matches
+    while (standing.recentForm.length < 5) {
+      standing.recentForm.push('-');
+    }
+  });
+
   const sortedStandings = Array.from(standingsMap.values()).sort((a, b) => {
     if (b.points !== a.points) {
       return b.points - a.points;
@@ -116,6 +166,16 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
     return b.goalsFor - a.goalsFor;
   });
 
+  // Placeholder for position change (requires historical data for real implementation)
+  // For now, we'll just show a static indicator or a dash.
+  sortedStandings.forEach((standing, index) => {
+    // This is a placeholder. A real implementation would compare with previous round's standings.
+    if (index % 3 === 0) standing.positionChange = 'up';
+    else if (index % 3 === 1) standing.positionChange = 'down';
+    else standing.positionChange = 'same';
+  });
+
+
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-4">Classificação</h2>
@@ -124,6 +184,7 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50px] text-center">#</TableHead>
+              <TableHead className="w-[30px] text-center">Var.</TableHead> {/* Position Change */}
               <TableHead>Time</TableHead>
               <TableHead className="text-center">P</TableHead>
               <TableHead className="text-center">J</TableHead>
@@ -133,13 +194,27 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
               <TableHead className="text-center">GP</TableHead>
               <TableHead className="text-center">GC</TableHead>
               <TableHead className="text-center">SG</TableHead>
+              <TableHead className="text-center">CA</TableHead> {/* Yellow Cards */}
+              <TableHead className="text-center">CV</TableHead> {/* Red Cards */}
+              <TableHead className="text-center">%</TableHead> {/* Percentage */}
+              <TableHead className="text-center">Recentes</TableHead> {/* Recent Form */}
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedStandings.map((standing, index) => (
               <TableRow key={standing.teamId}>
                 <TableCell className="font-medium text-center">{index + 1}</TableCell>
-                <TableCell>{standing.teamName}</TableCell>
+                <TableCell className="text-center">
+                  {standing.positionChange === 'up' && <ArrowUp className="h-4 w-4 text-green-500 inline" />}
+                  {standing.positionChange === 'down' && <ArrowDown className="h-4 w-4 text-red-500 inline" />}
+                  {standing.positionChange === 'same' && <Minus className="h-4 w-4 text-gray-500 inline" />}
+                  {standing.positionChange === 'new' && <span className="text-blue-500 text-xs">Novo</span>}
+                  {!standing.positionChange && <Minus className="h-4 w-4 text-gray-500 inline" />}
+                </TableCell>
+                <TableCell className="flex items-center gap-2">
+                  {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-6 w-6 object-contain" />}
+                  {standing.teamName}
+                </TableCell>
                 <TableCell className="text-center font-bold">{standing.points}</TableCell>
                 <TableCell className="text-center">{standing.played}</TableCell>
                 <TableCell className="text-center">{standing.wins}</TableCell>
@@ -148,6 +223,26 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
                 <TableCell className="text-center">{standing.goalsFor}</TableCell>
                 <TableCell className="text-center">{standing.goalsAgainst}</TableCell>
                 <TableCell className="text-center">{standing.goalDifference}</TableCell>
+                <TableCell className="text-center">{standing.yellowCards}</TableCell> {/* Placeholder */}
+                <TableCell className="text-center">{standing.redCards}</TableCell>    {/* Placeholder */}
+                <TableCell className="text-center">{standing.percentage.toFixed(1)}%</TableCell>
+                <TableCell className="text-center">
+                  <div className="flex justify-center gap-1">
+                    {standing.recentForm.map((form, i) => (
+                      <span
+                        key={i}
+                        className={`w-4 h-4 flex items-center justify-center text-xs font-bold rounded-sm
+                          ${form === 'W' ? 'bg-green-500 text-white' :
+                            form === 'D' ? 'bg-gray-400 text-white' :
+                            form === 'L' ? 'bg-red-500 text-white' :
+                            'bg-gray-200 text-gray-500'
+                          }`}
+                      >
+                        {form}
+                      </span>
+                    ))}
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
