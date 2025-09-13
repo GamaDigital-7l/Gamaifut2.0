@@ -1,11 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, Home } from "lucide-react";
+import { Trophy, Home, ChevronLeft, ChevronRight } from "lucide-react"; // Import Chevron icons
 import { cn } from "@/lib/utils";
-import { useChampionshipTheme } from "@/contexts/ThemeContext"; // Import the hook
+import { useChampionshipTheme } from "@/contexts/ThemeContext";
+import { Button } from "@/components/ui/button"; // Import Button
 
-const Sidebar = () => {
+interface SidebarProps {
+  isCollapsed: boolean;
+  toggleCollapsed: () => void;
+}
+
+const Sidebar = ({ isCollapsed, toggleCollapsed }: SidebarProps) => {
   const location = useLocation();
-  const { currentTheme } = useChampionshipTheme(); // Get the current theme
+  const { currentTheme } = useChampionshipTheme();
 
   const navLinks = [
     {
@@ -15,7 +21,6 @@ const Sidebar = () => {
     },
   ];
 
-  // Function to close the sheet (used for navigation links)
   const closeSheet = () => {
     const sheetCloseButton = document.getElementById('sheet-close-button');
     if (sheetCloseButton) {
@@ -24,10 +29,16 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="hidden border-r md:flex h-full max-h-screen flex-col gap-2" style={{ // Modified className
-      backgroundColor: currentTheme?.theme_bg ? `hsl(${currentTheme.theme_bg})` : 'hsl(var(--sidebar-background))',
-      borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
-    }}>
+    <div 
+      className={cn(
+        "hidden border-r md:flex h-full max-h-screen flex-col gap-2 transition-all duration-200 ease-out",
+        isCollapsed ? "w-[var(--sidebar-width-collapsed)]" : "w-[var(--sidebar-width-expanded)]"
+      )}
+      style={{
+        backgroundColor: currentTheme?.theme_bg ? `hsl(${currentTheme.theme_bg})` : 'hsl(var(--sidebar-background))',
+        borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
+      }}
+    >
       <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6" style={{
           borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
         }}>
@@ -35,10 +46,10 @@ const Sidebar = () => {
             color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))'
           }} onClick={closeSheet}>
             <Trophy className="h-6 w-6" />
-            <span>ChampManager</span>
+            {!isCollapsed && <span>ChampManager</span>}
           </Link>
         </div>
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
           {navLinks.map((link) => (
             <Link
@@ -57,14 +68,31 @@ const Sidebar = () => {
                 backgroundColor: location.pathname === link.href 
                   ? (currentTheme?.theme_secondary ? `hsl(${currentTheme.theme_secondary})` : 'hsl(var(--sidebar-accent))') 
                   : 'transparent',
+                justifyContent: isCollapsed ? 'center' : 'flex-start', // Center icon when collapsed
               }}
-              onClick={closeSheet} // Close sheet on navigation
+              onClick={closeSheet}
             >
               {link.icon}
-              {link.label}
+              {!isCollapsed && link.label}
             </Link>
           ))}
         </nav>
+      </div>
+      <div className="mt-auto p-2 border-t" style={{
+        borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
+      }}>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="w-full" 
+          onClick={toggleCollapsed}
+          style={{
+            color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))',
+          }}
+        >
+          {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+          <span className="sr-only">{isCollapsed ? 'Expandir Sidebar' : 'Recolher Sidebar'}</span>
+        </Button>
       </div>
     </div>
   );

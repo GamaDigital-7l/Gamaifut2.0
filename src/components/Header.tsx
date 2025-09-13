@@ -9,14 +9,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { CircleUser, Menu, Trophy, Sun, Moon } from "lucide-react"; // Import Sun and Moon icons
+import { CircleUser, Menu, Trophy, Sun, Moon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useChampionshipTheme } from "@/contexts/ThemeContext"; // Import the hook
-import Sidebar from "./Sidebar"; // Import Sidebar
+import { useChampionshipTheme } from "@/contexts/ThemeContext";
+import Sidebar from "./Sidebar";
 
-const Header = () => {
+interface HeaderProps {
+  toggleSidebar?: () => void; // Optional prop for toggling sidebar
+}
+
+const Header = ({ toggleSidebar }: HeaderProps) => {
   const navigate = useNavigate();
-  const { currentTheme, toggleGlobalThemeMode, globalThemeMode } = useChampionshipTheme(); // Get theme context
+  const { currentTheme, toggleGlobalThemeMode, globalThemeMode } = useChampionshipTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -33,18 +37,19 @@ const Header = () => {
     }}>
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0 md:hidden"> {/* Modified className */}
+          <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="flex flex-col p-0" style={{ // Added p-0
+        <SheetContent side="left" className="flex flex-col p-0" style={{
           backgroundColor: currentTheme?.theme_bg ? `hsl(${currentTheme.theme_bg})` : 'hsl(var(--sidebar-background))',
           color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))',
           borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
         }}>
-          <Sidebar /> {/* Render Sidebar inside SheetContent */}
-          <Button id="sheet-close-button" className="hidden" /> {/* Hidden button to programmatically close sheet */}
+          {/* Pass isCollapsed and toggleCollapsed to Sidebar within SheetContent for mobile */}
+          <Sidebar isCollapsed={false} toggleCollapsed={() => { /* No-op for mobile sheet */ }} /> 
+          <Button id="sheet-close-button" className="hidden" />
         </SheetContent>
       </Sheet>
       <div className="w-full flex-1">

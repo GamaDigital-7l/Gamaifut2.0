@@ -56,6 +56,10 @@
     --championship-accent: var(--accent);
     --championship-bg: var(--background);
     --championship-text: var(--foreground);
+
+    /* Sidebar Widths */
+    --sidebar-width-expanded: 280px;
+    --sidebar-width-collapsed: 60px;
   }
 
   .dark {
