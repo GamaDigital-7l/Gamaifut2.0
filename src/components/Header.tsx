@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { CircleUser, Menu, Trophy, Sun, Moon } from "lucide-react"; // Import Sun and Moon icons
 import { supabase } from "@/integrations/supabase/client";
 import { useChampionshipTheme } from "@/contexts/ThemeContext"; // Import the hook
+import Sidebar from "./Sidebar"; // Import Sidebar
 
 const Header = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const Header = () => {
     }}>
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+          <Button variant="outline" size="icon" className="shrink-0"> {/* Removed md:hidden to always show */}
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
@@ -42,23 +43,7 @@ const Header = () => {
           color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))',
           borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
         }}>
-          <nav className="grid gap-2 text-lg font-medium">
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-2 text-lg font-semibold"
-              onClick={() => document.getElementById('sheet-close-button')?.click()} // Close sheet on navigation
-            >
-              <Trophy className="h-6 w-6" />
-              <span className="sr-only">ChampManager</span>
-            </Link>
-            <Link
-              to="/dashboard"
-              className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-              onClick={() => document.getElementById('sheet-close-button')?.click()} // Close sheet on navigation
-            >
-              Dashboard
-            </Link>
-          </nav>
+          <Sidebar /> {/* Render Sidebar inside SheetContent */}
           <Button id="sheet-close-button" className="hidden" /> {/* Hidden button to programmatically close sheet */}
         </SheetContent>
       </Sheet>

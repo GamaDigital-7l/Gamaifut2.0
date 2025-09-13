@@ -40,8 +40,8 @@ interface Standing {
   goalsFor: number;
   goalsAgainst: number;
   goalDifference: number;
-  yellowCards: number; // Placeholder for now
-  redCards: number;    // Placeholder for now
+  // yellowCards: number; // Removed
+  // redCards: number;    // Removed
   percentage: number;
   recentForm: ('W' | 'D' | 'L' | '-')[]; // Last 5 games, '-' for unplayed
   positionChange: 'up' | 'down' | 'same' | 'new' | null; // Placeholder for now
@@ -71,8 +71,8 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
     goalsFor: 0,
     goalsAgainst: 0,
     goalDifference: 0,
-    yellowCards: 0, // Placeholder
-    redCards: 0,    // Placeholder
+    // yellowCards: 0, // Removed
+    // redCards: 0,    // Removed
     percentage: 0,
     recentForm: [],
     positionChange: null, // Placeholder
@@ -194,8 +194,8 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
               <TableHead className="text-center">GP</TableHead>
               <TableHead className="text-center">GC</TableHead>
               <TableHead className="text-center">SG</TableHead>
-              <TableHead className="text-center">CA</TableHead> {/* Yellow Cards */}
-              <TableHead className="text-center">CV</TableHead> {/* Red Cards */}
+              {/* <TableHead className="text-center">CA</TableHead> Removed */}
+              {/* <TableHead className="text-center">CV</TableHead> Removed */}
               <TableHead className="text-center">%</TableHead> {/* Percentage */}
               <TableHead className="text-center">Recentes</TableHead> {/* Recent Form */}
             </TableRow>
@@ -223,8 +223,8 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
                 <TableCell className="text-center">{standing.goalsFor}</TableCell>
                 <TableCell className="text-center">{standing.goalsAgainst}</TableCell>
                 <TableCell className="text-center">{standing.goalDifference}</TableCell>
-                <TableCell className="text-center">{standing.yellowCards}</TableCell> {/* Placeholder */}
-                <TableCell className="text-center">{standing.redCards}</TableCell>    {/* Placeholder */}
+                {/* <TableCell className="text-center">{standing.yellowCards}</TableCell> Removed */}
+                {/* <TableCell className="text-center">{standing.redCards}</TableCell>    Removed */}
                 <TableCell className="text-center">{standing.percentage.toFixed(1)}%</TableCell>
                 <TableCell className="text-center min-w-[120px]"> {/* Added min-w for recent form */}
                   <div className="flex justify-center gap-1">
