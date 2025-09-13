@@ -2,20 +2,21 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, MoreHorizontal, Swords } from 'lucide-react';
+import { MoreHorizontal, Swords } from 'lucide-react';
 import { CreateTeamDialog } from '@/components/CreateTeamDialog';
 import { EditTeamDialog } from '@/components/EditTeamDialog';
 import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
 import { CreateMatchDialog } from '@/components/CreateMatchDialog';
 import { EditMatchDialog } from '@/components/EditMatchDialog';
 import { DeleteMatchDialog } from '@/components/DeleteMatchDialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Leaderboard } from '@/components/Leaderboard';
 
 type Championship = {
@@ -133,96 +134,122 @@ const ChampionshipDetail = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <div>
         <h1 className="text-3xl font-bold">{championship.name}</h1>
         <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
       </div>
 
-      <Leaderboard teams={teams} matches={matches} />
+      <Tabs defaultValue="leaderboard" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="leaderboard">Classificação</TabsTrigger>
+          <TabsTrigger value="teams">Times</TabsTrigger>
+          <TabsTrigger value="matches">Partidas</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="leaderboard" className="mt-4">
+          <Leaderboard teams={teams} matches={matches} />
+        </TabsContent>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold">Times</h2>
-            <CreateTeamDialog championshipId={championship.id} onTeamCreated={fetchData} />
-          </div>
-          {teams.length === 0 ? (
-            <div className="text-center py-10 border-2 border-dashed rounded-lg">
-              <p className="text-gray-500">Ainda não há times.</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {teams.map((team) => (
-                <Card key={team.id}>
-                  <CardHeader className="flex flex-row items-center justify-between p-4">
-                    <CardTitle className="text-base">{team.name}</CardTitle>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <EditTeamDialog team={team} onTeamUpdated={fetchData}>
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
-                        </EditTeamDialog>
-                        <DeleteTeamDialog team={team} onTeamDeleted={fetchData}>
-                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem>
-                        </DeleteTeamDialog>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
+        <TabsContent value="teams" className="mt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Times</CardTitle>
+                  <CardDescription>Gerencie os times participantes.</CardDescription>
+                </div>
+                <CreateTeamDialog championshipId={championship.id} onTeamCreated={fetchData} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {teams.length === 0 ? (
+                <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                  <p className="text-gray-500">Ainda não há times.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {teams.map((team) => (
+                    <Card key={team.id}>
+                      <CardHeader className="flex flex-row items-center justify-between p-4">
+                        <CardTitle className="text-base font-medium">{team.name}</CardTitle>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <EditTeamDialog team={team} onTeamUpdated={fetchData}>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
+                            </EditTeamDialog>
+                            <DeleteTeamDialog team={team} onTeamDeleted={fetchData}>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem>
+                            </DeleteTeamDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </CardHeader>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        <div className="lg:col-span-2 space-y-4">
-           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold">Partidas</h2>
-            <CreateMatchDialog championshipId={championship.id} teams={teams} onMatchCreated={fetchData} />
-          </div>
-           {matches.length === 0 ? (
-            <div className="text-center py-10 border-2 border-dashed rounded-lg">
-              <p className="text-gray-500">Nenhuma partida agendada.</p>
-               {teams.length < 2 && <p className="text-gray-500 mt-2">Adicione pelo menos 2 times para agendar uma partida.</p>}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {matches.map((match) => (
-                <Card key={match.id}>
-                  <CardContent className="flex items-center justify-between p-4">
-                    <span className="font-medium flex-1 text-right pr-4">{match.team1.name}</span>
-                    <div className="flex items-center gap-2 text-lg">
-                      <span>{match.team1_score ?? '-'}</span>
-                      <Swords className="h-5 w-5 text-muted-foreground" />
-                      <span>{match.team2_score ?? '-'}</span>
-                    </div>
-                    <span className="font-medium flex-1 text-left pl-4">{match.team2.name}</span>
-                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <EditMatchDialog match={match} onMatchUpdated={fetchData}>
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Placar</DropdownMenuItem>
-                        </EditMatchDialog>
-                        <DeleteMatchDialog match={match} onMatchDeleted={fetchData}>
-                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
-                        </DeleteMatchDialog>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+        <TabsContent value="matches" className="mt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Partidas</CardTitle>
+                  <CardDescription>Agende e atualize os resultados das partidas.</CardDescription>
+                </div>
+                <CreateMatchDialog championshipId={championship.id} teams={teams} onMatchCreated={fetchData} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {matches.length === 0 ? (
+                <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                  <p className="text-gray-500">Nenhuma partida agendada.</p>
+                  {teams.length < 2 && <p className="text-gray-500 mt-2">Adicione pelo menos 2 times para agendar uma partida.</p>}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {matches.map((match) => (
+                    <Card key={match.id}>
+                      <CardContent className="flex items-center justify-between p-4">
+                        <span className="font-medium flex-1 text-right pr-4">{match.team1.name}</span>
+                        <div className="flex items-center gap-2 text-lg">
+                          <span>{match.team1_score ?? '-'}</span>
+                          <Swords className="h-5 w-5 text-muted-foreground" />
+                          <span>{match.team2_score ?? '-'}</span>
+                        </div>
+                        <span className="font-medium flex-1 text-left pl-4">{match.team2.name}</span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <EditMatchDialog match={match} onMatchUpdated={fetchData}>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Placar</DropdownMenuItem>
+                            </EditMatchDialog>
+                            <DeleteMatchDialog match={match} onMatchDeleted={fetchData}>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
+                            </DeleteMatchDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
