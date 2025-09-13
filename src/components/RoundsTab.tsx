@@ -27,6 +27,7 @@ import { showSuccess, showError } from '@/utils/toast';
 import { Badge } from '@/components/ui/badge';
 import { Team } from '@/pages/ChampionshipDetail'; // Import Team type
 import { Group } from './GroupsTab'; // Import Group type
+import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
 
 export type Round = {
   id: string;
@@ -124,7 +125,19 @@ export function RoundsTab({ championshipId, teams, groups, onMatchesAdded }: Rou
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p>Carregando rodadas...</p>
+          <div className="space-y-2">
+            {[...Array(3)].map((_, index) => (
+              <Card key={index}>
+                <CardHeader className="flex flex-row items-center justify-between p-4">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-28" />
+                    <Skeleton className="h-6 w-24" />
+                  </div>
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
         ) : rounds.length === 0 ? (
           <div className="text-center py-10 border-2 border-dashed rounded-lg">
             <p className="text-gray-500">Nenhuma rodada ou fase cadastrada.</p>
