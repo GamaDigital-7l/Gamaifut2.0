@@ -12,8 +12,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton'; // Importar Skeleton
+import { MoreHorizontal, ClipboardList } from 'lucide-react'; // Import ClipboardList icon
+import { Skeleton } from '@/components/ui/skeleton';
+import { useSession } from '@/components/SessionProvider'; // Import useSession
 
 type Championship = {
   id: string;
@@ -23,6 +24,7 @@ type Championship = {
 };
 
 const Dashboard = () => {
+  const { userProfile } = useSession(); // Get user profile from session
   const [championships, setChampionships] = useState<Championship[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,7 +51,17 @@ const Dashboard = () => {
     <>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold">Meus Campeonatos</h1>
-        <CreateChampionshipDialog onChampionshipCreated={fetchChampionships} />
+        <div className="flex gap-2">
+          {userProfile?.role === 'admin' && ( // Conditionally render for admin
+            <Button asChild variant="outline">
+              <Link to="/official-dashboard">
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Painel do Mesário
+              </Link>
+            </Button>
+          )}
+          <CreateChampionshipDialog onChampionshipCreated={fetchChampionships} />
+        </div>
       </div>
 
       {loading ? (
