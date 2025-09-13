@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ChampionshipDetail from "./pages/ChampionshipDetail";
+import Profile from "./pages/Profile";
 import { SessionProvider } from "./components/SessionProvider";
 import MainLayout from "./components/MainLayout";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/championship/:id" element={<ChampionshipDetail />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
