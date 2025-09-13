@@ -23,6 +23,7 @@ import { SponsorsTab } from '@/components/SponsorsTab';
 import { SponsorDisplay } from '@/components/SponsorDisplay';
 import { MatchCard } from '@/components/MatchCard';
 import { GroupsTab, Group } from '@/components/GroupsTab'; // Import GroupsTab and Group type
+import { RoundsTab, Round } from '@/components/RoundsTab'; // Import RoundsTab and Round type
 import { format } from 'date-fns';
 import { useChampionshipTheme } from '@/contexts/ThemeContext';
 
@@ -52,13 +53,6 @@ type Match = {
   team2: { name: string; logo_url: string | null; };
   groups: { name: string } | null; // Nested group data
   rounds: { name: string } | null; // Nested round data
-};
-
-type Round = {
-  id: string;
-  name: string;
-  order_index: number;
-  type: string;
 };
 
 const ChampionshipDetail = () => {
@@ -246,9 +240,10 @@ const ChampionshipDetail = () => {
       </div>
 
       <Tabs defaultValue="teams" className="w-full mt-4">
-        <TabsList className="grid w-full grid-cols-3"> {/* Changed to 3 columns for Groups tab */}
+        <TabsList className="grid w-full grid-cols-4"> {/* Changed to 4 columns for Rounds tab */}
           <TabsTrigger value="teams">Times</TabsTrigger>
-          <TabsTrigger value="groups">Grupos</TabsTrigger> {/* New tab for Groups */}
+          <TabsTrigger value="groups">Grupos</TabsTrigger>
+          <TabsTrigger value="rounds">Rodadas</TabsTrigger> {/* New tab for Rounds */}
           <TabsTrigger value="sponsors">Patrocínios</TabsTrigger>
         </TabsList>
         
@@ -301,8 +296,12 @@ const ChampionshipDetail = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="groups" className="mt-4"> {/* New TabsContent for Groups */}
+        <TabsContent value="groups" className="mt-4">
           <GroupsTab championshipId={championship.id} />
+        </TabsContent>
+
+        <TabsContent value="rounds" className="mt-4"> {/* New TabsContent for Rounds */}
+          <RoundsTab championshipId={championship.id} />
         </TabsContent>
 
         <TabsContent value="sponsors" className="mt-4">
