@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Leaderboard } from '@/components/Leaderboard';
+import { SponsorsTab } from '@/components/SponsorsTab';
 
 type Championship = {
   id: string;
@@ -142,10 +143,11 @@ const ChampionshipDetail = () => {
       </div>
 
       <Tabs defaultValue="leaderboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="leaderboard">Classificação</TabsTrigger>
           <TabsTrigger value="teams">Times</TabsTrigger>
           <TabsTrigger value="matches">Partidas</TabsTrigger>
+          <TabsTrigger value="sponsors">Patrocínios</TabsTrigger>
         </TabsList>
         
         <TabsContent value="leaderboard" className="mt-4">
@@ -252,6 +254,10 @@ const ChampionshipDetail = () => {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="sponsors" className="mt-4">
+          <SponsorsTab championshipId={championship.id} />
         </TabsContent>
       </Tabs>
     </div>

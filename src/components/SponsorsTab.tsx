@@ -1,0 +1,123 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { CreateSponsorDialog } from './CreateSponsorDialog';
+import { EditSponsorDialog } from './EditSponsorDialog';
+import { DeleteSponsorDialog } from './DeleteSponsorDialog';
+
+export type Sponsor = {
+  id: string;
+  name: string;
+  level: 'ouro' | 'prata' | 'bronze';
+  logo_url: string | null;
+  target_url: string | null;
+  is_active: boolean;
+};
+
+interface SponsorsTabProps {
+  championshipId: string;
+}
+
+export function SponsorsTab({ championshipId }: SponsorsTabProps) {
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSponsors = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('sponsors')
+      .select('*')
+      .eq('championship_id', championshipId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching sponsors:', error);
+    } else {
+      setSponsors(data as Sponsor[]);
+    }
+    setLoading(false);
+  }, [championshipId]);
+
+  useEffect(() => {
+    fetchSponsors();
+  }, [fetchSponsors]);
+
+  const levelVariant = (level: string) => {
+    switch (level) {
+      case 'ouro': return 'default';
+      case 'prata': return 'secondary';
+      case 'bronze': return 'outline';
+      default: return 'outline';
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Patrocinadores</CardTitle>
+            <CardDescription>Gerencie os patrocinadores do campeonato.</CardDescription>
+          </div>
+          <CreateSponsorDialog 
+            championshipId={championshipId} 
+            existingSponsors={sponsors}
+            onSponsorCreated={fetchSponsors} 
+          />
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <p>Carregando patrocinadores...</p>
+        ) : sponsors.length === 0 ? (
+          <div className="text-center py-10 border-2 border-dashed rounded-lg">
+            <p className="text-gray-500">Nenhum patrocinador cadastrado.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {sponsors.map((sponsor) => (
+              <Card key={sponsor.id}>
+                <CardHeader className="flex flex-row items-center justify-between p-4">
+                  <div className="flex items-center gap-4">
+                    {sponsor.logo_url && <img src={sponsor.logo_url} alt={sponsor.name} className="h-10 w-10 object-contain" />}
+                    <CardTitle className="text-base font-medium">{sponsor.name}</CardTitle>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Badge variant={levelVariant(sponsor.level)}>{sponsor.level}</Badge>
+                    <Badge variant={sponsor.is_active ? 'default' : 'destructive'}>
+                      {sponsor.is_active ? 'Ativo' : 'Inativo'}
+                    </Badge>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <EditSponsorDialog sponsor={sponsor} existingSponsors={sponsors} onSponsorUpdated={fetchSponsors}>
+                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
+                        </EditSponsorDialog>
+                        <DeleteSponsorDialog sponsor={sponsor} onSponsorDeleted={fetchSponsors}>
+                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem>
+                        </DeleteSponsorDialog>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
