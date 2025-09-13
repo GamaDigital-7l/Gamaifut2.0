@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { CreateTeamDialog } from '@/components/CreateTeamDialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type Championship = {
   id: string;
@@ -11,11 +13,34 @@ type Championship = {
   created_at: string;
 };
 
+type Team = {
+  id: string;
+  name: string;
+  created_at: string;
+};
+
 const ChampionshipDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [championship, setChampionship] = useState<Championship | null>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchTeams = useCallback(async () => {
+    if (!id) return;
+    const { data, error } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('championship_id', id)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching teams:', error);
+      setError('Erro ao carregar os times.');
+    } else {
+      setTeams(data);
+    }
+  }, [id]);
 
   useEffect(() => {
     const fetchChampionship = async () => {
@@ -26,31 +51,32 @@ const ChampionshipDetail = () => {
       }
 
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error: champError } = await supabase
         .from('championships')
         .select('*')
         .eq('id', id)
         .single();
 
-      if (error) {
-        console.error('Error fetching championship:', error);
+      if (champError) {
+        console.error('Error fetching championship:', champError);
         setError('Campeonato não encontrado ou erro ao carregar.');
         setChampionship(null);
       } else {
         setChampionship(data);
+        await fetchTeams();
         setError(null);
       }
       setLoading(false);
     };
 
     fetchChampionship();
-  }, [id]);
+  }, [id, fetchTeams]);
 
   if (loading) {
     return <div className="p-8">Carregando detalhes do campeonato...</div>;
   }
 
-  if (error) {
+  if (error && !championship) {
     return (
       <div className="p-8 text-center">
         <p className="text-red-500 mb-4">{error}</p>
@@ -89,11 +115,26 @@ const ChampionshipDetail = () => {
       </div>
 
       <div>
-        <h2 className="text-2xl font-semibold mb-4">Times</h2>
-        <div className="text-center py-10 border-2 border-dashed rounded-lg">
-          <p className="text-gray-500">Ainda não há times neste campeonato.</p>
-          <p className="text-gray-500 mt-2">Em breve você poderá adicioná-los aqui.</p>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold">Times</h2>
+          <CreateTeamDialog championshipId={championship.id} onTeamCreated={fetchTeams} />
         </div>
+        {teams.length === 0 ? (
+          <div className="text-center py-10 border-2 border-dashed rounded-lg">
+            <p className="text-gray-500">Ainda não há times neste campeonato.</p>
+            <p className="text-gray-500 mt-2">Clique em "Adicionar Time" para começar.</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {teams.map((team) => (
+              <Card key={team.id}>
+                <CardHeader>
+                  <CardTitle>{team.name}</CardTitle>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
