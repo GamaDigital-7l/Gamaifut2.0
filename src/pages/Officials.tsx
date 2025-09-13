@@ -1,18 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { User as UserIcon } from 'lucide-react'; // Renamed to avoid conflict with Supabase User type
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from '@/components/ui/button';
-import { showSuccess, showError } from '@/utils/toast';
 import { useSession } from '@/components/SessionProvider'; // Import useSession
 
 interface Profile {
@@ -29,7 +20,6 @@ const Officials = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [savingRoles, setSavingRoles] = useState<Set<string>>(new Set());
 
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
@@ -89,27 +79,6 @@ const Officials = () => {
     fetchProfiles();
   }, [fetchProfiles]);
 
-  const handleRoleChange = async (profileId: string, newRole: string) => {
-    setSavingRoles(prev => new Set(prev).add(profileId));
-    const { error } = await supabase
-      .from('profiles')
-      .update({ role: newRole })
-      .eq('id', profileId);
-    
-    setSavingRoles(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(profileId);
-      return newSet;
-    });
-
-    if (error) {
-      showError(`Erro ao atualizar função: ${error.message}`);
-    } else {
-      showSuccess("Função atualizada com sucesso!");
-      fetchProfiles(); // Re-fetch to update the list
-    }
-  };
-
   // Only allow 'admin' role to manage other users' roles
   const canManageRoles = userProfile?.role === 'admin';
 
@@ -117,8 +86,8 @@ const Officials = () => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold">Gerenciar Usuários e Mesários</h1>
-          <p className="text-muted-foreground mt-1">Defina as funções dos usuários (admin, mesário, usuário).</p>
+          <h1 className="text-2xl font-semibold">Gerenciar Usuários</h1>
+          <p className="text-muted-foreground mt-1">Visualize todos os usuários cadastrados e suas funções.</p>
         </div>
       </div>
 
@@ -158,24 +127,7 @@ const Officials = () => {
                 <div className="flex-1">
                   <CardTitle className="text-lg">{profile.first_name} {profile.last_name}</CardTitle>
                   <CardDescription className="text-sm">{profile.email}</CardDescription>
-                  {canManageRoles ? (
-                    <Select
-                      value={profile.role}
-                      onValueChange={(newRole) => handleRoleChange(profile.id, newRole)}
-                      disabled={savingRoles.has(profile.id) || profile.id === userProfile?.id} // Cannot change own role
-                    >
-                      <SelectTrigger className="w-[180px] mt-2">
-                        <SelectValue placeholder="Selecione a função" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="user">Usuário</SelectItem>
-                        <SelectItem value="official">Mesário</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <span className="text-xs text-muted-foreground capitalize mt-2 block">Função: {profile.role}</span>
-                  )}
+                  <span className="text-xs text-muted-foreground capitalize mt-2 block">Função: {profile.role}</span>
                 </div>
               </CardHeader>
             </Card>

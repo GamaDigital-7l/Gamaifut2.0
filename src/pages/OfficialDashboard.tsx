@@ -23,6 +23,13 @@ interface Match {
   group_id: string | null;
   round_id: string | null;
   assigned_official_id: string | null;
+  team1_yellow_cards: number | null; // New field
+  team2_yellow_cards: number | null; // New field
+  team1_red_cards: number | null; // New field
+  team2_red_cards: number | null; // New field
+  team1_fouls: number | null; // New field
+  team2_fouls: number | null; // New field
+  notes: string | null; // New field
   team1: { name: string; logo_url: string | null; };
   team2: { name: string; logo_url: string | null; };
   groups: { name: string } | null;
@@ -50,7 +57,7 @@ const OfficialDashboard = () => {
   const [allRounds, setAllRounds] = useState<Round[]>([]); // To pass to MatchCard
 
   const fetchAssignedMatches = useCallback(async () => {
-    if (!session?.user?.id || userProfile?.role !== 'official') {
+    if (!session?.user?.id || (userProfile?.role !== 'official' && userProfile?.role !== 'admin')) {
       setLoading(false);
       setError('Você não tem permissão para acessar este painel.');
       return;
@@ -85,6 +92,13 @@ const OfficialDashboard = () => {
         group_id,
         round_id,
         assigned_official_id,
+        team1_yellow_cards,
+        team2_yellow_cards,
+        team1_red_cards,
+        team2_red_cards,
+        team1_fouls,
+        team2_fouls,
+        notes,
         team1:teams!matches_team1_id_fkey(name, logo_url),
         team2:teams!matches_team2_id_fkey(name, logo_url),
         groups(name),
@@ -128,14 +142,6 @@ const OfficialDashboard = () => {
     );
   }
 
-  if (userProfile?.role !== 'official' && userProfile?.role !== 'admin') {
-    return (
-      <div className="text-center py-10 border-2 border-dashed rounded-lg text-red-500">
-        <p>Acesso negado. Você não tem permissão para visualizar este painel.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Painel do Mesário</h1>
@@ -156,6 +162,7 @@ const OfficialDashboard = () => {
               isEven={index % 2 === 0}
               groups={allGroups}
               rounds={allRounds}
+              isOfficialView={true} // Indicate that this card is in the official view
             />
           ))}
         </div>

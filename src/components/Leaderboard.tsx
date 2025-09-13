@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/table";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react"; // Import icons for position change
 import { Team } from '@/pages/ChampionshipDetail'; // Import Team type from ChampionshipDetail
+import { Link } from 'react-router-dom'; // Import Link
 
 interface Match {
   id: string;
@@ -199,7 +200,9 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
                 </TableCell>
                 <TableCell className="flex items-center gap-2 px-2 py-2"> {/* Removed min-w */}
                   {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-6 w-6 object-contain" />}
-                  {standing.teamName}
+                  <Link to={`/team/${standing.teamId}`} className="hover:underline">
+                    {standing.teamName}
+                  </Link>
                 </TableCell>
                 <TableCell className="text-center font-bold px-2 py-2">{standing.points}</TableCell>
                 <TableCell className="text-center px-2 py-2">{standing.played}</TableCell>

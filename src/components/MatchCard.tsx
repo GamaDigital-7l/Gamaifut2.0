@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EditMatchDialog } from "./EditMatchDialog";
 import { DeleteMatchDialog } from "./DeleteMatchDialog";
-import { MoreHorizontal, X, CalendarIcon, MapPin } from "lucide-react"; // Changed Swords to X
+import { OfficialMatchUpdateDialog } from "./OfficialMatchUpdateDialog"; // Import new dialog
+import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, Goal, MinusCircle, PlusCircle } from "lucide-react"; // Changed Swords to X, added new icons
 import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils"; // Import cn utility
@@ -31,6 +32,14 @@ interface Match {
   location: string | null;
   group_id: string | null; // Added group_id
   round_id: string | null; // Added round_id
+  assigned_official_id: string | null; // Added assigned_official_id
+  team1_yellow_cards: number | null; // New field
+  team2_yellow_cards: number | null; // New field
+  team1_red_cards: number | null; // New field
+  team2_red_cards: number | null; // New field
+  team1_fouls: number | null; // New field
+  team2_fouls: number | null; // New field
+  notes: string | null; // New field
   team1: Team;
   team2: Team;
   groups: { name: string } | null; // Nested group data
@@ -44,9 +53,10 @@ interface MatchCardProps {
   isEven: boolean; // New prop for alternating colors
   groups: Group[]; // New prop
   rounds: Round[]; // New prop
+  isOfficialView?: boolean; // New prop to indicate if it's for official dashboard
 }
 
-export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds }: MatchCardProps) {
+export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, isOfficialView = false }: MatchCardProps) {
   const matchDate = match.match_date ? new Date(match.match_date) : null;
   const isPlayed = match.team1_score !== null && match.team2_score !== null;
 
@@ -110,22 +120,56 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           </div>
         </div>
 
+        {isPlayed && (
+          <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground mt-3 border-t pt-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <SquareDot className="h-3 w-3 text-yellow-500" /> Amarelos:
+              </div>
+              <span>{match.team1_yellow_cards ?? 0} - {match.team2_yellow_cards ?? 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <SquareDot className="h-3 w-3 text-red-500" /> Vermelhos:
+              </div>
+              <span>{match.team1_red_cards ?? 0} - {match.team2_red_cards ?? 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <MinusCircle className="h-3 w-3" /> Faltas:
+              </div>
+              <span>{match.team1_fouls ?? 0} - {match.team2_fouls ?? 0}</span>
+            </div>
+            {match.notes && (
+              <div className="col-span-2 text-xs text-gray-500 mt-1">
+                Notas: {match.notes}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex justify-end mt-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <EditMatchDialog match={match} groups={groups} rounds={rounds} onMatchUpdated={onMatchUpdated}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Partida</DropdownMenuItem>
-              </EditMatchDialog>
-              <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
-              </DeleteMatchDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {isOfficialView ? (
+            <OfficialMatchUpdateDialog match={match} onMatchUpdated={onMatchUpdated}>
+              <Button variant="outline" size="sm">Atualizar Partida</Button>
+            </OfficialMatchUpdateDialog>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <EditMatchDialog match={match} groups={groups} rounds={rounds} onMatchUpdated={onMatchUpdated}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Partida</DropdownMenuItem>
+                </EditMatchDialog>
+                <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
+                </DeleteMatchDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardContent>
     </Card>

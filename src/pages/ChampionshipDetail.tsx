@@ -61,6 +61,14 @@ type Match = {
   location: string | null;
   group_id: string | null;
   round_id: string | null;
+  assigned_official_id: string | null;
+  team1_yellow_cards: number | null; // New field
+  team2_yellow_cards: number | null; // New field
+  team1_red_cards: number | null; // New field
+  team2_red_cards: number | null; // New field
+  team1_fouls: number | null; // New field
+  team2_fouls: number | null; // New field
+  notes: string | null; // New field
   team1: { name: string; logo_url: string | null; };
   team2: { name: string; logo_url: string | null; };
   groups: { name: string } | null;
@@ -149,6 +157,14 @@ const ChampionshipDetail = () => {
         location,
         group_id,
         round_id,
+        assigned_official_id,
+        team1_yellow_cards,
+        team2_yellow_cards,
+        team1_red_cards,
+        team2_red_cards,
+        team1_fouls,
+        team2_fouls,
+        notes,
         team1:teams!matches_team1_id_fkey(name, logo_url),
         team2:teams!matches_team2_id_fkey(name, logo_url),
         groups(name),
@@ -402,7 +418,11 @@ const ChampionshipDetail = () => {
                       <CardHeader className="flex flex-row items-center justify-between p-4">
                         <div className="flex items-center gap-4">
                           {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-10 w-10 object-contain" />}
-                          <CardTitle className="text-base font-medium">{team.name}</CardTitle>
+                          <CardTitle className="text-base font-medium">
+                            <Link to={`/team/${team.id}`} className="hover:underline">
+                              {team.name}
+                            </Link>
+                          </CardTitle>
                           {team.group_id && (
                             <span className="text-sm text-muted-foreground">
                               ({groups.find(g => g.id === team.group_id)?.name || 'Grupo Desconhecido'})
