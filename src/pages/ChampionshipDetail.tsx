@@ -20,6 +20,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Leaderboard } from '@/components/Leaderboard';
 import { SponsorsTab } from '@/components/SponsorsTab';
+import { SponsorDisplay } from '@/components/SponsorDisplay'; // Import the new component
 
 type Championship = {
   id: string;
@@ -268,6 +269,9 @@ const ChampionshipDetail = () => {
           <SponsorsTab championshipId={championship.id} />
         </TabsContent>
       </Tabs>
+      
+      {/* Display active sponsors below the tabs */}
+      <SponsorDisplay championshipId={championship.id} />
     </div>
   );
 };
