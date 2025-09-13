@@ -7,6 +7,8 @@ import { CreateTeamDialog } from '@/components/CreateTeamDialog';
 import { EditTeamDialog } from '@/components/EditTeamDialog';
 import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
 import { CreateMatchDialog } from '@/components/CreateMatchDialog';
+import { EditMatchDialog } from '@/components/EditMatchDialog';
+import { DeleteMatchDialog } from '@/components/DeleteMatchDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -30,10 +32,8 @@ type Match = {
   id: string;
   team1_score: number | null;
   team2_score: number | null;
-  teams: [
-    { name: string }, // team1
-    { name: string }  // team2
-  ]
+  team1: { name: string };
+  team2: { name: string };
 };
 
 const ChampionshipDetail = () => {
@@ -196,13 +196,28 @@ const ChampionshipDetail = () => {
               {matches.map((match) => (
                 <Card key={match.id}>
                   <CardContent className="flex items-center justify-between p-4">
-                    <span className="font-medium">{match.team1.name}</span>
+                    <span className="font-medium flex-1 text-right pr-4">{match.team1.name}</span>
                     <div className="flex items-center gap-2 text-lg">
                       <span>{match.team1_score ?? '-'}</span>
                       <Swords className="h-5 w-5 text-muted-foreground" />
                       <span>{match.team2_score ?? '-'}</span>
                     </div>
-                    <span className="font-medium">{match.team2.name}</span>
+                    <span className="font-medium flex-1 text-left pl-4">{match.team2.name}</span>
+                     <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <EditMatchDialog match={match} onMatchUpdated={fetchData}>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Placar</DropdownMenuItem>
+                        </EditMatchDialog>
+                        <DeleteMatchDialog match={match} onMatchDeleted={fetchData}>
+                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
+                        </DeleteMatchDialog>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </CardContent>
                 </Card>
               ))}
