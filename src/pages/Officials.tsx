@@ -3,7 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User } from 'lucide-react';
+import { User as UserIcon } from 'lucide-react'; // Renamed to avoid conflict with Supabase User type
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from '@/components/ui/button';
+import { showSuccess, showError } from '@/utils/toast';
+import { useSession } from '@/components/SessionProvider'; // Import useSession
 
 interface Profile {
   id: string;
@@ -11,60 +21,105 @@ interface Profile {
   last_name: string | null;
   avatar_url: string | null;
   role: string;
-  email: string; // Assuming email can be fetched or is part of the profile
+  email: string;
 }
 
 const Officials = () => {
-  const [officials, setOfficials] = useState<Profile[]>([]);
+  const { userProfile } = useSession(); // Get current user's profile
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [savingRoles, setSavingRoles] = useState<Set<string>>(new Set());
 
-  const fetchOfficials = useCallback(async () => {
+  const fetchProfiles = useCallback(async () => {
     setLoading(true);
     setError(null);
 
-    // Fetch profiles and join with auth.users to get email
-    const { data, error } = await supabase
+    // Fetch all profiles
+    const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select(`
         id,
         first_name,
         last_name,
         avatar_url,
-        role,
-        auth_users(email)
+        role
       `)
       .order('first_name', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching officials:', error);
-      setError('Erro ao carregar a lista de mesários.');
-    } else {
-      const formattedData: Profile[] = data.map((profile: any) => ({
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+      setError('Erro ao carregar a lista de usuários.');
+      setLoading(false);
+      return;
+    }
+
+    // Fetch emails from auth.users for all fetched profiles
+    const userIds = profilesData.map(p => p.id);
+    const { data: authUsersData, error: authUsersError } = await supabase.auth.admin.listUsers();
+
+    if (authUsersError) {
+      console.error('Error fetching auth users:', authUsersError);
+      // Continue without emails if admin.listUsers fails (e.g., not service role)
+      const formattedData: Profile[] = profilesData.map((profile: any) => ({
         id: profile.id,
         first_name: profile.first_name,
         last_name: profile.last_name,
         avatar_url: profile.avatar_url,
         role: profile.role,
-        email: profile.auth_users?.email || 'N/A',
+        email: 'N/A', // Fallback if email cannot be fetched
       }));
-      setOfficials(formattedData);
+      setProfiles(formattedData);
+    } else {
+      const userEmailMap = new Map(authUsersData.users.map(u => [u.id, u.email]));
+      const formattedData: Profile[] = profilesData.map((profile: any) => ({
+        id: profile.id,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        avatar_url: profile.avatar_url,
+        role: profile.role,
+        email: userEmailMap.get(profile.id) || 'N/A',
+      }));
+      setProfiles(formattedData);
     }
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchOfficials();
-  }, [fetchOfficials]);
+    fetchProfiles();
+  }, [fetchProfiles]);
+
+  const handleRoleChange = async (profileId: string, newRole: string) => {
+    setSavingRoles(prev => new Set(prev).add(profileId));
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role: newRole })
+      .eq('id', profileId);
+    
+    setSavingRoles(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(profileId);
+      return newSet;
+    });
+
+    if (error) {
+      showError(`Erro ao atualizar função: ${error.message}`);
+    } else {
+      showSuccess("Função atualizada com sucesso!");
+      fetchProfiles(); // Re-fetch to update the list
+    }
+  };
+
+  // Only allow 'admin' role to manage other users' roles
+  const canManageRoles = userProfile?.role === 'admin';
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold">Gerenciar Mesários</h1>
-          <p className="text-muted-foreground mt-1">Visualize e gerencie os usuários que podem atuar como mesários.</p>
+          <h1 className="text-2xl font-semibold">Gerenciar Usuários e Mesários</h1>
+          <p className="text-muted-foreground mt-1">Defina as funções dos usuários (admin, mesário, usuário).</p>
         </div>
-        {/* Futuramente, pode haver um botão para convidar novos mesários ou editar roles */}
       </div>
 
       {loading ? (
@@ -85,28 +140,43 @@ const Officials = () => {
         <div className="text-center py-10 border-2 border-dashed rounded-lg text-red-500">
           <p>{error}</p>
         </div>
-      ) : officials.length === 0 ? (
+      ) : profiles.length === 0 ? (
         <div className="text-center py-10 border-2 border-dashed rounded-lg">
-          <p className="text-gray-500">Nenhum mesário encontrado.</p>
-          <p className="text-gray-500 mt-2">Convide usuários para se tornarem mesários.</p>
+          <p className="text-gray-500">Nenhum usuário encontrado.</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {officials.map((official) => (
-            <Card key={official.id}>
+          {profiles.map((profile) => (
+            <Card key={profile.id}>
               <CardHeader className="flex flex-row items-center gap-4 p-4">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={official.avatar_url || undefined} alt={official.first_name || 'User'} />
+                  <AvatarImage src={profile.avatar_url || undefined} alt={profile.first_name || 'User'} />
                   <AvatarFallback>
-                    <User className="h-6 w-6 text-gray-500" />
+                    <UserIcon className="h-6 w-6 text-gray-500" />
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <CardTitle className="text-lg">{official.first_name} {official.last_name}</CardTitle>
-                  <CardDescription className="text-sm">{official.email}</CardDescription>
-                  <span className="text-xs text-muted-foreground capitalize">{official.role}</span>
+                  <CardTitle className="text-lg">{profile.first_name} {profile.last_name}</CardTitle>
+                  <CardDescription className="text-sm">{profile.email}</CardDescription>
+                  {canManageRoles ? (
+                    <Select
+                      value={profile.role}
+                      onValueChange={(newRole) => handleRoleChange(profile.id, newRole)}
+                      disabled={savingRoles.has(profile.id) || profile.id === userProfile?.id} // Cannot change own role
+                    >
+                      <SelectTrigger className="w-[180px] mt-2">
+                        <SelectValue placeholder="Selecione a função" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">Usuário</SelectItem>
+                        <SelectItem value="official">Mesário</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span className="text-xs text-muted-foreground capitalize mt-2 block">Função: {profile.role}</span>
+                  )}
                 </div>
-                {/* Futuramente, botões de ação como "Editar Role" ou "Remover" */}
               </CardHeader>
             </Card>
           ))}

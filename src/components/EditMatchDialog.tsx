@@ -38,6 +38,13 @@ interface Match {
   location: string | null;
   group_id: string | null; // Added group_id
   round_id: string | null; // Added round_id
+  assigned_official_id: string | null; // Added assigned_official_id
+}
+
+interface Official {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
 }
 
 interface EditMatchDialogProps {
@@ -63,6 +70,8 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
   const [location, setLocation] = useState(match.location || '');
   const [groupId, setGroupId] = useState<string | undefined>(match.group_id || undefined); // New state for group
   const [roundId, setRoundId] = useState<string | undefined>(match.round_id || undefined); // New state for round
+  const [assignedOfficialId, setAssignedOfficialId] = useState<string | undefined>(match.assigned_official_id || undefined); // New state for assigned official
+  const [officials, setOfficials] = useState<Official[]>([]); // State for officials list
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -72,6 +81,7 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
     setLocation(match.location || '');
     setGroupId(match.group_id || undefined);
     setRoundId(match.round_id || undefined);
+    setAssignedOfficialId(match.assigned_official_id || undefined);
     if (match.match_date) {
       const date = new Date(match.match_date);
       setMatchTime(format(date, 'HH:mm'));
@@ -79,6 +89,23 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
       setMatchTime('');
     }
   }, [match]);
+
+  useEffect(() => {
+    const fetchOfficials = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .eq('role', 'official')
+        .order('first_name', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching officials:', error);
+      } else {
+        setOfficials(data as Official[]);
+      }
+    };
+    fetchOfficials();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,6 +136,7 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
         location: location.trim() === '' ? null : location.trim(),
         group_id: groupId || null,
         round_id: roundId || null,
+        assigned_official_id: assignedOfficialId || null, // Include assigned_official_id
       })
       .eq('id', match.id);
 
@@ -130,7 +158,7 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
         <DialogHeader>
           <DialogTitle>Editar Partida</DialogTitle>
           <DialogDescription>
-            {`Atualize o placar, data, local, grupo e rodada da partida entre ${match.team1.name} e ${match.team2.name}.`}
+            {`Atualize o placar, data, local, grupo, rodada e mesário da partida entre ${match.team1.name} e ${match.team2.name}.`}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -241,6 +269,23 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
                 className="col-span-3"
                 placeholder="Estádio Municipal"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="official" className="text-right">
+                Mesário
+              </Label>
+              <Select value={assignedOfficialId} onValueChange={setAssignedOfficialId}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Atribuir mesário (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {officials.map(official => (
+                    <SelectItem key={official.id} value={official.id}>
+                      {official.first_name} {official.last_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

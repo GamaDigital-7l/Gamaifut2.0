@@ -1,31 +1,69 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Session } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const SessionContext = createContext<{ session: Session | null }>({ session: null });
+interface UserProfile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+  role: string;
+}
+
+interface SessionContextType {
+  session: Session | null;
+  userProfile: UserProfile | null;
+}
+
+const SessionContext = createContext<SessionContextType>({ session: null, userProfile: null });
 
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
+  const fetchUserProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, avatar_url, role')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      setUserProfile(null);
+    } else {
+      setUserProfile(data as UserProfile);
+    }
+  };
+
   useEffect(() => {
-    const getSession = async () => {
+    const getSessionAndProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
+      if (session?.user) {
+        await fetchUserProfile(session.user.id);
+      }
       setLoading(false);
     };
 
-    getSession();
+    getSessionAndProfile();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      if (_event === 'SIGNED_IN' && location.pathname !== '/dashboard') {
-        navigate('/dashboard');
-      } else if (_event === 'SIGNED_OUT' && location.pathname !== '/login') {
-        navigate('/login');
+      if (session?.user) {
+        await fetchUserProfile(session.user.id);
+        if (_event === 'SIGNED_IN' && location.pathname !== '/dashboard') {
+          navigate('/dashboard');
+        }
+      } else {
+        setUserProfile(null);
+        if (_event === 'SIGNED_OUT' && location.pathname !== '/login') {
+          navigate('/login');
+        }
       }
     });
 
@@ -42,11 +80,11 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   }, [session, loading, navigate, location.pathname]);
 
   if (loading) {
-    return <div>Loading...</div>; // Or a proper spinner component
+    return <div>Carregando...</div>; // Or a proper spinner component
   }
 
   return (
-    <SessionContext.Provider value={{ session }}>
+    <SessionContext.Provider value={{ session, userProfile }}>
       {children}
     </SessionContext.Provider>
   );

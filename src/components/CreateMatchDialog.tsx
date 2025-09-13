@@ -34,6 +34,12 @@ interface Team {
   name: string;
 }
 
+interface Official {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+}
+
 interface CreateMatchDialogProps {
   championshipId: string;
   teams: Team[];
@@ -51,8 +57,27 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
   const [location, setLocation] = useState('');
   const [groupId, setGroupId] = useState<string | undefined>(undefined); // New state for group
   const [roundId, setRoundId] = useState<string | undefined>(undefined); // New state for round
+  const [assignedOfficialId, setAssignedOfficialId] = useState<string | undefined>(undefined); // New state for assigned official
+  const [officials, setOfficials] = useState<Official[]>([]); // State for officials list
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { session } = useSession();
+
+  useEffect(() => {
+    const fetchOfficials = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .eq('role', 'official')
+        .order('first_name', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching officials:', error);
+      } else {
+        setOfficials(data as Official[]);
+      }
+    };
+    fetchOfficials();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +110,7 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
         location: location.trim() === '' ? null : location.trim(),
         group_id: groupId || null, // Include group_id
         round_id: roundId || null, // Include round_id
+        assigned_official_id: assignedOfficialId || null, // Include assigned_official_id
       }]);
 
     setIsSubmitting(false);
@@ -100,6 +126,7 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
       setLocation('');
       setGroupId(undefined); // Reset group
       setRoundId(undefined); // Reset round
+      setAssignedOfficialId(undefined); // Reset assigned official
       setOpen(false);
       onMatchCreated();
     }
@@ -117,7 +144,7 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
         <DialogHeader>
           <DialogTitle>Agendar Nova Partida</DialogTitle>
           <DialogDescription>
-            Selecione os dois times que irão se enfrentar e defina a data, local, grupo e rodada.
+            Selecione os dois times que irão se enfrentar e defina a data, local, grupo, rodada e mesário.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -232,6 +259,23 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
                 className="col-span-3"
                 placeholder="Estádio Municipal"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="official" className="text-right">
+                Mesário
+              </Label>
+              <Select value={assignedOfficialId} onValueChange={setAssignedOfficialId}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Atribuir mesário (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {officials.map(official => (
+                    <SelectItem key={official.id} value={official.id}>
+                      {official.first_name} {official.last_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

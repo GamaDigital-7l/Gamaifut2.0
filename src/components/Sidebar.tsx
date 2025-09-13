@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, Home, ChevronLeft, ChevronRight, Users } from "lucide-react"; // Import Users icon
+import { Trophy, Home, ChevronLeft, ChevronRight, Users, ClipboardList } from "lucide-react"; // Import Users and ClipboardList icons
 import { cn } from "@/lib/utils";
 import { useChampionshipTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
+import { useSession } from '@/components/SessionProvider'; // Import useSession
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -12,17 +13,26 @@ interface SidebarProps {
 const Sidebar = ({ isCollapsed, toggleCollapsed }: SidebarProps) => {
   const location = useLocation();
   const { currentTheme } = useChampionshipTheme();
+  const { userProfile } = useSession(); // Get user profile from session
 
   const navLinks = [
     {
       href: "/dashboard",
       icon: <Home className="h-4 w-4" />,
       label: "Dashboard",
+      roles: ['user', 'official', 'admin'], // Visible to all authenticated users
     },
     {
-      href: "/officials", // New link for Officials
+      href: "/officials",
       icon: <Users className="h-4 w-4" />,
-      label: "Mesários",
+      label: "Gerenciar Usuários",
+      roles: ['admin'], // Only visible to admins
+    },
+    {
+      href: "/official-dashboard",
+      icon: <ClipboardList className="h-4 w-4" />,
+      label: "Painel do Mesário",
+      roles: ['official', 'admin'], // Visible to officials and admins
     },
   ];
 
@@ -57,29 +67,32 @@ const Sidebar = ({ isCollapsed, toggleCollapsed }: SidebarProps) => {
       <div className="flex-1 overflow-y-auto">
         <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
           {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
-                location.pathname === link.href 
-                  ? "bg-muted text-primary" 
-                  : "text-muted-foreground hover:text-primary"
-              )}
-              style={{
-                color: location.pathname === link.href 
-                  ? (currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-primary))') 
-                  : (currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))'),
-                backgroundColor: location.pathname === link.href 
-                  ? (currentTheme?.theme_secondary ? `hsl(${currentTheme.theme_secondary})` : 'hsl(var(--sidebar-accent))') 
-                  : 'transparent',
-                justifyContent: isCollapsed ? 'center' : 'flex-start', // Center icon when collapsed
-              }}
-              onClick={closeSheet}
-            >
-              {link.icon}
-              {!isCollapsed && link.label}
-            </Link>
+            // Only render link if user has the required role
+            userProfile?.role && link.roles.includes(userProfile.role) && (
+              <Link
+                key={link.href}
+                to={link.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
+                  location.pathname === link.href 
+                    ? "bg-muted text-primary" 
+                    : "text-muted-foreground hover:text-primary"
+                )}
+                style={{
+                  color: location.pathname === link.href 
+                    ? (currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-primary))') 
+                    : (currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))'),
+                  backgroundColor: location.pathname === link.href 
+                    ? (currentTheme?.theme_secondary ? `hsl(${currentTheme.theme_secondary})` : 'hsl(var(--sidebar-accent))') 
+                    : 'transparent',
+                  justifyContent: isCollapsed ? 'center' : 'flex-start', // Center icon when collapsed
+                }}
+                onClick={closeSheet}
+              >
+                {link.icon}
+                {!isCollapsed && link.label}
+              </Link>
+            )
           ))}
         </nav>
       </div>
