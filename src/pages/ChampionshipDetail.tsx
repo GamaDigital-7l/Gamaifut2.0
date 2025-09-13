@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Leaderboard } from '@/components/Leaderboard';
 
 type Championship = {
   id: string;
@@ -30,6 +31,8 @@ type Team = {
 
 type Match = {
   id: string;
+  team1_id: string;
+  team2_id: string;
   team1_score: number | null;
   team2_score: number | null;
   team1: { name: string };
@@ -79,6 +82,8 @@ const ChampionshipDetail = () => {
       .from('matches')
       .select(`
         id,
+        team1_id,
+        team2_id,
         team1_score,
         team2_score,
         team1:teams!matches_team1_id_fkey(name),
@@ -142,6 +147,8 @@ const ChampionshipDetail = () => {
         <h1 className="text-4xl font-bold">{championship.name}</h1>
         <p className="text-lg text-muted-foreground mt-2">{championship.description || 'Sem descrição.'}</p>
       </div>
+
+      <Leaderboard teams={teams} matches={matches} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-4">
