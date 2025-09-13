@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Leaderboard } from '@/components/Leaderboard';
 import { SponsorsTab } from '@/components/SponsorsTab';
 import { SponsorDisplay } from '@/components/SponsorDisplay';
+import { MatchCard } from '@/components/MatchCard'; // Import the new MatchCard component
 import { format } from 'date-fns';
 
 type Championship = {
@@ -32,7 +33,7 @@ type Championship = {
 type Team = {
   id: string;
   name: string;
-  logo_url: string | null; // Add logo_url
+  logo_url: string | null;
 };
 
 type Match = {
@@ -43,8 +44,8 @@ type Match = {
   team2_score: number | null;
   match_date: string | null;
   location: string | null;
-  team1: { name: string; logo_url: string | null; }; // Update team1 type
-  team2: { name: string; logo_url: string | null; }; // Update team2 type
+  team1: { name: string; logo_url: string | null; };
+  team2: { name: string; logo_url: string | null; };
 };
 
 const ChampionshipDetail = () => {
@@ -157,92 +158,56 @@ const ChampionshipDetail = () => {
         </Button>
       </div>
 
-      <Tabs defaultValue="leaderboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="leaderboard">Classificação</TabsTrigger>
-          <TabsTrigger value="matches">Partidas</TabsTrigger> {/* Moved matches here */}
+      {/* Main two-column layout for Leaderboard and Matches */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Leaderboard Section */}
+        <div>
+          <Leaderboard teams={teams} matches={matches} />
+        </div>
+
+        {/* Matches Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Jogos</CardTitle>
+                <CardDescription>Agende e atualize os resultados das partidas.</CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <GenerateMatchesDialog championshipId={championship.id} teams={teams} onMatchesGenerated={fetchData} />
+                <CreateMatchDialog championshipId={championship.id} teams={teams} onMatchCreated={fetchData} />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {matches.length === 0 ? (
+              <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                <p className="text-gray-500">Nenhuma partida agendada.</p>
+                {teams.length < 2 && <p className="text-gray-500 mt-2">Adicione pelo menos 2 times para agendar uma partida.</p>}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {matches.map((match) => (
+                  <MatchCard
+                    key={match.id}
+                    match={match}
+                    onMatchUpdated={fetchData}
+                    onMatchDeleted={fetchData}
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tabs for Teams and Sponsors (below the two-column layout) */}
+      <Tabs defaultValue="teams" className="w-full mt-4">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="teams">Times</TabsTrigger>
           <TabsTrigger value="sponsors">Patrocínios</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="leaderboard" className="mt-4">
-          <Leaderboard teams={teams} matches={matches} />
-        </TabsContent>
-
-        <TabsContent value="matches" className="mt-4"> {/* Moved matches content here */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Partidas</CardTitle>
-                  <CardDescription>Agende e atualize os resultados das partidas.</CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <GenerateMatchesDialog championshipId={championship.id} teams={teams} onMatchesGenerated={fetchData} />
-                  <CreateMatchDialog championshipId={championship.id} teams={teams} onMatchCreated={fetchData} />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {matches.length === 0 ? (
-                <div className="text-center py-10 border-2 border-dashed rounded-lg">
-                  <p className="text-gray-500">Nenhuma partida agendada.</p>
-                  {teams.length < 2 && <p className="text-gray-500 mt-2">Adicione pelo menos 2 times para agendar uma partida.</p>}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {matches.map((match) => (
-                    <Card key={match.id}>
-                      <CardContent className="flex flex-col sm:flex-row items-center justify-between p-4">
-                        <div className="flex items-center justify-center sm:justify-start w-full sm:w-auto mb-2 sm:mb-0">
-                          {match.team1.logo_url && <img src={match.team1.logo_url} alt={match.team1.name} className="h-8 w-8 object-contain mr-2" />}
-                          <span className="font-medium text-right pr-2">{match.team1.name}</span>
-                          <div className="flex items-center gap-2 text-lg">
-                            <span>{match.team1_score ?? '-'}</span>
-                            <Swords className="h-5 w-5 text-muted-foreground" />
-                            <span>{match.team2_score ?? '-'}</span>
-                          </div>
-                          <span className="font-medium text-left pl-2">{match.team2.name}</span>
-                          {match.team2.logo_url && <img src={match.team2.logo_url} alt={match.team2.name} className="h-8 w-8 object-contain ml-2" />}
-                        </div>
-                        <div className="flex flex-col sm:flex-row items-center gap-2 text-sm text-muted-foreground">
-                          {match.match_date && (
-                            <span className="flex items-center gap-1">
-                              <CalendarIcon className="h-4 w-4" />
-                              {format(new Date(match.match_date), 'dd/MM/yyyy')}
-                            </span>
-                          )}
-                          {match.location && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-4 w-4" />
-                              {match.location}
-                            </span>
-                          )}
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <EditMatchDialog match={match} onMatchUpdated={fetchData}>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Placar</DropdownMenuItem>
-                            </EditMatchDialog>
-                            <DeleteMatchDialog match={match} onMatchDeleted={fetchData}>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
-                            </DeleteMatchDialog>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="teams" className="mt-4">
           <Card>
             <CardHeader>
