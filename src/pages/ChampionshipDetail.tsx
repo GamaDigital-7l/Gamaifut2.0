@@ -23,6 +23,7 @@ import { SponsorsTab } from '@/components/SponsorsTab';
 import { SponsorDisplay } from '@/components/SponsorDisplay';
 import { MatchCard } from '@/components/MatchCard'; // Import the new MatchCard component
 import { format } from 'date-fns';
+import { useChampionshipTheme } from '@/contexts/ThemeContext'; // Import the theme hook
 
 type Championship = {
   id: string;
@@ -55,6 +56,7 @@ const ChampionshipDetail = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { fetchAndApplyChampionshipTheme } = useChampionshipTheme(); // Use the theme hook
 
   const fetchData = useCallback(async () => {
     if (!id) return;
@@ -111,7 +113,8 @@ const ChampionshipDetail = () => {
     }
 
     setLoading(false);
-  }, [id]);
+    fetchAndApplyChampionshipTheme(id); // Fetch and apply theme when championship data is loaded
+  }, [id, fetchAndApplyChampionshipTheme]);
 
   useEffect(() => {
     fetchData();

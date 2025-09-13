@@ -16,16 +16,16 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="hidden border-r bg-muted/40 md:block" style={{
-      backgroundColor: currentTheme?.theme_bg || 'var(--sidebar-background)',
-      borderColor: currentTheme?.theme_primary || 'var(--sidebar-border)'
+    <div className="hidden border-r md:block" style={{
+      backgroundColor: currentTheme?.theme_bg ? `hsl(${currentTheme.theme_bg})` : 'hsl(var(--sidebar-background))',
+      borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
     }}>
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6" style={{
-          borderColor: currentTheme?.theme_primary || 'var(--sidebar-border)'
+          borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
         }}>
           <Link to="/" className="flex items-center gap-2 font-semibold" style={{
-            color: currentTheme?.theme_text || 'var(--sidebar-foreground)'
+            color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))'
           }}>
             <Trophy className="h-6 w-6" />
             <span>ChampManager</span>
@@ -38,15 +38,17 @@ const Sidebar = () => {
                 key={link.href}
                 to={link.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                  location.pathname === link.href && "bg-muted text-primary"
+                  "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
+                  location.pathname === link.href 
+                    ? "bg-muted text-primary" 
+                    : "text-muted-foreground hover:text-primary"
                 )}
                 style={{
                   color: location.pathname === link.href 
-                    ? (currentTheme?.theme_primary || 'var(--sidebar-primary)') 
-                    : (currentTheme?.theme_text || 'var(--sidebar-foreground)'),
+                    ? (currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-primary))') 
+                    : (currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))'),
                   backgroundColor: location.pathname === link.href 
-                    ? (currentTheme?.theme_secondary || 'var(--sidebar-accent)') 
+                    ? (currentTheme?.theme_secondary ? `hsl(${currentTheme.theme_secondary})` : 'hsl(var(--sidebar-accent))') 
                     : 'transparent',
                 }}
               >

@@ -12,8 +12,8 @@ const MainLayout = () => {
       <div className="flex flex-col">
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6" style={{ 
-          backgroundColor: currentTheme?.theme_bg || 'var(--background)',
-          color: currentTheme?.theme_text || 'var(--foreground)'
+          backgroundColor: currentTheme?.theme_bg ? `hsl(${currentTheme.theme_bg})` : 'hsl(var(--background))',
+          color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--foreground))'
         }}>
           <Outlet />
         </main>

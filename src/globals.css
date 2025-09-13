@@ -50,7 +50,7 @@
 
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Championship Theme Variables */
+    /* Championship Theme Variables - These will be set by ThemeContext in HSL format */
     --championship-primary: var(--primary);
     --championship-secondary: var(--secondary);
     --championship-accent: var(--accent);
@@ -104,39 +104,40 @@
 
   body {
     /* Use championship theme variables if available, otherwise fallback to default */
-    background-color: var(--championship-bg, hsl(var(--background)));
-    color: var(--championship-text, hsl(var(--foreground)));
+    background-color: hsl(var(--championship-bg, var(--background)));
+    color: hsl(var(--championship-text, var(--foreground)));
   }
 
   /* Override specific shadcn/ui components to use championship theme */
+  /* These now correctly use the HSL values from --championship- variables */
   .bg-background {
-    background-color: var(--championship-bg, hsl(var(--background))) !important;
+    background-color: hsl(var(--championship-bg, var(--background))) !important;
   }
   .text-foreground {
-    color: var(--championship-text, hsl(var(--foreground))) !important;
+    color: hsl(var(--championship-text, var(--foreground))) !important;
   }
   .bg-primary {
-    background-color: var(--championship-primary, hsl(var(--primary))) !important;
+    background-color: hsl(var(--championship-primary, var(--primary))) !important;
   }
   .text-primary-foreground {
-    color: var(--championship-text, hsl(var(--primary-foreground))) !important;
+    color: hsl(var(--championship-text, var(--primary-foreground))) !important;
   }
   .bg-secondary {
-    background-color: var(--championship-secondary, hsl(var(--secondary))) !important;
+    background-color: hsl(var(--championship-secondary, var(--secondary))) !important;
   }
   .text-secondary-foreground {
-    color: var(--championship-text, hsl(var(--secondary-foreground))) !important;
+    color: hsl(var(--championship-text, var(--secondary-foreground))) !important;
   }
   .bg-accent {
-    background-color: var(--championship-accent, hsl(var(--accent))) !important;
+    background-color: hsl(var(--championship-accent, var(--accent))) !important;
   }
   .text-accent-foreground {
-    color: var(--championship-text, hsl(var(--accent-foreground))) !important;
+    color: hsl(var(--championship-text, var(--accent-foreground))) !important;
   }
   .border-border {
-    border-color: var(--championship-primary, hsl(var(--border))) !important;
+    border-color: hsl(var(--championship-primary, var(--border))) !important;
   }
   .ring-ring {
-    --ring: var(--championship-primary, hsl(var(--ring))) !important;
+    --ring: hsl(var(--championship-primary, var(--ring))) !important;
   }
 }

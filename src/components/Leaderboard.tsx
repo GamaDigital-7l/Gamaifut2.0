@@ -179,7 +179,7 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-4">Classificação</h2>
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto"> {/* Added overflow-x-auto here */}
         <Table>
           <TableHeader>
             <TableRow>
@@ -211,7 +211,7 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
                   {standing.positionChange === 'new' && <span className="text-blue-500 text-xs">Novo</span>}
                   {!standing.positionChange && <Minus className="h-4 w-4 text-gray-500 inline" />}
                 </TableCell>
-                <TableCell className="flex items-center gap-2">
+                <TableCell className="flex items-center gap-2 min-w-[150px]"> {/* Added min-w for team name */}
                   {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-6 w-6 object-contain" />}
                   {standing.teamName}
                 </TableCell>
@@ -226,7 +226,7 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
                 <TableCell className="text-center">{standing.yellowCards}</TableCell> {/* Placeholder */}
                 <TableCell className="text-center">{standing.redCards}</TableCell>    {/* Placeholder */}
                 <TableCell className="text-center">{standing.percentage.toFixed(1)}%</TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center min-w-[120px]"> {/* Added min-w for recent form */}
                   <div className="flex justify-center gap-1">
                     {standing.recentForm.map((form, i) => (
                       <span

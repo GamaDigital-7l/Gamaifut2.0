@@ -9,7 +9,8 @@ import { Switch } from '@/components/ui/switch';
 import { showSuccess, showError } from '@/utils/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { useSession } from '@/components/SessionProvider'; // Import useSession
+import { useSession } from '@/components/SessionProvider';
+import { hexToHsl } from '@/lib/utils'; // Import the new utility
 
 type ChampionshipThemeData = {
   logo_url: string | null;
@@ -24,18 +25,18 @@ type ChampionshipThemeData = {
 const ChampionshipTheme = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { session } = useSession(); // Get session for user ID
+  const { session } = useSession();
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [logoUrl, setLogoUrl] = useState('');
-  const [logoFile, setLogoFile] = useState<File | null>(null); // State for the selected file
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [primaryColor, setPrimaryColor] = useState('#007bff');
   const [secondaryColor, setSecondaryColor] = useState('#6c757d');
   const [accentColor, setAccentColor] = useState('#28a745');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [textColor, setTextColor] = useState('#212529');
-  const [themeMode, setThemeMode] = useState('light'); // 'light' or 'dark'
+  const [themeMode, setThemeMode] = useState('light');
 
   const fetchChampionshipTheme = useCallback(async () => {
     if (!id) return;
@@ -72,11 +73,8 @@ const ChampionshipTheme = () => {
     } else {
       setLogoFile(null);
       // If no file selected, revert to existing logo_url or empty
-      if (championship?.logo_url) { // Assuming championship state is available or refetch
-        fetchChampionshipTheme();
-      } else {
-        setLogoUrl('');
-      }
+      // Re-fetch to get the original logo_url if it exists
+      fetchChampionshipTheme(); 
     }
   };
 
