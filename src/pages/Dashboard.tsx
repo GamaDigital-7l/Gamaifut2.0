@@ -1,9 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { CreateChampionshipDialog } from '@/components/CreateChampionshipDialog';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type Championship = {
   id: string;
@@ -63,14 +63,16 @@ const Dashboard = () => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {championships.map((championship) => (
-            <Card key={championship.id}>
-              <CardHeader>
-                <CardTitle>{championship.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{championship.description || 'Sem descrição.'}</p>
-              </CardContent>
-            </Card>
+            <Link to={`/championship/${championship.id}`} key={championship.id}>
+              <Card className="hover:shadow-lg transition-shadow duration-200 h-full">
+                <CardHeader>
+                  <CardTitle>{championship.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{championship.description || 'Sem descrição.'}</p>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}
