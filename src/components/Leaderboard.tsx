@@ -7,12 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react"; // Import icons for position change
-
-interface Team {
-  id: string;
-  name: string;
-  logo_url: string | null; // Added logo_url
-}
+import { Team } from '@/pages/ChampionshipDetail'; // Import Team type from ChampionshipDetail
 
 interface Match {
   id: string;
@@ -21,6 +16,7 @@ interface Match {
   team1_score: number | null;
   team2_score: number | null;
   match_date: string | null; // Needed for recent form sorting
+  group_id: string | null; // Added group_id
 }
 
 interface LeaderboardProps {
@@ -48,11 +44,8 @@ interface Standing {
 export function Leaderboard({ teams, matches }: LeaderboardProps) {
   if (teams.length === 0) {
     return (
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Classificação</h2>
-        <div className="text-center py-10 border-2 border-dashed rounded-lg">
-          <p className="text-gray-500">Adicione times para ver a classificação.</p>
-        </div>
+      <div className="text-center py-10 border-2 border-dashed rounded-lg">
+        <p className="text-gray-500">Adicione times a este grupo para ver a classificação.</p>
       </div>
     );
   }
@@ -174,7 +167,6 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-4">Classificação</h2>
       <div className="rounded-md border overflow-x-auto"> {/* Added overflow-x-auto here */}
         <Table className="min-w-max"> {/* Added min-w-max here */}
           <TableHeader>

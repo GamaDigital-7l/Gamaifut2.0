@@ -28,6 +28,13 @@ import { CalendarTab } from '@/components/CalendarTab';
 import { StatisticsTab } from '@/components/StatisticsTab';
 import { format } from 'date-fns';
 import { useChampionshipTheme } from '@/contexts/ThemeContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Championship = {
   id: string;
@@ -39,6 +46,7 @@ export type Team = { // Export Team type for use in other components
   id: string;
   name: string;
   logo_url: string | null;
+  group_id: string | null; // Added group_id
 };
 
 type Match = {
@@ -66,6 +74,7 @@ const ChampionshipDetail = () => {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all'); // New state for round filter
   const { fetchAndApplyChampionshipTheme } = useChampionshipTheme();
 
   const fetchData = useCallback(async () => {
@@ -161,6 +170,10 @@ const ChampionshipDetail = () => {
     fetchData();
   }, [id, fetchData]);
 
+  const filteredMatches = selectedRoundFilter === 'all'
+    ? matches
+    : matches.filter(match => match.round_id === selectedRoundFilter);
+
   if (loading) {
     return <div className="p-8">Carregando detalhes do campeonato...</div>;
   }
@@ -203,13 +216,39 @@ const ChampionshipDetail = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div>
-          <Leaderboard teams={teams} matches={matches} />
-        </div>
+        {/* Leaderboards por Grupo */}
+        {groups.length > 0 ? (
+          <div className="space-y-4">
+            {groups.map(group => (
+              <Card key={group.id}>
+                <CardHeader>
+                  <CardTitle>Classificação - {group.name}</CardTitle>
+                  <CardDescription>Times do grupo {group.name}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Leaderboard 
+                    teams={teams.filter(team => team.group_id === group.id)} 
+                    matches={matches.filter(match => match.group_id === group.id)} 
+                  />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Classificação Geral</CardTitle>
+              <CardDescription>Todos os times do campeonato.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Leaderboard teams={teams} matches={matches} />
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-2">
               <div>
                 <CardTitle>Jogos</CardTitle>
                 <CardDescription>Agende e atualize os resultados das partidas.</CardDescription>
@@ -219,16 +258,33 @@ const ChampionshipDetail = () => {
                 <CreateMatchDialog championshipId={championship.id} teams={teams} groups={groups} rounds={rounds} onMatchCreated={fetchData} />
               </div>
             </div>
+            {/* Round Filter */}
+            {rounds.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Label htmlFor="round-filter" className="text-right sr-only">Filtrar por Rodada</Label>
+                <Select value={selectedRoundFilter} onValueChange={setSelectedRoundFilter}>
+                  <SelectTrigger id="round-filter" className="w-[180px]">
+                    <SelectValue placeholder="Filtrar por Rodada" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as Rodadas</SelectItem>
+                    {rounds.map(round => (
+                      <SelectItem key={round.id} value={round.id}>{round.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
-            {matches.length === 0 ? (
+            {filteredMatches.length === 0 ? (
               <div className="text-center py-10 border-2 border-dashed rounded-lg">
                 <p className="text-gray-500">Nenhuma partida agendada.</p>
                 {teams.length < 2 && <p className="text-gray-500 mt-2">Adicione pelo menos 2 times para agendar uma partida.</p>}
               </div>
             ) : (
               <div className="space-y-2">
-                {matches.map((match, index) => (
+                {filteredMatches.map((match, index) => (
                   <MatchCard
                     key={match.id}
                     match={match}
@@ -263,7 +319,7 @@ const ChampionshipDetail = () => {
                   <CardTitle>Times</CardTitle>
                   <CardDescription>Gerencie os times participantes.</CardDescription>
                 </div>
-                <CreateTeamDialog championshipId={championship.id} onTeamCreated={fetchData} />
+                <CreateTeamDialog championshipId={championship.id} onTeamCreated={fetchData} groups={groups} />
               </div>
             </CardHeader>
             <CardContent>
@@ -279,6 +335,11 @@ const ChampionshipDetail = () => {
                         <div className="flex items-center gap-4">
                           {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-10 w-10 object-contain" />}
                           <CardTitle className="text-base font-medium">{team.name}</CardTitle>
+                          {team.group_id && (
+                            <span className="text-sm text-muted-foreground">
+                              ({groups.find(g => g.id === team.group_id)?.name || 'Grupo Desconhecido'})
+                            </span>
+                          )}
                         </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -287,7 +348,7 @@ const ChampionshipDetail = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
-                            <EditTeamDialog team={team} onTeamUpdated={fetchData}>
+                            <EditTeamDialog team={team} onTeamUpdated={fetchData} groups={groups}>
                               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
                             </EditTeamDialog>
                             <DeleteTeamDialog team={team} onTeamDeleted={fetchData}>
@@ -305,7 +366,7 @@ const ChampionshipDetail = () => {
         </TabsContent>
 
         <TabsContent value="groups" className="mt-4">
-          <GroupsTab championshipId={championship.id} />
+          <GroupsTab championshipId={championship.id} teams={teams} onTeamUpdated={fetchData} />
         </TabsContent>
 
         <TabsContent value="rounds" className="mt-4">

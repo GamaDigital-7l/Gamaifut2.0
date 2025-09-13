@@ -11,27 +11,38 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider'; // Import useSession
 import { showSuccess, showError } from '@/utils/toast';
+import { Group } from './GroupsTab'; // Import Group type
 
 interface Team {
   id: string;
   name: string;
   logo_url: string | null; // Add logo_url
+  group_id: string | null; // Add group_id
 }
 
 interface EditTeamDialogProps {
   team: Team;
   onTeamUpdated: () => void;
   children: React.ReactNode;
+  groups: Group[]; // New prop for groups
 }
 
-export function EditTeamDialog({ team, onTeamUpdated, children }: EditTeamDialogProps) {
+export function EditTeamDialog({ team, onTeamUpdated, children, groups }: EditTeamDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(team.name);
   const [logoUrl, setLogoUrl] = useState(team.logo_url || ''); // State for current logo URL
   const [logoFile, setLogoFile] = useState<File | null>(null); // State for the selected new file
+  const [groupId, setGroupId] = useState<string | undefined>(team.group_id || undefined); // New state for group
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { session } = useSession(); // Get session for user ID
 
@@ -39,6 +50,7 @@ export function EditTeamDialog({ team, onTeamUpdated, children }: EditTeamDialog
     setName(team.name);
     setLogoUrl(team.logo_url || '');
     setLogoFile(null); // Clear file input on team change
+    setGroupId(team.group_id || undefined); // Set initial group
   }, [team]);
 
   const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +111,7 @@ export function EditTeamDialog({ team, onTeamUpdated, children }: EditTeamDialog
 
     const { error } = await supabase
       .from('teams')
-      .update({ name, logo_url: newLogoUrl })
+      .update({ name, logo_url: newLogoUrl, group_id: groupId || null }) // Include group_id
       .eq('id', team.id);
 
     setIsSubmitting(false);
@@ -120,7 +132,7 @@ export function EditTeamDialog({ team, onTeamUpdated, children }: EditTeamDialog
         <DialogHeader>
           <DialogTitle>Editar Time</DialogTitle>
           <DialogDescription>
-            Altere o nome e o escudo do time e clique em salvar.
+            Altere o nome, o escudo e o grupo do time e clique em salvar.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -153,6 +165,21 @@ export function EditTeamDialog({ team, onTeamUpdated, children }: EditTeamDialog
                   Escudo atual: <a href={logoUrl} target="_blank" rel="noopener noreferrer" className="underline">{logoUrl.split('/').pop()}</a>
                 </p>
               )}
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="group" className="text-right">
+                Grupo
+              </Label>
+              <Select value={groupId} onValueChange={setGroupId}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Selecione o grupo (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {groups.map(group => (
+                    <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

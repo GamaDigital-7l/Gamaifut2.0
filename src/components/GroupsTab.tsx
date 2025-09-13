@@ -22,6 +22,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { showSuccess, showError } from '@/utils/toast';
+import { Team } from '@/pages/ChampionshipDetail'; // Import Team type
 
 export type Group = {
   id: string;
@@ -32,9 +33,11 @@ export type Group = {
 
 interface GroupsTabProps {
   championshipId: string;
+  teams: Team[]; // New prop: all teams in the championship
+  onTeamUpdated: () => void; // Callback to refresh teams if needed (e.g., after assigning)
 }
 
-export function GroupsTab({ championshipId }: GroupsTabProps) {
+export function GroupsTab({ championshipId, teams, onTeamUpdated }: GroupsTabProps) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -62,6 +65,19 @@ export function GroupsTab({ championshipId }: GroupsTabProps) {
 
   const handleDeleteGroup = async (groupId: string, groupName: string) => {
     setIsDeleting(true);
+    
+    // First, set group_id to null for all teams in this group
+    const { error: updateError } = await supabase
+      .from('teams')
+      .update({ group_id: null })
+      .eq('group_id', groupId);
+
+    if (updateError) {
+      showError(`Erro ao desvincular times do grupo "${groupName}": ${updateError.message}`);
+      setIsDeleting(false);
+      return;
+    }
+
     const { error } = await supabase
       .from('groups')
       .delete()
@@ -74,6 +90,7 @@ export function GroupsTab({ championshipId }: GroupsTabProps) {
     } else {
       showSuccess(`Grupo "${groupName}" excluído com sucesso!`);
       fetchGroups();
+      onTeamUpdated(); // Trigger a refresh of teams in ChampionshipDetail
     }
   };
 
@@ -97,7 +114,7 @@ export function GroupsTab({ championshipId }: GroupsTabProps) {
             <p className="text-gray-500 mt-2">Crie grupos para organizar seu campeonato.</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {groups.map((group) => (
               <Card key={group.id}>
                 <CardHeader className="flex flex-row items-center justify-between p-4">
@@ -123,7 +140,7 @@ export function GroupsTab({ championshipId }: GroupsTabProps) {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Esta ação não pode ser desfeita. Isso excluirá permanentemente o grupo "{group.name}" e desvinculará todas as partidas associadas a ele.
+                              Esta ação não pode ser desfeita. Isso excluirá permanentemente o grupo "{group.name}" e desvinculará todos os times e partidas associadas a ele.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -137,6 +154,21 @@ export function GroupsTab({ championshipId }: GroupsTabProps) {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <h4 className="text-sm font-semibold mb-2">Times no Grupo:</h4>
+                  {teams.filter(team => team.group_id === group.id).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhum time neste grupo.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {teams.filter(team => team.group_id === group.id).map(team => (
+                        <Badge key={team.id} variant="secondary" className="flex items-center gap-1">
+                          {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-4 w-4 object-contain" />}
+                          {team.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
               </Card>
             ))}
           </div>

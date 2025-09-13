@@ -11,19 +11,29 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
 import { showSuccess, showError } from '@/utils/toast';
+import { Group } from './GroupsTab'; // Import Group type
 
 interface CreateTeamDialogProps {
   championshipId: string;
   onTeamCreated: () => void;
+  groups: Group[]; // New prop for groups
 }
 
-export function CreateTeamDialog({ championshipId, onTeamCreated }: CreateTeamDialogProps) {
+export function CreateTeamDialog({ championshipId, onTeamCreated, groups }: CreateTeamDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null); // State for the selected file
+  const [groupId, setGroupId] = useState<string | undefined>(undefined); // New state for group
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { session } = useSession();
 
@@ -88,6 +98,7 @@ export function CreateTeamDialog({ championshipId, onTeamCreated }: CreateTeamDi
         championship_id: championshipId,
         user_id: session.user.id,
         logo_url,
+        group_id: groupId || null, // Include group_id
       }]);
 
     setIsSubmitting(false);
@@ -98,6 +109,7 @@ export function CreateTeamDialog({ championshipId, onTeamCreated }: CreateTeamDi
       showSuccess("Time criado com sucesso!");
       setName('');
       setLogoFile(null);
+      setGroupId(undefined); // Reset group
       setOpen(false);
       onTeamCreated();
     }
@@ -112,7 +124,7 @@ export function CreateTeamDialog({ championshipId, onTeamCreated }: CreateTeamDi
         <DialogHeader>
           <DialogTitle>Adicionar Novo Time</DialogTitle>
           <DialogDescription>
-            Preencha o nome do time e adicione um escudo (opcional).
+            Preencha o nome do time, adicione um escudo (opcional) e atribua a um grupo.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -141,6 +153,21 @@ export function CreateTeamDialog({ championshipId, onTeamCreated }: CreateTeamDi
                 onChange={handleLogoFileChange}
                 className="col-span-3"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="group" className="text-right">
+                Grupo
+              </Label>
+              <Select value={groupId} onValueChange={setGroupId}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Selecione o grupo (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {groups.map(group => (
+                    <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
