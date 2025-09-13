@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,25 +19,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
-import { useSession } from '@/components/SessionProvider';
 import { showSuccess, showError } from '@/utils/toast';
+import { Round } from './RoundsTab';
 
-interface CreateRoundDialogProps {
-  championshipId: string;
-  onRoundCreated: () => void;
+interface EditRoundDialogProps {
+  round: Round;
+  onRoundUpdated: () => void;
+  children: React.ReactNode;
 }
 
-export function CreateRoundDialog({ championshipId, onRoundCreated }: CreateRoundDialogProps) {
+export function EditRoundDialog({ round, onRoundUpdated, children }: EditRoundDialogProps) {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [orderIndex, setOrderIndex] = useState('0');
-  const [type, setType] = useState('group_stage');
+  const [name, setName] = useState(round.name);
+  const [orderIndex, setOrderIndex] = useState(round.order_index.toString());
+  const [type, setType] = useState(round.type);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { session } = useSession();
+
+  useEffect(() => {
+    setName(round.name);
+    setOrderIndex(round.order_index.toString());
+    setType(round.type);
+  }, [round]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !session?.user) {
+    if (!name.trim()) {
       showError("O nome da rodada é obrigatório.");
       return;
     }
@@ -46,38 +52,32 @@ export function CreateRoundDialog({ championshipId, onRoundCreated }: CreateRoun
 
     const { error } = await supabase
       .from('rounds')
-      .insert([{ 
+      .update({ 
         name, 
-        championship_id: championshipId,
-        user_id: session.user.id,
         order_index: parseInt(orderIndex, 10),
         type,
-      }]);
+      })
+      .eq('id', round.id);
 
     setIsSubmitting(false);
 
     if (error) {
-      showError(`Erro ao criar rodada: ${error.message}`);
+      showError(`Erro ao atualizar rodada: ${error.message}`);
     } else {
-      showSuccess("Rodada criada com sucesso!");
-      setName('');
-      setOrderIndex('0');
-      setType('group_stage');
+      showSuccess("Rodada atualizada com sucesso!");
       setOpen(false);
-      onRoundCreated();
+      onRoundUpdated();
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Adicionar Rodada</Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Criar Nova Rodada</DialogTitle>
+          <DialogTitle>Editar Rodada</DialogTitle>
           <DialogDescription>
-            Defina um nome, ordem e tipo para a nova rodada/fase.
+            Altere as informações da rodada/fase.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -91,7 +91,6 @@ export function CreateRoundDialog({ championshipId, onRoundCreated }: CreateRoun
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="col-span-3"
-                placeholder="Rodada 1"
                 required
               />
             </div>
@@ -105,7 +104,6 @@ export function CreateRoundDialog({ championshipId, onRoundCreated }: CreateRoun
                 value={orderIndex}
                 onChange={(e) => setOrderIndex(e.target.value)}
                 className="col-span-3"
-                placeholder="0"
                 min="0"
               />
             </div>
@@ -129,7 +127,7 @@ export function CreateRoundDialog({ championshipId, onRoundCreated }: CreateRoun
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Criando...' : 'Criar'}
+              {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </DialogFooter>
         </form>

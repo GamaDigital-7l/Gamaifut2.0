@@ -11,6 +11,7 @@ import { DeleteMatchDialog } from "./DeleteMatchDialog";
 import { MoreHorizontal, Swords, CalendarIcon, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
+import { cn } from "@/lib/utils"; // Import cn utility
 
 interface Team {
   id: string;
@@ -38,14 +39,18 @@ interface MatchCardProps {
   match: Match;
   onMatchUpdated: () => void;
   onMatchDeleted: () => void;
+  isEven: boolean; // New prop for alternating colors
 }
 
-export function MatchCard({ match, onMatchUpdated, onMatchDeleted }: MatchCardProps) {
+export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven }: MatchCardProps) {
   const matchDate = match.match_date ? new Date(match.match_date) : null;
   const isPlayed = match.team1_score !== null && match.team2_score !== null;
 
   return (
-    <Card className="w-full">
+    <Card className={cn(
+      "w-full",
+      isEven ? "bg-card" : "bg-muted/50 dark:bg-muted/20" // Alternating background
+    )}>
       <CardContent className="p-4">
         <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
           <div className="flex items-center gap-1">
@@ -86,7 +91,9 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted }: MatchCardPr
           {/* Scores / Separator */}
           <div className="flex items-center gap-2 text-xl font-bold">
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
-            <Swords className="h-5 w-5 text-muted-foreground" />
+            <div className="p-1 rounded-full bg-primary text-primary-foreground"> {/* Enhanced Swords icon */}
+              <Swords className="h-4 w-4" />
+            </div>
             <span>{isPlayed ? (match.team2_score ?? '-') : ''}</span>
           </div>
 

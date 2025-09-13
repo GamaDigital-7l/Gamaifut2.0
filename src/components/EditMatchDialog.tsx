@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, setHours, setMinutes, getHours, getMinutes } from "date-fns"; // Import setHours, setMinutes, getHours, getMinutes
 import { CalendarIcon } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
@@ -53,6 +53,13 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
   const [team1Score, setTeam1Score] = useState(match.team1_score?.toString() ?? '');
   const [team2Score, setTeam2Score] = useState(match.team2_score?.toString() ?? '');
   const [matchDate, setMatchDate] = useState<Date | undefined>(match.match_date ? new Date(match.match_date) : undefined);
+  const [matchTime, setMatchTime] = useState<string>(() => { // New state for time
+    if (match.match_date) {
+      const date = new Date(match.match_date);
+      return format(date, 'HH:mm');
+    }
+    return '';
+  });
   const [location, setLocation] = useState(match.location || '');
   const [groupId, setGroupId] = useState<string | undefined>(match.group_id || undefined); // New state for group
   const [roundId, setRoundId] = useState<string | undefined>(match.round_id || undefined); // New state for round
@@ -65,6 +72,12 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
     setLocation(match.location || '');
     setGroupId(match.group_id || undefined);
     setRoundId(match.round_id || undefined);
+    if (match.match_date) {
+      const date = new Date(match.match_date);
+      setMatchTime(format(date, 'HH:mm'));
+    } else {
+      setMatchTime('');
+    }
   }, [match]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,12 +93,19 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
         return;
     }
 
+    let finalMatchDate = matchDate;
+    if (finalMatchDate && matchTime) {
+      const [hours, minutes] = matchTime.split(':').map(Number);
+      finalMatchDate = setHours(finalMatchDate, hours);
+      finalMatchDate = setMinutes(finalMatchDate, minutes);
+    }
+
     const { error } = await supabase
       .from('matches')
       .update({ 
         team1_score: score1, 
         team2_score: score2,
-        match_date: matchDate?.toISOString() || null,
+        match_date: finalMatchDate?.toISOString() || null,
         location: location.trim() === '' ? null : location.trim(),
         group_id: groupId || null,
         round_id: roundId || null,
@@ -197,6 +217,18 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="matchTime" className="text-right">
+                Hora
+              </Label>
+              <Input
+                id="matchTime"
+                type="time"
+                value={matchTime}
+                onChange={(e) => setMatchTime(e.target.value)}
+                className="col-span-3"
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="location" className="text-right">

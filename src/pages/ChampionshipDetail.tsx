@@ -114,7 +114,8 @@ const ChampionshipDetail = () => {
       .from('rounds')
       .select('*')
       .eq('championship_id', id)
-      .order('order_index', { ascending: true });
+      .order('order_index', { ascending: true })
+      .order('name', { ascending: true });
 
     if (roundsError) {
       console.error('Error fetching rounds:', roundsError);
@@ -225,12 +226,13 @@ const ChampionshipDetail = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {matches.map((match) => (
+                {matches.map((match, index) => (
                   <MatchCard
                     key={match.id}
                     match={match}
                     onMatchUpdated={fetchData}
                     onMatchDeleted={fetchData}
+                    isEven={index % 2 === 0} // Pass isEven prop
                   />
                 ))}
               </div>

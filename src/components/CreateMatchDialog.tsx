@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, setHours, setMinutes } from "date-fns"; // Import setHours and setMinutes
 import { CalendarIcon } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
@@ -47,6 +47,7 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
   const [team1Id, setTeam1Id] = useState<string | undefined>(undefined);
   const [team2Id, setTeam2Id] = useState<string | undefined>(undefined);
   const [matchDate, setMatchDate] = useState<Date | undefined>(undefined);
+  const [matchTime, setMatchTime] = useState<string>(''); // New state for time
   const [location, setLocation] = useState('');
   const [groupId, setGroupId] = useState<string | undefined>(undefined); // New state for group
   const [roundId, setRoundId] = useState<string | undefined>(undefined); // New state for round
@@ -66,6 +67,13 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
 
     setIsSubmitting(true);
 
+    let finalMatchDate = matchDate;
+    if (finalMatchDate && matchTime) {
+      const [hours, minutes] = matchTime.split(':').map(Number);
+      finalMatchDate = setHours(finalMatchDate, hours);
+      finalMatchDate = setMinutes(finalMatchDate, minutes);
+    }
+
     const { error } = await supabase
       .from('matches')
       .insert([{ 
@@ -73,7 +81,7 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
         user_id: session.user.id,
         team1_id: team1Id,
         team2_id: team2Id,
-        match_date: matchDate?.toISOString(),
+        match_date: finalMatchDate?.toISOString() || null,
         location: location.trim() === '' ? null : location.trim(),
         group_id: groupId || null, // Include group_id
         round_id: roundId || null, // Include round_id
@@ -88,6 +96,7 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
       setTeam1Id(undefined);
       setTeam2Id(undefined);
       setMatchDate(undefined);
+      setMatchTime(''); // Reset time
       setLocation('');
       setGroupId(undefined); // Reset group
       setRoundId(undefined); // Reset round
@@ -199,6 +208,18 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="matchTime" className="text-right">
+                Hora
+              </Label>
+              <Input
+                id="matchTime"
+                type="time"
+                value={matchTime}
+                onChange={(e) => setMatchTime(e.target.value)}
+                className="col-span-3"
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="location" className="text-right">

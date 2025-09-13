@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CreateRoundDialog } from './CreateRoundDialog';
+import { EditRoundDialog } from './EditRoundDialog'; // Import EditRoundDialog
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,7 +29,7 @@ export type Round = {
   id: string;
   name: string;
   order_index: number;
-  type: 'group_stage' | 'knockout' | 'final';
+  type: 'group_stage' | 'round_of_16' | 'quarter_finals' | 'semi_finals' | 'final'; // Updated types
   championship_id: string;
   created_at: string;
 };
@@ -81,10 +82,23 @@ export function RoundsTab({ championshipId }: RoundsTabProps) {
     }
   };
 
-  const getTypeBadgeVariant = (type: string) => {
+  const getTypeDisplayName = (type: Round['type']) => {
+    switch (type) {
+      case 'group_stage': return 'Fase de Grupos';
+      case 'round_of_16': return 'Oitavas de Final';
+      case 'quarter_finals': return 'Quartas de Final';
+      case 'semi_finals': return 'Semi Final';
+      case 'final': return 'Final';
+      default: return type;
+    }
+  };
+
+  const getTypeBadgeVariant = (type: Round['type']) => {
     switch (type) {
       case 'group_stage': return 'default';
-      case 'knockout': return 'secondary';
+      case 'round_of_16':
+      case 'quarter_finals':
+      case 'semi_finals': return 'secondary';
       case 'final': return 'destructive';
       default: return 'outline';
     }
@@ -116,7 +130,7 @@ export function RoundsTab({ championshipId }: RoundsTabProps) {
                 <CardHeader className="flex flex-row items-center justify-between p-4">
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-base font-medium">{round.name}</CardTitle>
-                    <Badge variant={getTypeBadgeVariant(round.type)}>{round.type === 'group_stage' ? 'Fase de Grupos' : round.type === 'knockout' ? 'Mata-mata' : 'Final'}</Badge>
+                    <Badge variant={getTypeBadgeVariant(round.type)}>{getTypeDisplayName(round.type)}</Badge>
                     <span className="text-sm text-muted-foreground">({round.order_index})</span>
                   </div>
                   <DropdownMenu>
@@ -126,10 +140,11 @@ export function RoundsTab({ championshipId }: RoundsTabProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      {/* Edit Round Dialog (to be implemented later) */}
-                      <DropdownMenuItem disabled>
-                        <Edit className="mr-2 h-4 w-4" /> Editar
-                      </DropdownMenuItem>
+                      <EditRoundDialog round={round} onRoundUpdated={fetchRounds}>
+                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <Edit className="mr-2 h-4 w-4" /> Editar
+                         </DropdownMenuItem>
+                      </EditRoundDialog>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
