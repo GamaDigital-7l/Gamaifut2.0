@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton'; // Importar Skeleton
 
 type Championship = {
   id: string;
@@ -52,7 +53,23 @@ const Dashboard = () => {
       </div>
 
       {loading ? (
-        <p>Carregando campeonatos...</p>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(3)].map((_, index) => ( // Render 3 skeleton cards
+            <Card key={index} className="flex flex-col justify-between">
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4 mb-2" />
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <Skeleton className="h-4 w-full mb-1" />
+                <Skeleton className="h-4 w-5/6" />
+              </CardContent>
+              <CardFooter className="flex justify-between items-center">
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       ) : championships.length === 0 ? (
         <div className="text-center py-10 border-2 border-dashed rounded-lg">
           <p className="text-gray-500">Você ainda não criou nenhum campeonato.</p>
