@@ -40,8 +40,6 @@ interface Standing {
   goalsFor: number;
   goalsAgainst: number;
   goalDifference: number;
-  // yellowCards: number; // Removed
-  // redCards: number;    // Removed
   percentage: number;
   recentForm: ('W' | 'D' | 'L' | '-')[]; // Last 5 games, '-' for unplayed
   positionChange: 'up' | 'down' | 'same' | 'new' | null; // Placeholder for now
@@ -71,8 +69,6 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
     goalsFor: 0,
     goalsAgainst: 0,
     goalDifference: 0,
-    // yellowCards: 0, // Removed
-    // redCards: 0,    // Removed
     percentage: 0,
     recentForm: [],
     positionChange: null, // Placeholder
@@ -180,53 +176,49 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
     <div>
       <h2 className="text-2xl font-semibold mb-4">Classificação</h2>
       <div className="rounded-md border overflow-x-auto"> {/* Added overflow-x-auto here */}
-        <Table>
+        <Table className="min-w-max"> {/* Added min-w-max here */}
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50px] text-center">#</TableHead>
-              <TableHead className="w-[30px] text-center">Var.</TableHead> {/* Position Change */}
-              <TableHead>Time</TableHead>
-              <TableHead className="text-center">P</TableHead>
-              <TableHead className="text-center">J</TableHead>
-              <TableHead className="text-center">V</TableHead>
-              <TableHead className="text-center">E</TableHead>
-              <TableHead className="text-center">D</TableHead>
-              <TableHead className="text-center">GP</TableHead>
-              <TableHead className="text-center">GC</TableHead>
-              <TableHead className="text-center">SG</TableHead>
-              {/* <TableHead className="text-center">CA</TableHead> Removed */}
-              {/* <TableHead className="text-center">CV</TableHead> Removed */}
-              <TableHead className="text-center">%</TableHead> {/* Percentage */}
-              <TableHead className="text-center">Recentes</TableHead> {/* Recent Form */}
+              <TableHead className="w-[50px] text-center px-2 py-2">#</TableHead>
+              <TableHead className="w-[30px] text-center px-2 py-2">Var.</TableHead> {/* Position Change */}
+              <TableHead className="px-2 py-2">Time</TableHead> {/* Removed explicit width */}
+              <TableHead className="text-center px-2 py-2">P</TableHead>
+              <TableHead className="text-center px-2 py-2">J</TableHead>
+              <TableHead className="text-center px-2 py-2">V</TableHead>
+              <TableHead className="text-center px-2 py-2">E</TableHead>
+              <TableHead className="text-center px-2 py-2">D</TableHead>
+              <TableHead className="text-center px-2 py-2">GP</TableHead>
+              <TableHead className="text-center px-2 py-2">GC</TableHead>
+              <TableHead className="text-center px-2 py-2">SG</TableHead>
+              <TableHead className="text-center px-2 py-2">%</TableHead> {/* Percentage */}
+              <TableHead className="text-center px-2 py-2">Recentes</TableHead> {/* Recent Form */}
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedStandings.map((standing, index) => (
               <TableRow key={standing.teamId}>
-                <TableCell className="font-medium text-center">{index + 1}</TableCell>
-                <TableCell className="text-center">
+                <TableCell className="font-medium text-center px-2 py-2">{index + 1}</TableCell>
+                <TableCell className="text-center px-2 py-2">
                   {standing.positionChange === 'up' && <ArrowUp className="h-4 w-4 text-green-500 inline" />}
                   {standing.positionChange === 'down' && <ArrowDown className="h-4 w-4 text-red-500 inline" />}
                   {standing.positionChange === 'same' && <Minus className="h-4 w-4 text-gray-500 inline" />}
                   {standing.positionChange === 'new' && <span className="text-blue-500 text-xs">Novo</span>}
                   {!standing.positionChange && <Minus className="h-4 w-4 text-gray-500 inline" />}
                 </TableCell>
-                <TableCell className="flex items-center gap-2 min-w-[150px]"> {/* Added min-w for team name */}
+                <TableCell className="flex items-center gap-2 px-2 py-2"> {/* Removed min-w */}
                   {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-6 w-6 object-contain" />}
                   {standing.teamName}
                 </TableCell>
-                <TableCell className="text-center font-bold">{standing.points}</TableCell>
-                <TableCell className="text-center">{standing.played}</TableCell>
-                <TableCell className="text-center">{standing.wins}</TableCell>
-                <TableCell className="text-center">{standing.draws}</TableCell>
-                <TableCell className="text-center">{standing.losses}</TableCell>
-                <TableCell className="text-center">{standing.goalsFor}</TableCell>
-                <TableCell className="text-center">{standing.goalsAgainst}</TableCell>
-                <TableCell className="text-center">{standing.goalDifference}</TableCell>
-                {/* <TableCell className="text-center">{standing.yellowCards}</TableCell> Removed */}
-                {/* <TableCell className="text-center">{standing.redCards}</TableCell>    Removed */}
-                <TableCell className="text-center">{standing.percentage.toFixed(1)}%</TableCell>
-                <TableCell className="text-center min-w-[120px]"> {/* Added min-w for recent form */}
+                <TableCell className="text-center font-bold px-2 py-2">{standing.points}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.played}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.wins}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.draws}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.losses}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.goalsFor}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.goalsAgainst}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.goalDifference}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.percentage.toFixed(1)}%</TableCell>
+                <TableCell className="text-center px-2 py-2"> {/* Removed min-w */}
                   <div className="flex justify-center gap-1">
                     {standing.recentForm.map((form, i) => (
                       <span
