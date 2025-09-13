@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { showSuccess, showError } from '@/utils/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { useSession } from '@/components/SessionProvider'; // Import useSession
 
 type ChampionshipThemeData = {
   logo_url: string | null;
@@ -23,10 +24,12 @@ type ChampionshipThemeData = {
 const ChampionshipTheme = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { session } = useSession(); // Get session for user ID
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [logoUrl, setLogoUrl] = useState('');
+  const [logoFile, setLogoFile] = useState<File | null>(null); // State for the selected file
   const [primaryColor, setPrimaryColor] = useState('#007bff');
   const [secondaryColor, setSecondaryColor] = useState('#6c757d');
   const [accentColor, setAccentColor] = useState('#28a745');
@@ -62,14 +65,66 @@ const ChampionshipTheme = () => {
     fetchChampionshipTheme();
   }, [fetchChampionshipTheme]);
 
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setLogoFile(e.target.files[0]);
+      setLogoUrl(URL.createObjectURL(e.target.files[0])); // For live preview
+    } else {
+      setLogoFile(null);
+      // If no file selected, revert to existing logo_url or empty
+      if (championship?.logo_url) { // Assuming championship state is available or refetch
+        fetchChampionshipTheme();
+      } else {
+        setLogoUrl('');
+      }
+    }
+  };
+
+  const uploadLogo = async (): Promise<string | null> => {
+    if (!logoFile || !session?.user) return null;
+
+    const fileExt = logoFile.name.split('.').pop();
+    const fileName = `${id}-${Math.random()}.${fileExt}`;
+    const filePath = `${session.user.id}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('championship-logos')
+      .upload(filePath, logoFile, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      showError('Erro ao fazer upload do logo: ' + uploadError.message);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from('championship-logos')
+      .getPublicUrl(filePath);
+    
+    return data.publicUrl;
+  };
+
   const handleSaveTheme = async (event: FormEvent) => {
     event.preventDefault();
     if (!id) return;
 
     setIsSubmitting(true);
+    let newLogoUrl = logoUrl;
+
+    if (logoFile) {
+      const uploadedUrl = await uploadLogo();
+      if (uploadedUrl) {
+        newLogoUrl = uploadedUrl;
+      } else {
+        setIsSubmitting(false);
+        return; // Stop if upload failed
+      }
+    }
 
     const updates: ChampionshipThemeData = {
-      logo_url: logoUrl,
+      logo_url: newLogoUrl,
       theme_primary: primaryColor,
       theme_secondary: secondaryColor,
       theme_accent: accentColor,
@@ -94,14 +149,6 @@ const ChampionshipTheme = () => {
     }
   };
 
-  const previewStyles = {
-    '--preview-primary': primaryColor,
-    '--preview-secondary': secondaryColor,
-    '--preview-accent': accentColor,
-    '--preview-bg': bgColor,
-    '--preview-text': textColor,
-  } as React.CSSProperties;
-
   return (
     <div className="flex justify-center items-start pt-8">
       <Card className="w-full max-w-4xl">
@@ -116,14 +163,19 @@ const ChampionshipTheme = () => {
             <form onSubmit={handleSaveTheme} className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="logoUrl">URL do Logo do Campeonato</Label>
+                  <Label htmlFor="logoUpload">Upload do Logo do Campeonato</Label>
                   <Input
-                    id="logoUrl"
-                    type="text"
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
-                    placeholder="https://seulogo.com/logo.png"
+                    id="logoUpload"
+                    type="file"
+                    accept="image/png, image/svg+xml, image/jpeg"
+                    onChange={handleLogoFileChange}
+                    className="col-span-3"
                   />
+                  {logoUrl && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Logo atual: <a href={logoUrl} target="_blank" rel="noopener noreferrer" className="underline">{logoUrl.split('/').pop()}</a>
+                    </p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
