@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { showSuccess, showError } from '@/utils/toast';
 import { Team } from '@/pages/ChampionshipDetail'; // Import Team type
+import { Skeleton } from '@/components/ui/skeleton'; // Importar Skeleton
+import { Badge } from '@/components/ui/badge'; // Importar Badge para os times
 
 export type Group = {
   id: string;
@@ -107,7 +109,24 @@ export function GroupsTab({ championshipId, teams, onTeamUpdated }: GroupsTabPro
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p>Carregando grupos...</p>
+          <div className="space-y-4">
+            {[...Array(2)].map((_, index) => ( // Render 2 skeleton cards
+              <Card key={index}>
+                <CardHeader className="flex flex-row items-center justify-between p-4">
+                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <Skeleton className="h-4 w-32 mb-2" />
+                  <div className="flex flex-wrap gap-2">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         ) : groups.length === 0 ? (
           <div className="text-center py-10 border-2 border-dashed rounded-lg">
             <p className="text-gray-500">Nenhum grupo cadastrado.</p>

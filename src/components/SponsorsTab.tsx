@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { CreateSponsorDialog } from './CreateSponsorDialog';
 import { EditSponsorDialog } from './EditSponsorDialog';
 import { DeleteSponsorDialog } from './DeleteSponsorDialog';
+import { Skeleton } from '@/components/ui/skeleton'; // Importar Skeleton
 
 export type Sponsor = {
   id: string;
@@ -77,7 +78,23 @@ export function SponsorsTab({ championshipId }: SponsorsTabProps) {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p>Carregando patrocinadores...</p>
+          <div className="space-y-2">
+            {[...Array(3)].map((_, index) => ( // Render 3 skeleton cards
+              <Card key={index}>
+                <CardHeader className="flex flex-row items-center justify-between p-4">
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="h-10 w-10 rounded-md" />
+                    <Skeleton className="h-5 w-32" />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                  </div>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
         ) : sponsors.length === 0 ? (
           <div className="text-center py-10 border-2 border-dashed rounded-lg">
             <p className="text-gray-500">Nenhum patrocinador cadastrado.</p>
