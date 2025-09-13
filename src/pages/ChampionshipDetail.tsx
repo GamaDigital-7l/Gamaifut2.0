@@ -9,6 +9,7 @@ import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
 import { CreateMatchDialog } from '@/components/CreateMatchDialog';
 import { EditMatchDialog } from '@/components/EditMatchDialog';
 import { DeleteMatchDialog } from '@/components/DeleteMatchDialog';
+import { GenerateMatchesDialog } from '@/components/GenerateMatchesDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -205,7 +206,10 @@ const ChampionshipDetail = () => {
                   <CardTitle>Partidas</CardTitle>
                   <CardDescription>Agende e atualize os resultados das partidas.</CardDescription>
                 </div>
-                <CreateMatchDialog championshipId={championship.id} teams={teams} onMatchCreated={fetchData} />
+                <div className="flex gap-2">
+                  <GenerateMatchesDialog championshipId={championship.id} teams={teams} onMatchesGenerated={fetchData} />
+                  <CreateMatchDialog championshipId={championship.id} teams={teams} onMatchCreated={fetchData} />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
