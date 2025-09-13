@@ -8,10 +8,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EditMatchDialog } from "./EditMatchDialog";
 import { DeleteMatchDialog } from "./DeleteMatchDialog";
-import { MoreHorizontal, Swords, CalendarIcon, MapPin } from "lucide-react";
+import { MoreHorizontal, X, CalendarIcon, MapPin } from "lucide-react"; // Changed Swords to X
 import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils"; // Import cn utility
+import { Group } from './GroupsTab'; // Import Group type
+import { Round } from '@/components/RoundsTab'; // Import Round type
 
 interface Team {
   id: string;
@@ -40,9 +42,11 @@ interface MatchCardProps {
   onMatchUpdated: () => void;
   onMatchDeleted: () => void;
   isEven: boolean; // New prop for alternating colors
+  groups: Group[]; // New prop
+  rounds: Round[]; // New prop
 }
 
-export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven }: MatchCardProps) {
+export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds }: MatchCardProps) {
   const matchDate = match.match_date ? new Date(match.match_date) : null;
   const isPlayed = match.team1_score !== null && match.team2_score !== null;
 
@@ -91,8 +95,8 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven }: Mat
           {/* Scores / Separator */}
           <div className="flex items-center gap-2 text-xl font-bold">
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
-            <div className="p-1 rounded-full bg-primary text-primary-foreground"> {/* Enhanced Swords icon */}
-              <Swords className="h-4 w-4" />
+            <div className="p-1 rounded-full bg-primary text-primary-foreground"> {/* Enhanced X icon */}
+              <X className="h-4 w-4" /> 
             </div>
             <span>{isPlayed ? (match.team2_score ?? '-') : ''}</span>
           </div>
@@ -114,7 +118,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven }: Mat
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <EditMatchDialog match={match} onMatchUpdated={onMatchUpdated}>
+              <EditMatchDialog match={match} groups={groups} rounds={rounds} onMatchUpdated={onMatchUpdated}>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Partida</DropdownMenuItem>
               </EditMatchDialog>
               <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>

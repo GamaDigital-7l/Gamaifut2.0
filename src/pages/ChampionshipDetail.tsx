@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Swords, Palette, CalendarIcon, MapPin } from 'lucide-react';
+import { MoreHorizontal, X, Palette, CalendarIcon, MapPin } from 'lucide-react'; // Changed Swords to X
 import { CreateTeamDialog } from '@/components/CreateTeamDialog';
 import { EditTeamDialog } from '@/components/EditTeamDialog';
 import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
@@ -24,6 +24,8 @@ import { SponsorDisplay } from '@/components/SponsorDisplay';
 import { MatchCard } from '@/components/MatchCard';
 import { GroupsTab, Group } from '@/components/GroupsTab'; // Import GroupsTab and Group type
 import { RoundsTab, Round } from '@/components/RoundsTab'; // Import RoundsTab and Round type
+import { CalendarTab } from '@/components/CalendarTab'; // Import CalendarTab
+import { StatisticsTab } from '@/components/StatisticsTab'; // Import StatisticsTab
 import { format } from 'date-fns';
 import { useChampionshipTheme } from '@/contexts/ThemeContext';
 
@@ -233,6 +235,8 @@ const ChampionshipDetail = () => {
                     onMatchUpdated={fetchData}
                     onMatchDeleted={fetchData}
                     isEven={index % 2 === 0} // Pass isEven prop
+                    groups={groups} // Pass groups
+                    rounds={rounds} // Pass rounds
                   />
                 ))}
               </div>
@@ -242,10 +246,12 @@ const ChampionshipDetail = () => {
       </div>
 
       <Tabs defaultValue="teams" className="w-full mt-4">
-        <TabsList className="grid w-full grid-cols-4"> {/* Changed to 4 columns for Rounds tab */}
+        <TabsList className="grid w-full grid-cols-6"> {/* Changed to 6 columns for new tabs */}
           <TabsTrigger value="teams">Times</TabsTrigger>
           <TabsTrigger value="groups">Grupos</TabsTrigger>
-          <TabsTrigger value="rounds">Rodadas</TabsTrigger> {/* New tab for Rounds */}
+          <TabsTrigger value="rounds">Rodadas</TabsTrigger>
+          <TabsTrigger value="matches-calendar">Calendário</TabsTrigger> {/* New tab */}
+          <TabsTrigger value="statistics">Estatísticas</TabsTrigger> {/* New tab */}
           <TabsTrigger value="sponsors">Patrocínios</TabsTrigger>
         </TabsList>
         
@@ -302,8 +308,27 @@ const ChampionshipDetail = () => {
           <GroupsTab championshipId={championship.id} />
         </TabsContent>
 
-        <TabsContent value="rounds" className="mt-4"> {/* New TabsContent for Rounds */}
+        <TabsContent value="rounds" className="mt-4">
           <RoundsTab championshipId={championship.id} />
+        </TabsContent>
+
+        <TabsContent value="matches-calendar" className="mt-4"> {/* New TabsContent for Calendar */}
+          <CalendarTab 
+            championshipId={championship.id} 
+            matches={matches} 
+            groups={groups}
+            rounds={rounds}
+            onMatchUpdated={fetchData} 
+            onMatchDeleted={fetchData} 
+          />
+        </TabsContent>
+
+        <TabsContent value="statistics" className="mt-4"> {/* New TabsContent for Statistics */}
+          <StatisticsTab 
+            championshipId={championship.id} 
+            teams={teams} 
+            matches={matches} 
+          />
         </TabsContent>
 
         <TabsContent value="sponsors" className="mt-4">

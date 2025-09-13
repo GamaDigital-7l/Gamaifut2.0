@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Group } from './GroupsTab'; // Import Group type
-import { Round } from '@/pages/ChampionshipDetail'; // Import Round type
+import { Round } from '@/components/RoundsTab'; // Import Round type
 
 interface Match {
   id: string;

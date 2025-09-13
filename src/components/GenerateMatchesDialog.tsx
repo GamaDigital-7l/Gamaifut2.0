@@ -23,7 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import { Group } from './GroupsTab'; // Import Group type
-import { Round } from '@/pages/ChampionshipDetail'; // Import Round type
+import { Round } from '@/components/RoundsTab'; // Import Round type
 
 interface Team {
   id: string;
