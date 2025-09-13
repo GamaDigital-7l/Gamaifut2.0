@@ -16,16 +16,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input"; // Import Input for location
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar"; // Import Calendar
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover
-import { cn } from "@/lib/utils"; // Import cn for class merging
-import { format } from "date-fns"; // Import format for date display
-import { CalendarIcon } from "lucide-react"; // Import CalendarIcon
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
 import { showSuccess, showError } from '@/utils/toast';
+import { Group } from './GroupsTab'; // Import Group type
+import { Round } from '@/pages/ChampionshipDetail'; // Import Round type
 
 interface Team {
   id: string;
@@ -35,15 +37,19 @@ interface Team {
 interface CreateMatchDialogProps {
   championshipId: string;
   teams: Team[];
+  groups: Group[]; // Pass groups
+  rounds: Round[]; // Pass rounds
   onMatchCreated: () => void;
 }
 
-export function CreateMatchDialog({ championshipId, teams, onMatchCreated }: CreateMatchDialogProps) {
+export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMatchCreated }: CreateMatchDialogProps) {
   const [open, setOpen] = useState(false);
   const [team1Id, setTeam1Id] = useState<string | undefined>(undefined);
   const [team2Id, setTeam2Id] = useState<string | undefined>(undefined);
   const [matchDate, setMatchDate] = useState<Date | undefined>(undefined);
   const [location, setLocation] = useState('');
+  const [groupId, setGroupId] = useState<string | undefined>(undefined); // New state for group
+  const [roundId, setRoundId] = useState<string | undefined>(undefined); // New state for round
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { session } = useSession();
 
@@ -67,8 +73,10 @@ export function CreateMatchDialog({ championshipId, teams, onMatchCreated }: Cre
         user_id: session.user.id,
         team1_id: team1Id,
         team2_id: team2Id,
-        match_date: matchDate?.toISOString(), // Convert Date to ISO string
+        match_date: matchDate?.toISOString(),
         location: location.trim() === '' ? null : location.trim(),
+        group_id: groupId || null, // Include group_id
+        round_id: roundId || null, // Include round_id
       }]);
 
     setIsSubmitting(false);
@@ -81,6 +89,8 @@ export function CreateMatchDialog({ championshipId, teams, onMatchCreated }: Cre
       setTeam2Id(undefined);
       setMatchDate(undefined);
       setLocation('');
+      setGroupId(undefined); // Reset group
+      setRoundId(undefined); // Reset round
       setOpen(false);
       onMatchCreated();
     }
@@ -98,7 +108,7 @@ export function CreateMatchDialog({ championshipId, teams, onMatchCreated }: Cre
         <DialogHeader>
           <DialogTitle>Agendar Nova Partida</DialogTitle>
           <DialogDescription>
-            Selecione os dois times que irão se enfrentar e defina a data e o local.
+            Selecione os dois times que irão se enfrentar e defina a data, local, grupo e rodada.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -129,6 +139,36 @@ export function CreateMatchDialog({ championshipId, teams, onMatchCreated }: Cre
                 <SelectContent>
                   {availableTeamsForTeam2.map(team => (
                     <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="group" className="text-right">
+                Grupo
+              </Label>
+              <Select value={groupId} onValueChange={setGroupId}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Selecione o grupo (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {groups.map(group => (
+                    <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="round" className="text-right">
+                Rodada
+              </Label>
+              <Select value={roundId} onValueChange={setRoundId}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Selecione a rodada (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {rounds.map(round => (
+                    <SelectItem key={round.id} value={round.id}>{round.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

@@ -21,9 +21,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Leaderboard } from '@/components/Leaderboard';
 import { SponsorsTab } from '@/components/SponsorsTab';
 import { SponsorDisplay } from '@/components/SponsorDisplay';
-import { MatchCard } from '@/components/MatchCard'; // Import the new MatchCard component
+import { MatchCard } from '@/components/MatchCard';
+import { GroupsTab, Group } from '@/components/GroupsTab'; // Import GroupsTab and Group type
 import { format } from 'date-fns';
-import { useChampionshipTheme } from '@/contexts/ThemeContext'; // Import the theme hook
+import { useChampionshipTheme } from '@/contexts/ThemeContext';
 
 type Championship = {
   id: string;
@@ -45,8 +46,19 @@ type Match = {
   team2_score: number | null;
   match_date: string | null;
   location: string | null;
+  group_id: string | null; // Added group_id
+  round_id: string | null; // Added round_id
   team1: { name: string; logo_url: string | null; };
   team2: { name: string; logo_url: string | null; };
+  groups: { name: string } | null; // Nested group data
+  rounds: { name: string } | null; // Nested round data
+};
+
+type Round = {
+  id: string;
+  name: string;
+  order_index: number;
+  type: string;
 };
 
 const ChampionshipDetail = () => {
@@ -54,9 +66,11 @@ const ChampionshipDetail = () => {
   const [championship, setChampionship] = useState<Championship | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]); // State for groups
+  const [rounds, setRounds] = useState<Round[]>([]); // State for rounds
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { fetchAndApplyChampionshipTheme } = useChampionshipTheme(); // Use the theme hook
+  const { fetchAndApplyChampionshipTheme } = useChampionshipTheme();
 
   const fetchData = useCallback(async () => {
     if (!id) return;
@@ -89,6 +103,32 @@ const ChampionshipDetail = () => {
       setTeams(teamsData);
     }
 
+    const { data: groupsData, error: groupsError } = await supabase
+      .from('groups')
+      .select('*')
+      .eq('championship_id', id)
+      .order('name', { ascending: true });
+
+    if (groupsError) {
+      console.error('Error fetching groups:', groupsError);
+      setError('Erro ao carregar os grupos.');
+    } else {
+      setGroups(groupsData as Group[]);
+    }
+
+    const { data: roundsData, error: roundsError } = await supabase
+      .from('rounds')
+      .select('*')
+      .eq('championship_id', id)
+      .order('order_index', { ascending: true });
+
+    if (roundsError) {
+      console.error('Error fetching rounds:', roundsError);
+      setError('Erro ao carregar as rodadas.');
+    } else {
+      setRounds(roundsData as Round[]);
+    }
+
     const { data: matchesData, error: matchesError } = await supabase
       .from('matches')
       .select(`
@@ -99,8 +139,12 @@ const ChampionshipDetail = () => {
         team2_score,
         match_date,
         location,
+        group_id,
+        round_id,
         team1:teams!matches_team1_id_fkey(name, logo_url),
-        team2:teams!matches_team2_id_fkey(name, logo_url)
+        team2:teams!matches_team2_id_fkey(name, logo_url),
+        groups(name),
+        rounds(name)
       `)
       .eq('championship_id', id)
       .order('match_date', { ascending: true });
@@ -113,7 +157,7 @@ const ChampionshipDetail = () => {
     }
 
     setLoading(false);
-    fetchAndApplyChampionshipTheme(id); // Fetch and apply theme when championship data is loaded
+    fetchAndApplyChampionshipTheme(id);
   }, [id, fetchAndApplyChampionshipTheme]);
 
   useEffect(() => {
@@ -161,14 +205,11 @@ const ChampionshipDetail = () => {
         </Button>
       </div>
 
-      {/* Main two-column layout for Leaderboard and Matches */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Leaderboard Section */}
         <div>
           <Leaderboard teams={teams} matches={matches} />
         </div>
 
-        {/* Matches Section */}
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -177,8 +218,8 @@ const ChampionshipDetail = () => {
                 <CardDescription>Agende e atualize os resultados das partidas.</CardDescription>
               </div>
               <div className="flex gap-2">
-                <GenerateMatchesDialog championshipId={championship.id} teams={teams} onMatchesGenerated={fetchData} />
-                <CreateMatchDialog championshipId={championship.id} teams={teams} onMatchCreated={fetchData} />
+                <GenerateMatchesDialog championshipId={championship.id} teams={teams} groups={groups} rounds={rounds} onMatchesGenerated={fetchData} />
+                <CreateMatchDialog championshipId={championship.id} teams={teams} groups={groups} rounds={rounds} onMatchCreated={fetchData} />
               </div>
             </div>
           </CardHeader>
@@ -204,10 +245,10 @@ const ChampionshipDetail = () => {
         </Card>
       </div>
 
-      {/* Tabs for Teams and Sponsors (below the two-column layout) */}
       <Tabs defaultValue="teams" className="w-full mt-4">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3"> {/* Changed to 3 columns for Groups tab */}
           <TabsTrigger value="teams">Times</TabsTrigger>
+          <TabsTrigger value="groups">Grupos</TabsTrigger> {/* New tab for Groups */}
           <TabsTrigger value="sponsors">Patrocínios</TabsTrigger>
         </TabsList>
         
@@ -260,12 +301,15 @@ const ChampionshipDetail = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="groups" className="mt-4"> {/* New TabsContent for Groups */}
+          <GroupsTab championshipId={championship.id} />
+        </TabsContent>
+
         <TabsContent value="sponsors" className="mt-4">
           <SponsorsTab championshipId={championship.id} />
         </TabsContent>
       </Tabs>
       
-      {/* Display active sponsors below the tabs */}
       <SponsorDisplay championshipId={championship.id} />
     </div>
   );

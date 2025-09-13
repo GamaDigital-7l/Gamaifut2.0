@@ -18,6 +18,15 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Group } from './GroupsTab'; // Import Group type
+import { Round } from '@/pages/ChampionshipDetail'; // Import Round type
 
 interface Match {
   id: string;
@@ -25,22 +34,28 @@ interface Match {
   team2_score: number | null;
   team1: { name: string };
   team2: { name: string };
-  match_date: string | null; // Add match_date
-  location: string | null; // Add location
+  match_date: string | null;
+  location: string | null;
+  group_id: string | null; // Added group_id
+  round_id: string | null; // Added round_id
 }
 
 interface EditMatchDialogProps {
   match: Match;
+  groups: Group[]; // Pass groups
+  rounds: Round[]; // Pass rounds
   onMatchUpdated: () => void;
   children: React.ReactNode;
 }
 
-export function EditMatchDialog({ match, onMatchUpdated, children }: EditMatchDialogProps) {
+export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, children }: EditMatchDialogProps) {
   const [open, setOpen] = useState(false);
   const [team1Score, setTeam1Score] = useState(match.team1_score?.toString() ?? '');
   const [team2Score, setTeam2Score] = useState(match.team2_score?.toString() ?? '');
   const [matchDate, setMatchDate] = useState<Date | undefined>(match.match_date ? new Date(match.match_date) : undefined);
   const [location, setLocation] = useState(match.location || '');
+  const [groupId, setGroupId] = useState<string | undefined>(match.group_id || undefined); // New state for group
+  const [roundId, setRoundId] = useState<string | undefined>(match.round_id || undefined); // New state for round
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -48,6 +63,8 @@ export function EditMatchDialog({ match, onMatchUpdated, children }: EditMatchDi
     setTeam2Score(match.team2_score?.toString() ?? '');
     setMatchDate(match.match_date ? new Date(match.match_date) : undefined);
     setLocation(match.location || '');
+    setGroupId(match.group_id || undefined);
+    setRoundId(match.round_id || undefined);
   }, [match]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,6 +87,8 @@ export function EditMatchDialog({ match, onMatchUpdated, children }: EditMatchDi
         team2_score: score2,
         match_date: matchDate?.toISOString() || null,
         location: location.trim() === '' ? null : location.trim(),
+        group_id: groupId || null,
+        round_id: roundId || null,
       })
       .eq('id', match.id);
 
@@ -91,7 +110,7 @@ export function EditMatchDialog({ match, onMatchUpdated, children }: EditMatchDi
         <DialogHeader>
           <DialogTitle>Editar Partida</DialogTitle>
           <DialogDescription>
-            {`Atualize o placar, data e local da partida entre ${match.team1.name} e ${match.team2.name}.`}
+            {`Atualize o placar, data, local, grupo e rodada da partida entre ${match.team1.name} e ${match.team2.name}.`}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -121,6 +140,36 @@ export function EditMatchDialog({ match, onMatchUpdated, children }: EditMatchDi
                 className="col-span-3"
                 placeholder="Placar Time 2"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="group" className="text-right">
+                Grupo
+              </Label>
+              <Select value={groupId} onValueChange={setGroupId}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Selecione o grupo (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {groups.map(group => (
+                    <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="round" className="text-right">
+                Rodada
+              </Label>
+              <Select value={roundId} onValueChange={setRoundId}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Selecione a rodada (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {rounds.map(round => (
+                    <SelectItem key={round.id} value={round.id}>{round.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="matchDate" className="text-right">

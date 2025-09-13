@@ -26,8 +26,12 @@ interface Match {
   team2_score: number | null;
   match_date: string | null;
   location: string | null;
+  group_id: string | null; // Added group_id
+  round_id: string | null; // Added round_id
   team1: Team;
   team2: Team;
+  groups: { name: string } | null; // Nested group data
+  rounds: { name: string } | null; // Nested round data
 }
 
 interface MatchCardProps {
@@ -50,6 +54,16 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted }: MatchCardPr
                 <MapPin className="h-3 w-3" />
                 <span>{match.location}</span>
               </>
+            )}
+            {match.groups?.name && (
+              <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs dark:bg-gray-800">
+                {match.groups.name}
+              </span>
+            )}
+            {match.rounds?.name && (
+              <span className="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs dark:bg-gray-800">
+                {match.rounds.name}
+              </span>
             )}
           </div>
           {matchDate && (
