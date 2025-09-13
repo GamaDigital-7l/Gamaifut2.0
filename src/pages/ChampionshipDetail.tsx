@@ -2,9 +2,17 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal } from 'lucide-react';
 import { CreateTeamDialog } from '@/components/CreateTeamDialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EditTeamDialog } from '@/components/EditTeamDialog';
+import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Championship = {
   id: string;
@@ -128,8 +136,27 @@ const ChampionshipDetail = () => {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {teams.map((team) => (
               <Card key={team.id}>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>{team.name}</CardTitle>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <EditTeamDialog team={team} onTeamUpdated={fetchTeams}>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          Editar
+                        </DropdownMenuItem>
+                      </EditTeamDialog>
+                      <DeleteTeamDialog team={team} onTeamDeleted={fetchTeams}>
+                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                          Excluir
+                        </DropdownMenuItem>
+                      </DeleteTeamDialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardHeader>
               </Card>
             ))}
