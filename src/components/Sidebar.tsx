@@ -24,7 +24,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="flex h-full max-h-screen flex-col gap-2" style={{ // Removed hidden border-r md:block
+    <div className="hidden border-r md:flex h-full max-h-screen flex-col gap-2" style={{ // Modified className
       backgroundColor: currentTheme?.theme_bg ? `hsl(${currentTheme.theme_bg})` : 'hsl(var(--sidebar-background))',
       borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
     }}>

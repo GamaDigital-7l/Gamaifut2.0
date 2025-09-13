@@ -33,12 +33,12 @@ const Header = () => {
     }}>
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0"> {/* Removed md:hidden to always show */}
+          <Button variant="outline" size="icon" className="shrink-0 md:hidden"> {/* Modified className */}
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="flex flex-col" style={{
+        <SheetContent side="left" className="flex flex-col p-0" style={{ // Added p-0
           backgroundColor: currentTheme?.theme_bg ? `hsl(${currentTheme.theme_bg})` : 'hsl(var(--sidebar-background))',
           color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))',
           borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
