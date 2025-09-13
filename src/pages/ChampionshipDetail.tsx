@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Swords, Palette } from 'lucide-react'; // Import Palette icon
+import { MoreHorizontal, Swords, Palette, CalendarIcon, MapPin } from 'lucide-react'; // Import CalendarIcon and MapPin
 import { CreateTeamDialog } from '@/components/CreateTeamDialog';
 import { EditTeamDialog } from '@/components/EditTeamDialog';
 import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
@@ -20,7 +20,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Leaderboard } from '@/components/Leaderboard';
 import { SponsorsTab } from '@/components/SponsorsTab';
-import { SponsorDisplay } from '@/components/SponsorDisplay'; // Import the new component
+import { SponsorDisplay } from '@/components/SponsorDisplay';
+import { format } from 'date-fns'; // Import format for date display
 
 type Championship = {
   id: string;
@@ -39,6 +40,8 @@ type Match = {
   team2_id: string;
   team1_score: number | null;
   team2_score: number | null;
+  match_date: string | null; // Add match_date
+  location: string | null; // Add location
   team1: { name: string };
   team2: { name: string };
 };
@@ -90,17 +93,19 @@ const ChampionshipDetail = () => {
         team2_id,
         team1_score,
         team2_score,
+        match_date,
+        location,
         team1:teams!matches_team1_id_fkey(name),
         team2:teams!matches_team2_id_fkey(name)
       `)
-      .eq('championship_id', id);
+      .eq('championship_id', id)
+      .order('match_date', { ascending: true }); // Order matches by date
 
     if (matchesError) {
         console.error('Error fetching matches:', matchesError);
         setError('Erro ao carregar as partidas.');
     } else {
-        // @ts-ignore
-        setMatches(matchesData);
+        setMatches(matchesData as Match[]);
     }
 
     setLoading(false);
@@ -233,14 +238,30 @@ const ChampionshipDetail = () => {
                 <div className="space-y-2">
                   {matches.map((match) => (
                     <Card key={match.id}>
-                      <CardContent className="flex items-center justify-between p-4">
-                        <span className="font-medium flex-1 text-right pr-4">{match.team1.name}</span>
-                        <div className="flex items-center gap-2 text-lg">
-                          <span>{match.team1_score ?? '-'}</span>
-                          <Swords className="h-5 w-5 text-muted-foreground" />
-                          <span>{match.team2_score ?? '-'}</span>
+                      <CardContent className="flex flex-col sm:flex-row items-center justify-between p-4">
+                        <div className="flex items-center justify-center sm:justify-start w-full sm:w-auto mb-2 sm:mb-0">
+                          <span className="font-medium text-right pr-2">{match.team1.name}</span>
+                          <div className="flex items-center gap-2 text-lg">
+                            <span>{match.team1_score ?? '-'}</span>
+                            <Swords className="h-5 w-5 text-muted-foreground" />
+                            <span>{match.team2_score ?? '-'}</span>
+                          </div>
+                          <span className="font-medium text-left pl-2">{match.team2.name}</span>
                         </div>
-                        <span className="font-medium flex-1 text-left pl-4">{match.team2.name}</span>
+                        <div className="flex flex-col sm:flex-row items-center gap-2 text-sm text-muted-foreground">
+                          {match.match_date && (
+                            <span className="flex items-center gap-1">
+                              <CalendarIcon className="h-4 w-4" />
+                              {format(new Date(match.match_date), 'dd/MM/yyyy')}
+                            </span>
+                          )}
+                          {match.location && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-4 w-4" />
+                              {match.location}
+                            </span>
+                          )}
+                        </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
