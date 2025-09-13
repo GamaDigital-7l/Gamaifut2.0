@@ -3,7 +3,16 @@ import { Button } from '@/components/ui/button';
 import { useNavigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { CreateChampionshipDialog } from '@/components/CreateChampionshipDialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EditChampionshipDialog } from '@/components/EditChampionshipDialog';
+import { DeleteChampionshipDialog } from '@/components/DeleteChampionshipDialog';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from 'lucide-react';
 
 type Championship = {
   id: string;
@@ -63,16 +72,34 @@ const Dashboard = () => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {championships.map((championship) => (
-            <Link to={`/championship/${championship.id}`} key={championship.id}>
-              <Card className="hover:shadow-lg transition-shadow duration-200 h-full">
-                <CardHeader>
-                  <CardTitle>{championship.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{championship.description || 'Sem descrição.'}</p>
-                </CardContent>
-              </Card>
-            </Link>
+            <Card key={championship.id} className="flex flex-col justify-between">
+              <CardHeader>
+                <CardTitle>{championship.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <p className="text-sm text-muted-foreground line-clamp-3">{championship.description || 'Sem descrição.'}</p>
+              </CardContent>
+              <CardFooter className="flex justify-between items-center">
+                <Button asChild variant="outline" size="sm">
+                  <Link to={`/championship/${championship.id}`}>Ver Detalhes</Link>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <EditChampionshipDialog championship={championship} onChampionshipUpdated={fetchChampionships}>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
+                    </EditChampionshipDialog>
+                    <DeleteChampionshipDialog championship={championship} onChampionshipDeleted={fetchChampionships}>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem>
+                    </DeleteChampionshipDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       )}
