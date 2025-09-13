@@ -20,7 +20,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Leaderboard } from '@/components/Leaderboard';
 import { SponsorsTab } from '@/components/SponsorsTab';
-import { SponsorDisplay } from '@/components/SponsorDisplay';
+import { SponsorDisplay } = '@/components/SponsorDisplay';
 import { MatchCard } from '@/components/MatchCard';
 import { GroupsTab, Group } from '@/components/GroupsTab';
 import { RoundsTab, Round } from '@/components/RoundsTab';
@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from '@/components/ui/label'; // Adicionando a importação do Label
 
 type Championship = {
   id: string;
