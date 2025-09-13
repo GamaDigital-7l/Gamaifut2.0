@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Trash2, Edit } from 'lucide-react';
+import { MoreHorizontal, Trash2, Edit, PlusCircle } from 'lucide-react'; // Import PlusCircle
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CreateRoundDialog } from './CreateRoundDialog';
-import { EditRoundDialog } from './EditRoundDialog'; // Import EditRoundDialog
+import { EditRoundDialog } from './EditRoundDialog';
+import { AddMatchesToRoundDialog } from './AddMatchesToRoundDialog'; // Import AddMatchesToRoundDialog
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,21 +25,26 @@ import {
 } from "@/components/ui/alert-dialog";
 import { showSuccess, showError } from '@/utils/toast';
 import { Badge } from '@/components/ui/badge';
+import { Team } from '@/pages/ChampionshipDetail'; // Import Team type
+import { Group } from './GroupsTab'; // Import Group type
 
 export type Round = {
   id: string;
   name: string;
   order_index: number;
-  type: 'group_stage' | 'round_of_16' | 'quarter_finals' | 'semi_finals' | 'final'; // Updated types
+  type: 'group_stage' | 'round_of_16' | 'quarter_finals' | 'semi_finals' | 'final';
   championship_id: string;
   created_at: string;
 };
 
 interface RoundsTabProps {
   championshipId: string;
+  teams: Team[]; // Pass teams to AddMatchesToRoundDialog
+  groups: Group[]; // Pass groups to AddMatchesToRoundDialog
+  onMatchesAdded: () => void; // Callback for when matches are added
 }
 
-export function RoundsTab({ championshipId }: RoundsTabProps) {
+export function RoundsTab({ championshipId, teams, groups, onMatchesAdded }: RoundsTabProps) {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -79,6 +85,7 @@ export function RoundsTab({ championshipId }: RoundsTabProps) {
     } else {
       showSuccess(`Rodada "${roundName}" excluída com sucesso!`);
       fetchRounds();
+      onMatchesAdded(); // Also trigger a refresh of matches in ChampionshipDetail
     }
   };
 
@@ -140,6 +147,18 @@ export function RoundsTab({ championshipId }: RoundsTabProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
+                      <AddMatchesToRoundDialog
+                        championshipId={championshipId}
+                        roundId={round.id}
+                        roundName={round.name}
+                        teams={teams}
+                        groups={groups}
+                        onMatchesAdded={onMatchesAdded}
+                      >
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Partidas
+                        </DropdownMenuItem>
+                      </AddMatchesToRoundDialog>
                       <EditRoundDialog round={round} onRoundUpdated={fetchRounds}>
                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                             <Edit className="mr-2 h-4 w-4" /> Editar

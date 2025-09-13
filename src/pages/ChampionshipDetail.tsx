@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, X, Palette, CalendarIcon, MapPin } from 'lucide-react'; // Changed Swords to X
+import { MoreHorizontal, X, Palette, CalendarIcon, MapPin } from 'lucide-react';
 import { CreateTeamDialog } from '@/components/CreateTeamDialog';
 import { EditTeamDialog } from '@/components/EditTeamDialog';
 import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
@@ -22,10 +22,10 @@ import { Leaderboard } from '@/components/Leaderboard';
 import { SponsorsTab } from '@/components/SponsorsTab';
 import { SponsorDisplay } from '@/components/SponsorDisplay';
 import { MatchCard } from '@/components/MatchCard';
-import { GroupsTab, Group } from '@/components/GroupsTab'; // Import GroupsTab and Group type
-import { RoundsTab, Round } from '@/components/RoundsTab'; // Import RoundsTab and Round type
-import { CalendarTab } from '@/components/CalendarTab'; // Import CalendarTab
-import { StatisticsTab } from '@/components/StatisticsTab'; // Import StatisticsTab
+import { GroupsTab, Group } from '@/components/GroupsTab';
+import { RoundsTab, Round } from '@/components/RoundsTab';
+import { CalendarTab } from '@/components/CalendarTab';
+import { StatisticsTab } from '@/components/StatisticsTab';
 import { format } from 'date-fns';
 import { useChampionshipTheme } from '@/contexts/ThemeContext';
 
@@ -35,7 +35,7 @@ type Championship = {
   description: string | null;
 };
 
-type Team = {
+export type Team = { // Export Team type for use in other components
   id: string;
   name: string;
   logo_url: string | null;
@@ -49,12 +49,12 @@ type Match = {
   team2_score: number | null;
   match_date: string | null;
   location: string | null;
-  group_id: string | null; // Added group_id
-  round_id: string | null; // Added round_id
+  group_id: string | null;
+  round_id: string | null;
   team1: { name: string; logo_url: string | null; };
   team2: { name: string; logo_url: string | null; };
-  groups: { name: string } | null; // Nested group data
-  rounds: { name: string } | null; // Nested round data
+  groups: { name: string } | null;
+  rounds: { name: string } | null;
 };
 
 const ChampionshipDetail = () => {
@@ -62,8 +62,8 @@ const ChampionshipDetail = () => {
   const [championship, setChampionship] = useState<Championship | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]); // State for groups
-  const [rounds, setRounds] = useState<Round[]>([]); // State for rounds
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { fetchAndApplyChampionshipTheme } = useChampionshipTheme();
@@ -234,9 +234,9 @@ const ChampionshipDetail = () => {
                     match={match}
                     onMatchUpdated={fetchData}
                     onMatchDeleted={fetchData}
-                    isEven={index % 2 === 0} // Pass isEven prop
-                    groups={groups} // Pass groups
-                    rounds={rounds} // Pass rounds
+                    isEven={index % 2 === 0}
+                    groups={groups}
+                    rounds={rounds}
                   />
                 ))}
               </div>
@@ -246,12 +246,12 @@ const ChampionshipDetail = () => {
       </div>
 
       <Tabs defaultValue="teams" className="w-full mt-4">
-        <TabsList className="grid w-full grid-cols-6"> {/* Changed to 6 columns for new tabs */}
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="teams">Times</TabsTrigger>
           <TabsTrigger value="groups">Grupos</TabsTrigger>
           <TabsTrigger value="rounds">Rodadas</TabsTrigger>
-          <TabsTrigger value="matches-calendar">Calendário</TabsTrigger> {/* New tab */}
-          <TabsTrigger value="statistics">Estatísticas</TabsTrigger> {/* New tab */}
+          <TabsTrigger value="matches-calendar">Calendário</TabsTrigger>
+          <TabsTrigger value="statistics">Estatísticas</TabsTrigger>
           <TabsTrigger value="sponsors">Patrocínios</TabsTrigger>
         </TabsList>
         
@@ -309,10 +309,15 @@ const ChampionshipDetail = () => {
         </TabsContent>
 
         <TabsContent value="rounds" className="mt-4">
-          <RoundsTab championshipId={championship.id} />
+          <RoundsTab 
+            championshipId={championship.id} 
+            teams={teams} 
+            groups={groups} 
+            onMatchesAdded={fetchData} // Pass fetchData as callback
+          />
         </TabsContent>
 
-        <TabsContent value="matches-calendar" className="mt-4"> {/* New TabsContent for Calendar */}
+        <TabsContent value="matches-calendar" className="mt-4">
           <CalendarTab 
             championshipId={championship.id} 
             matches={matches} 
@@ -323,7 +328,7 @@ const ChampionshipDetail = () => {
           />
         </TabsContent>
 
-        <TabsContent value="statistics" className="mt-4"> {/* New TabsContent for Statistics */}
+        <TabsContent value="statistics" className="mt-4">
           <StatisticsTab 
             championshipId={championship.id} 
             teams={teams} 
