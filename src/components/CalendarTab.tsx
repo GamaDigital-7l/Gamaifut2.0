@@ -107,7 +107,8 @@ export function CalendarTab({ championshipId, matches, groups, rounds, onMatchUp
               ))}
             </div>
           )}
-        </CardContent>
+        </div>
+      </CardContent> {/* Fechamento da tag CardContent adicionado aqui */}
     </Card>
   );
 }
