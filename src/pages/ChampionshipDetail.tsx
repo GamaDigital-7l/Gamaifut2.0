@@ -20,7 +20,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Leaderboard } from '@/components/Leaderboard';
 import { SponsorsTab } from '@/components/SponsorsTab';
-import { SponsorDisplay } from '@/components/SponsorDisplay'; // Corrigido: removido '='
+import { SponsorDisplay } from '@/components/SponsorDisplay';
 import { MatchCard } from '@/components/MatchCard';
 import { GroupsTab, Group } from '@/components/GroupsTab';
 import { RoundsTab, Round } from '@/components/RoundsTab';
@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type Championship = {
   id: string;
@@ -176,7 +177,73 @@ const ChampionshipDetail = () => {
     : matches.filter(match => match.round_id === selectedRoundFilter);
 
   if (loading) {
-    return <div className="p-8">Carregando detalhes do campeonato...</div>;
+    return (
+      <div className="space-y-4 p-4 lg:p-6">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-center">
+          <div>
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-80" />
+          </div>
+          <Skeleton className="h-10 w-36" />
+        </div>
+
+        {/* Main Content Grid Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Leaderboard Card Skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-48 mb-2" />
+              <Skeleton className="h-4 w-56" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 p-2">
+                    <Skeleton className="h-6 w-6" />
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <Skeleton className="h-5 w-full" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Matches Card Skeleton */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center mb-2">
+                <div>
+                  <Skeleton className="h-6 w-24 mb-2" />
+                  <Skeleton className="h-4 w-64" />
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-10 w-28" />
+                  <Skeleton className="h-10 w-32" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-20 w-full" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabs Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-10 w-full" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-40 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (error && !championship) {
