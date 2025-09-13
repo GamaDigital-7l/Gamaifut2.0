@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Swords, Palette, CalendarIcon, MapPin } from 'lucide-react'; // Import CalendarIcon and MapPin
+import { MoreHorizontal, Swords, Palette, CalendarIcon, MapPin } from 'lucide-react';
 import { CreateTeamDialog } from '@/components/CreateTeamDialog';
 import { EditTeamDialog } from '@/components/EditTeamDialog';
 import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Leaderboard } from '@/components/Leaderboard';
 import { SponsorsTab } from '@/components/SponsorsTab';
 import { SponsorDisplay } from '@/components/SponsorDisplay';
-import { format } from 'date-fns'; // Import format for date display
+import { format } from 'date-fns';
 
 type Championship = {
   id: string;
@@ -32,6 +32,7 @@ type Championship = {
 type Team = {
   id: string;
   name: string;
+  logo_url: string | null; // Add logo_url
 };
 
 type Match = {
@@ -40,10 +41,10 @@ type Match = {
   team2_id: string;
   team1_score: number | null;
   team2_score: number | null;
-  match_date: string | null; // Add match_date
-  location: string | null; // Add location
-  team1: { name: string };
-  team2: { name: string };
+  match_date: string | null;
+  location: string | null;
+  team1: { name: string; logo_url: string | null; }; // Update team1 type
+  team2: { name: string; logo_url: string | null; }; // Update team2 type
 };
 
 const ChampionshipDetail = () => {
@@ -95,11 +96,11 @@ const ChampionshipDetail = () => {
         team2_score,
         match_date,
         location,
-        team1:teams!matches_team1_id_fkey(name),
-        team2:teams!matches_team2_id_fkey(name)
+        team1:teams!matches_team1_id_fkey(name, logo_url),
+        team2:teams!matches_team2_id_fkey(name, logo_url)
       `)
       .eq('championship_id', id)
-      .order('match_date', { ascending: true }); // Order matches by date
+      .order('match_date', { ascending: true });
 
     if (matchesError) {
         console.error('Error fetching matches:', matchesError);
@@ -189,7 +190,10 @@ const ChampionshipDetail = () => {
                   {teams.map((team) => (
                     <Card key={team.id}>
                       <CardHeader className="flex flex-row items-center justify-between p-4">
-                        <CardTitle className="text-base font-medium">{team.name}</CardTitle>
+                        <div className="flex items-center gap-4">
+                          {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-10 w-10 object-contain" />}
+                          <CardTitle className="text-base font-medium">{team.name}</CardTitle>
+                        </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
@@ -240,6 +244,7 @@ const ChampionshipDetail = () => {
                     <Card key={match.id}>
                       <CardContent className="flex flex-col sm:flex-row items-center justify-between p-4">
                         <div className="flex items-center justify-center sm:justify-start w-full sm:w-auto mb-2 sm:mb-0">
+                          {match.team1.logo_url && <img src={match.team1.logo_url} alt={match.team1.name} className="h-8 w-8 object-contain mr-2" />}
                           <span className="font-medium text-right pr-2">{match.team1.name}</span>
                           <div className="flex items-center gap-2 text-lg">
                             <span>{match.team1_score ?? '-'}</span>
@@ -247,6 +252,7 @@ const ChampionshipDetail = () => {
                             <span>{match.team2_score ?? '-'}</span>
                           </div>
                           <span className="font-medium text-left pl-2">{match.team2.name}</span>
+                          {match.team2.logo_url && <img src={match.team2.logo_url} alt={match.team2.name} className="h-8 w-8 object-contain ml-2" />}
                         </div>
                         <div className="flex flex-col sm:flex-row items-center gap-2 text-sm text-muted-foreground">
                           {match.match_date && (
