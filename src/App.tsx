@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ChampionshipDetail from "./pages/ChampionshipDetail";
 import { SessionProvider } from "./components/SessionProvider";
+import MainLayout from "./components/MainLayout";
 
 const queryClient = new QueryClient();
 
@@ -22,8 +23,12 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/championship/:id" element={<ChampionshipDetail />} />
+            
+            <Route element={<MainLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/championship/:id" element={<ChampionshipDetail />} />
+            </Route>
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

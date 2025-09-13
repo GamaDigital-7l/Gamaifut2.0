@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { CreateChampionshipDialog } from '@/components/CreateChampionshipDialog';
 import { EditChampionshipDialog } from '@/components/EditChampionshipDialog';
@@ -22,7 +22,6 @@ type Championship = {
 };
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const [championships, setChampionships] = useState<Championship[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,20 +44,10 @@ const Dashboard = () => {
     fetchChampionships();
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
-  };
-
   return (
-    <div className="p-4 md:p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Button onClick={handleLogout}>Logout</Button>
-      </div>
-      
+    <>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold">Meus Campeonatos</h2>
+        <h1 className="text-2xl font-semibold">Meus Campeonatos</h1>
         <CreateChampionshipDialog onChampionshipCreated={fetchChampionships} />
       </div>
 
@@ -103,7 +92,7 @@ const Dashboard = () => {
           ))}
         </div>
       )}
-    </div>
+    </>
   );
 };
 

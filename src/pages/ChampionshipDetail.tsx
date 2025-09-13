@@ -133,19 +133,10 @@ const ChampionshipDetail = () => {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-8">
+    <div className="space-y-8">
       <div>
-        <Button variant="outline" asChild>
-          <Link to="/dashboard" className="flex items-center gap-2">
-            <ArrowLeft size={16} />
-            Voltar para o Dashboard
-          </Link>
-        </Button>
-      </div>
-      
-      <div>
-        <h1 className="text-4xl font-bold">{championship.name}</h1>
-        <p className="text-lg text-muted-foreground mt-2">{championship.description || 'Sem descrição.'}</p>
+        <h1 className="text-3xl font-bold">{championship.name}</h1>
+        <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
       </div>
 
       <Leaderboard teams={teams} matches={matches} />
