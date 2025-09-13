@@ -2,11 +2,12 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, MoreHorizontal } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal, Swords } from 'lucide-react';
 import { CreateTeamDialog } from '@/components/CreateTeamDialog';
 import { EditTeamDialog } from '@/components/EditTeamDialog';
 import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { CreateMatchDialog } from '@/components/CreateMatchDialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,67 +19,87 @@ type Championship = {
   id: string;
   name: string;
   description: string | null;
-  created_at: string;
 };
 
 type Team = {
   id: string;
   name: string;
-  created_at: string;
+};
+
+type Match = {
+  id: string;
+  team1_score: number | null;
+  team2_score: number | null;
+  teams: [
+    { name: string }, // team1
+    { name: string }  // team2
+  ]
 };
 
 const ChampionshipDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [championship, setChampionship] = useState<Championship | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTeams = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     if (!id) return;
-    const { data, error } = await supabase
+    setLoading(true);
+
+    const { data: champData, error: champError } = await supabase
+      .from('championships')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (champError) {
+      console.error('Error fetching championship:', champError);
+      setError('Campeonato não encontrado ou erro ao carregar.');
+      setLoading(false);
+      return;
+    }
+    setChampionship(champData);
+
+    const { data: teamsData, error: teamsError } = await supabase
       .from('teams')
       .select('*')
       .eq('championship_id', id)
       .order('created_at', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching teams:', error);
+    if (teamsError) {
+      console.error('Error fetching teams:', teamsError);
       setError('Erro ao carregar os times.');
     } else {
-      setTeams(data);
+      setTeams(teamsData);
     }
+
+    const { data: matchesData, error: matchesError } = await supabase
+      .from('matches')
+      .select(`
+        id,
+        team1_score,
+        team2_score,
+        team1:teams!matches_team1_id_fkey(name),
+        team2:teams!matches_team2_id_fkey(name)
+      `)
+      .eq('championship_id', id);
+
+    if (matchesError) {
+        console.error('Error fetching matches:', matchesError);
+        setError('Erro ao carregar as partidas.');
+    } else {
+        // @ts-ignore
+        setMatches(matchesData);
+    }
+
+    setLoading(false);
   }, [id]);
 
   useEffect(() => {
-    const fetchChampionship = async () => {
-      if (!id) {
-        setError('ID do campeonato não encontrado.');
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      const { data, error: champError } = await supabase
-        .from('championships')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (champError) {
-        console.error('Error fetching championship:', champError);
-        setError('Campeonato não encontrado ou erro ao carregar.');
-        setChampionship(null);
-      } else {
-        setChampionship(data);
-        await fetchTeams();
-        setError(null);
-      }
-      setLoading(false);
-    };
-
-    fetchChampionship();
-  }, [id, fetchTeams]);
+    fetchData();
+  }, [id, fetchData]);
 
   if (loading) {
     return <div className="p-8">Carregando detalhes do campeonato...</div>;
@@ -107,8 +128,8 @@ const ChampionshipDetail = () => {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-6">
+    <div className="p-4 md:p-8 space-y-8">
+      <div>
         <Button variant="outline" asChild>
           <Link to="/dashboard" className="flex items-center gap-2">
             <ArrowLeft size={16} />
@@ -117,51 +138,77 @@ const ChampionshipDetail = () => {
         </Button>
       </div>
       
-      <div className="mb-8">
+      <div>
         <h1 className="text-4xl font-bold">{championship.name}</h1>
         <p className="text-lg text-muted-foreground mt-2">{championship.description || 'Sem descrição.'}</p>
       </div>
 
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold">Times</h2>
-          <CreateTeamDialog championshipId={championship.id} onTeamCreated={fetchTeams} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1 space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold">Times</h2>
+            <CreateTeamDialog championshipId={championship.id} onTeamCreated={fetchData} />
+          </div>
+          {teams.length === 0 ? (
+            <div className="text-center py-10 border-2 border-dashed rounded-lg">
+              <p className="text-gray-500">Ainda não há times.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {teams.map((team) => (
+                <Card key={team.id}>
+                  <CardHeader className="flex flex-row items-center justify-between p-4">
+                    <CardTitle className="text-base">{team.name}</CardTitle>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <EditTeamDialog team={team} onTeamUpdated={fetchData}>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
+                        </EditTeamDialog>
+                        <DeleteTeamDialog team={team} onTeamDeleted={fetchData}>
+                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem>
+                        </DeleteTeamDialog>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
-        {teams.length === 0 ? (
-          <div className="text-center py-10 border-2 border-dashed rounded-lg">
-            <p className="text-gray-500">Ainda não há times neste campeonato.</p>
-            <p className="text-gray-500 mt-2">Clique em "Adicionar Time" para começar.</p>
+
+        <div className="lg:col-span-2 space-y-4">
+           <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold">Partidas</h2>
+            <CreateMatchDialog championshipId={championship.id} teams={teams} onMatchCreated={fetchData} />
           </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {teams.map((team) => (
-              <Card key={team.id}>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>{team.name}</CardTitle>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <EditTeamDialog team={team} onTeamUpdated={fetchTeams}>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          Editar
-                        </DropdownMenuItem>
-                      </EditTeamDialog>
-                      <DeleteTeamDialog team={team} onTeamDeleted={fetchTeams}>
-                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
-                          Excluir
-                        </DropdownMenuItem>
-                      </DeleteTeamDialog>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        )}
+           {matches.length === 0 ? (
+            <div className="text-center py-10 border-2 border-dashed rounded-lg">
+              <p className="text-gray-500">Nenhuma partida agendada.</p>
+               {teams.length < 2 && <p className="text-gray-500 mt-2">Adicione pelo menos 2 times para agendar uma partida.</p>}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {matches.map((match) => (
+                <Card key={match.id}>
+                  <CardContent className="flex items-center justify-between p-4">
+                    <span className="font-medium">{match.team1.name}</span>
+                    <div className="flex items-center gap-2 text-lg">
+                      <span>{match.team1_score ?? '-'}</span>
+                      <Swords className="h-5 w-5 text-muted-foreground" />
+                      <span>{match.team2_score ?? '-'}</span>
+                    </div>
+                    <span className="font-medium">{match.team2.name}</span>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
