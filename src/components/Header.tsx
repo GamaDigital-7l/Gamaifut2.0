@@ -11,9 +11,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { CircleUser, Menu, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useChampionshipTheme } from "@/contexts/ThemeContext"; // Import the hook
 
 const Header = () => {
   const navigate = useNavigate();
+  const { currentTheme } = useChampionshipTheme(); // Get the current theme
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -21,7 +23,11 @@ const Header = () => {
   };
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+    <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6" style={{
+      backgroundColor: currentTheme?.theme_bg || 'var(--background)',
+      color: currentTheme?.theme_text || 'var(--foreground)',
+      borderColor: currentTheme?.theme_primary || 'var(--border)'
+    }}>
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">

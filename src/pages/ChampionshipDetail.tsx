@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Swords } from 'lucide-react';
+import { MoreHorizontal, Swords, Palette } from 'lucide-react'; // Import Palette icon
 import { CreateTeamDialog } from '@/components/CreateTeamDialog';
 import { EditTeamDialog } from '@/components/EditTeamDialog';
 import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
@@ -137,9 +137,17 @@ const ChampionshipDetail = () => {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-3xl font-bold">{championship.name}</h1>
-        <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">{championship.name}</h1>
+          <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
+        </div>
+        <Button asChild variant="outline">
+          <Link to={`/championship/${championship.id}/theme`}>
+            <Palette className="mr-2 h-4 w-4" />
+            Configurar Tema
+          </Link>
+        </Button>
       </div>
 
       <Tabs defaultValue="leaderboard" className="w-full">

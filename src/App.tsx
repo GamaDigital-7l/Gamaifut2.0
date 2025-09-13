@@ -8,9 +8,11 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ChampionshipDetail from "./pages/ChampionshipDetail";
+import ChampionshipTheme from "./pages/ChampionshipTheme"; // Import the new page
 import Profile from "./pages/Profile";
 import { SessionProvider } from "./components/SessionProvider";
 import MainLayout from "./components/MainLayout";
+import { ThemeProvider } from "./contexts/ThemeContext"; // Import ThemeProvider
 
 const queryClient = new QueryClient();
 
@@ -21,19 +23,22 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <SessionProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            
-            <Route element={<MainLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/championship/:id" element={<ChampionshipDetail />} />
-              <Route path="/profile" element={<Profile />} />
-            </Route>
+          <ThemeProvider> {/* Wrap with ThemeProvider */}
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              
+              <Route element={<MainLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/championship/:id" element={<ChampionshipDetail />} />
+                <Route path="/championship/:id/theme" element={<ChampionshipTheme />} /> {/* New route */}
+                <Route path="/profile" element={<Profile />} />
+              </Route>
 
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ThemeProvider>
         </SessionProvider>
       </BrowserRouter>
     </TooltipProvider>

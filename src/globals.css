@@ -49,6 +49,13 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Championship Theme Variables */
+    --championship-primary: var(--primary);
+    --championship-secondary: var(--secondary);
+    --championship-accent: var(--accent);
+    --championship-bg: var(--background);
+    --championship-text: var(--foreground);
   }
 
   .dark {
@@ -96,6 +103,40 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    /* Use championship theme variables if available, otherwise fallback to default */
+    background-color: var(--championship-bg, hsl(var(--background)));
+    color: var(--championship-text, hsl(var(--foreground)));
+  }
+
+  /* Override specific shadcn/ui components to use championship theme */
+  .bg-background {
+    background-color: var(--championship-bg, hsl(var(--background))) !important;
+  }
+  .text-foreground {
+    color: var(--championship-text, hsl(var(--foreground))) !important;
+  }
+  .bg-primary {
+    background-color: var(--championship-primary, hsl(var(--primary))) !important;
+  }
+  .text-primary-foreground {
+    color: var(--championship-text, hsl(var(--primary-foreground))) !important;
+  }
+  .bg-secondary {
+    background-color: var(--championship-secondary, hsl(var(--secondary))) !important;
+  }
+  .text-secondary-foreground {
+    color: var(--championship-text, hsl(var(--secondary-foreground))) !important;
+  }
+  .bg-accent {
+    background-color: var(--championship-accent, hsl(var(--accent))) !important;
+  }
+  .text-accent-foreground {
+    color: var(--championship-text, hsl(var(--accent-foreground))) !important;
+  }
+  .border-border {
+    border-color: var(--championship-primary, hsl(var(--border))) !important;
+  }
+  .ring-ring {
+    --ring: var(--championship-primary, hsl(var(--ring))) !important;
   }
 }
