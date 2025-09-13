@@ -160,8 +160,8 @@ const ChampionshipDetail = () => {
       <Tabs defaultValue="leaderboard" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="leaderboard">Classificação</TabsTrigger>
+          <TabsTrigger value="matches">Partidas</TabsTrigger> {/* Moved matches here */}
           <TabsTrigger value="teams">Times</TabsTrigger>
-          <TabsTrigger value="matches">Partidas</TabsTrigger>
           <TabsTrigger value="sponsors">Patrocínios</TabsTrigger>
         </TabsList>
         
@@ -169,56 +169,7 @@ const ChampionshipDetail = () => {
           <Leaderboard teams={teams} matches={matches} />
         </TabsContent>
 
-        <TabsContent value="teams" className="mt-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Times</CardTitle>
-                  <CardDescription>Gerencie os times participantes.</CardDescription>
-                </div>
-                <CreateTeamDialog championshipId={championship.id} onTeamCreated={fetchData} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              {teams.length === 0 ? (
-                <div className="text-center py-10 border-2 border-dashed rounded-lg">
-                  <p className="text-gray-500">Ainda não há times.</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {teams.map((team) => (
-                    <Card key={team.id}>
-                      <CardHeader className="flex flex-row items-center justify-between p-4">
-                        <div className="flex items-center gap-4">
-                          {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-10 w-10 object-contain" />}
-                          <CardTitle className="text-base font-medium">{team.name}</CardTitle>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <EditTeamDialog team={team} onTeamUpdated={fetchData}>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
-                            </EditTeamDialog>
-                            <DeleteTeamDialog team={team} onTeamDeleted={fetchData}>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem>
-                            </DeleteTeamDialog>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </CardHeader>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="matches" className="mt-4">
+        <TabsContent value="matches" className="mt-4"> {/* Moved matches content here */}
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -284,6 +235,55 @@ const ChampionshipDetail = () => {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="teams" className="mt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Times</CardTitle>
+                  <CardDescription>Gerencie os times participantes.</CardDescription>
+                </div>
+                <CreateTeamDialog championshipId={championship.id} onTeamCreated={fetchData} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {teams.length === 0 ? (
+                <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                  <p className="text-gray-500">Ainda não há times.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {teams.map((team) => (
+                    <Card key={team.id}>
+                      <CardHeader className="flex flex-row items-center justify-between p-4">
+                        <div className="flex items-center gap-4">
+                          {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-10 w-10 object-contain" />}
+                          <CardTitle className="text-base font-medium">{team.name}</CardTitle>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <EditTeamDialog team={team} onTeamUpdated={fetchData}>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
+                            </EditTeamDialog>
+                            <DeleteTeamDialog team={team} onTeamDeleted={fetchData}>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem>
+                            </DeleteTeamDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </CardHeader>
                     </Card>
                   ))}
                 </div>
