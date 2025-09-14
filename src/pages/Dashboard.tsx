@@ -1,7 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import { CreateChampionshipDialog } from '@/components/CreateChampionshipDialog';
 import { EditChampionshipDialog } from '@/components/EditChampionshipDialog';
 import { DeleteChampionshipDialog } from '@/components/DeleteChampionshipDialog';
@@ -12,9 +11,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from 'lucide-react'; // Removed ClipboardList icon
+import { MoreHorizontal } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useSession } from '@/components/SessionProvider'; // Import useSession
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+const fetchChampionships = async () => {
+  const { data, error } = await supabase
+    .from('championships')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(error.message);
+  return data;
+};
 
 type Championship = {
   id: string;
@@ -24,54 +32,32 @@ type Championship = {
 };
 
 const Dashboard = () => {
-  const { userProfile } = useSession(); // Get user profile from session
-  const [championships, setChampionships] = useState<Championship[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: championships = [], isLoading } = useQuery<Championship[]>({
+    queryKey: ['championships'],
+    queryFn: fetchChampionships,
+  });
 
-  const fetchChampionships = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('championships')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching championships:', error);
-    } else if (data) {
-      setChampionships(data);
-    }
-    setLoading(false);
+  const handleChampionshipChange = () => {
+    queryClient.invalidateQueries({ queryKey: ['championships'] });
   };
-
-  useEffect(() => {
-    fetchChampionships();
-  }, []);
 
   return (
     <>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold">Meus Campeonatos</h1>
         <div className="flex gap-2">
-          {/* Removed conditional button for Official Dashboard, now in Sidebar */}
-          <CreateChampionshipDialog onChampionshipCreated={fetchChampionships} />
+          <CreateChampionshipDialog onChampionshipCreated={handleChampionshipChange} />
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(3)].map((_, index) => ( // Render 3 skeleton cards
+          {[...Array(3)].map((_, index) => (
             <Card key={index} className="flex flex-col justify-between">
-              <CardHeader>
-                <Skeleton className="h-6 w-3/4 mb-2" />
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <Skeleton className="h-4 w-full mb-1" />
-                <Skeleton className="h-4 w-5/6" />
-              </CardContent>
-              <CardFooter className="flex justify-between items-center">
-                <Skeleton className="h-8 w-24" />
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </CardFooter>
+              <CardHeader><Skeleton className="h-6 w-3/4 mb-2" /></CardHeader>
+              <CardContent className="flex-grow"><Skeleton className="h-4 w-full mb-1" /><Skeleton className="h-4 w-5/6" /></CardContent>
+              <CardFooter className="flex justify-between items-center"><Skeleton className="h-8 w-24" /><Skeleton className="h-8 w-8 rounded-full" /></CardFooter>
             </Card>
           ))}
         </div>
@@ -84,27 +70,17 @@ const Dashboard = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {championships.map((championship) => (
             <Card key={championship.id} className="flex flex-col justify-between">
-              <CardHeader>
-                <CardTitle>{championship.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground line-clamp-3">{championship.description || 'Sem descrição.'}</p>
-              </CardContent>
+              <CardHeader><CardTitle>{championship.name}</CardTitle></CardHeader>
+              <CardContent className="flex-grow"><p className="text-sm text-muted-foreground line-clamp-3">{championship.description || 'Sem descrição.'}</p></CardContent>
               <CardFooter className="flex justify-between items-center">
-                <Button asChild variant="outline" size="sm">
-                  <Link to={`/championship/${championship.id}`}>Ver Detalhes</Link>
-                </Button>
+                <Button asChild variant="outline" size="sm"><Link to={`/championship/${championship.id}`}>Ver Detalhes</Link></Button>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
+                  <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <EditChampionshipDialog championship={championship} onChampionshipUpdated={fetchChampionships}>
+                    <EditChampionshipDialog championship={championship} onChampionshipUpdated={handleChampionshipChange}>
                       <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
                     </EditChampionshipDialog>
-                    <DeleteChampionshipDialog championship={championship} onChampionshipDeleted={fetchChampionships}>
+                    <DeleteChampionshipDialog championship={championship} onChampionshipDeleted={handleChampionshipChange}>
                       <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem>
                     </DeleteChampionshipDialog>
                   </DropdownMenuContent>
