@@ -81,6 +81,15 @@ type Round = {
   type: string;
 };
 
+type Sponsor = {
+  id: string;
+  name: string;
+  level: 'ouro' | 'prata' | 'bronze';
+  logo_url: string | null;
+  target_url: string | null;
+  is_active: boolean;
+};
+
 const PublicChampionshipView = () => {
   const { id } = useParams<{ id: string }>();
   const [championship, setChampionship] = useState<Championship | null>(null);
@@ -88,9 +97,10 @@ const PublicChampionshipView = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
+  const [masterSponsor, setMasterSponsor] = useState<Sponsor | null>(null); // New state for master sponsor
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all'); // New state for round filter
+  const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all');
   const { fetchAndApplyChampionshipTheme, applyThemeToDocument } = useChampionshipTheme();
 
   const fetchData = useCallback(async () => {
@@ -99,12 +109,13 @@ const PublicChampionshipView = () => {
     setError(null);
 
     // Fetch all data in parallel
-    const [champRes, teamsRes, groupsRes, roundsRes, matchesRes] = await Promise.all([
+    const [champRes, teamsRes, groupsRes, roundsRes, matchesRes, sponsorsRes] = await Promise.all([
       supabase.from('championships').select('*').eq('id', id).single(),
       supabase.from('teams').select('*').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('groups').select('*').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('rounds').select('*').eq('championship_id', id).order('order_index', { ascending: true }),
-      supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(name, logo_url), team2:teams!matches_team2_id_fkey(name, logo_url), groups(name), rounds(name)`).eq('championship_id', id).order('match_date', { ascending: true })
+      supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(name, logo_url), team2:teams!matches_team2_id_fkey(name, logo_url), groups(name), rounds(name)`).eq('championship_id', id).order('match_date', { ascending: true }),
+      supabase.from('sponsors').select('*').eq('championship_id', id).eq('is_active', true).eq('level', 'ouro').order('created_at', { ascending: true }).limit(1) // Fetch only one master sponsor
     ]);
 
     if (champRes.error) {
@@ -127,6 +138,10 @@ const PublicChampionshipView = () => {
 
     if (matchesRes.error) console.error('Error fetching matches:', matchesRes.error);
     else setMatches(matchesRes.data as Match[]);
+
+    if (sponsorsRes.error) console.error('Error fetching master sponsor:', sponsorsRes.error);
+    else if (sponsorsRes.data && sponsorsRes.data.length > 0) setMasterSponsor(sponsorsRes.data[0] as Sponsor);
+    else setMasterSponsor(null);
 
     setLoading(false);
   }, [id, fetchAndApplyChampionshipTheme, applyThemeToDocument]);
@@ -185,6 +200,17 @@ const PublicChampionshipView = () => {
               <h1 className="text-3xl font-bold">{championship.name}</h1>
               <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
             </div>
+            {masterSponsor && masterSponsor.logo_url && (
+              <a 
+                href={masterSponsor.target_url || '#'} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="ml-auto flex items-center gap-2 p-2 border rounded-lg hover:shadow-md transition-shadow max-w-[150px] sm:max-w-[200px]"
+              >
+                <span className="text-xs text-muted-foreground hidden sm:inline">Patrocínio Master:</span>
+                <img src={masterSponsor.logo_url} alt={masterSponsor.name} className="h-8 w-auto object-contain" />
+              </a>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -271,13 +297,12 @@ const PublicChampionshipView = () => {
           </div>
 
           <Tabs defaultValue="teams" className="w-full mt-4">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"> {/* Adjusted grid-cols for responsiveness */}
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
               <TabsTrigger value="teams">Times</TabsTrigger>
               <TabsTrigger value="groups">Grupos</TabsTrigger>
               <TabsTrigger value="rounds">Rodadas</TabsTrigger>
               <TabsTrigger value="matches-calendar">Calendário</TabsTrigger>
               <TabsTrigger value="statistics">Estatísticas</TabsTrigger>
-              {/* Sponsors tab is already outside, no need for it here */}
             </TabsList>
             
             <TabsContent value="teams" className="mt-4">
