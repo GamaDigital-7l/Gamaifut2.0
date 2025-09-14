@@ -97,7 +97,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           {/* Team 1 */}
           <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 justify-center sm:justify-end min-w-0">
-            <span className="font-medium text-sm sm:text-base text-right break-words">{match.team1.name}</span>
+            <span className="font-medium text-sm sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span>
             {match.team1.logo_url && (
               <img src={match.team1.logo_url} alt={match.team1.name} className="h-10 w-10 sm:h-8 sm:w-8 object-contain flex-shrink-0" />
             )}
@@ -117,7 +117,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             {match.team2.logo_url && (
               <img src={match.team2.logo_url} alt={match.team2.name} className="h-10 w-10 sm:h-8 sm:w-8 object-contain flex-shrink-0" />
             )}
-            <span className="font-medium text-sm sm:text-base text-left break-words">{match.team2.name}</span>
+            <span className="font-medium text-sm sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span>
           </div>
         </div>
 
