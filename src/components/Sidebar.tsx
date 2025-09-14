@@ -61,7 +61,7 @@ const Sidebar = ({ isCollapsed, toggleCollapsed }: SidebarProps) => {
             color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))'
           }} onClick={closeSheet}>
             <Trophy className="h-6 w-6" />
-            {!isCollapsed && <span>ChampManager</span>}
+            {!isCollapsed && <span>Gama Creative Fut</span>}
           </Link>
         </div>
       <div className="flex-1 overflow-y-auto">

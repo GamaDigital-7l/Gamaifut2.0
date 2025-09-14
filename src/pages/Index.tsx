@@ -67,7 +67,7 @@ const Index = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Button type="submit">Buscar</Button>
+            <Button type="submit" className="text-primary-foreground">Buscar</Button>
           </form>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -109,7 +109,7 @@ const Index = () => {
                   </CardContent>
                   <CardFooter>
                     <Button asChild variant="outline" size="sm">
-                      <Link to={`/public/championship/${championship.id}`}>Ver Página</Link>
+                      <Link to={`/public/championship/${championship.id}`} className="text-foreground">Ver Página</Link>
                     </Button>
                   </CardFooter>
                 </Card>

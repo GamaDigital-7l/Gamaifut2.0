@@ -7,10 +7,10 @@ export const PublicHeader = () => {
     <header className="flex h-16 items-center justify-between border-b bg-background px-4 md:px-6">
       <Link to="/" className="flex items-center gap-2 font-semibold">
         <Trophy className="h-6 w-6" />
-        <span className="">ChampManager</span>
+        <span className="">Gama Creative Fut</span>
       </Link>
       <Link to="/login">
-        <Button variant="outline">Acessar Painel</Button>
+        <Button variant="outline" className="text-foreground">Acessar Painel</Button>
       </Link>
     </header>
   );
