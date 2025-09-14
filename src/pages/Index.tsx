@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { PublicHeader } from '@/components/PublicHeader';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Trophy } from 'lucide-react';
 
 type ChampionshipResult = {
   id: string;
@@ -15,50 +17,59 @@ type ChampionshipResult = {
   description: string | null;
   city: string | null;
   state: string | null;
+  logo_url: string | null;
 };
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<ChampionshipResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const [championships, setChampionships] = useState<ChampionshipResult[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSearch = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!searchTerm.trim()) {
-      setSearchResults([]);
-      setSearched(true);
-      return;
+  const fetchChampionships = async (term = '') => {
+    setLoading(true);
+    let query = supabase
+      .from('championships')
+      .select('id, name, description, city, state, logo_url')
+      .order('created_at', { ascending: false });
+
+    if (term.trim()) {
+      query = query.or(`name.ilike.%${term}%,city.ilike.%${term}%,state.ilike.%${term}%`);
     }
 
-    setLoading(true);
-    setSearched(true);
-
-    const { data, error } = await supabase
-      .from('championships')
-      .select('id, name, description, city, state')
-      .or(`name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+    const { data, error } = await query;
 
     if (error) {
       showError('Erro ao buscar campeonatos: ' + error.message);
-      setSearchResults([]);
+      setChampionships([]);
     } else {
-      setSearchResults(data as ChampionshipResult[]);
+      setChampionships(data as ChampionshipResult[]);
     }
     setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchChampionships(); // Fetch all on initial load
+  }, []);
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    fetchChampionships(searchTerm);
   };
 
   return (
     <div className="flex min-h-screen w-full flex-col">
       <PublicHeader />
-      <main className="flex flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-10"> {/* Adjusted padding */}
-        <div className="grid w-full gap-2"> {/* Removed mx-auto and max-w-6xl */}
+      <main className="flex flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-10">
+        <div className="grid w-full gap-6 text-center">
+          <div className="flex justify-center">
+            <img src="/logo-gama.png" alt="Gama Creative Logo" className="h-24 w-auto" />
+          </div>
           <h1 className="text-3xl font-semibold">Encontre Campeonatos</h1>
           <p className="text-muted-foreground">
             Busque por nome, cidade ou estado para encontrar o campeonato que você procura.
           </p>
         </div>
-        <div className="grid w-full items-start gap-6"> {/* Removed mx-auto and max-w-6xl */}
+        <div className="grid w-full max-w-6xl mx-auto items-start gap-6">
           <form onSubmit={handleSearch} className="flex items-center gap-2">
             <Input
               type="search"
@@ -72,11 +83,14 @@ const Index = () => {
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {loading ? (
-              [...Array(3)].map((_, index) => (
+              [...Array(6)].map((_, index) => (
                 <Card key={index}>
-                  <CardHeader>
-                    <Skeleton className="h-6 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-1/2" />
+                  <CardHeader className="flex-row items-center gap-4">
+                    <Skeleton className="h-10 w-10 rounded-sm" />
+                    <div className="flex-1">
+                      <Skeleton className="h-5 w-3/4 mb-2" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <Skeleton className="h-4 w-full mb-1" />
@@ -87,20 +101,28 @@ const Index = () => {
                   </CardFooter>
                 </Card>
               ))
-            ) : searched && searchResults.length === 0 ? (
+            ) : championships.length === 0 ? (
               <div className="col-span-full text-center py-10">
-                <p className="text-gray-500">Nenhum resultado encontrado para "{searchTerm}".</p>
+                <p className="text-gray-500">Nenhum campeonato encontrado.</p>
               </div>
             ) : (
-              searchResults.map((championship) => (
+              championships.map((championship) => (
                 <Card key={championship.id}>
-                  <CardHeader>
-                    <CardTitle>{championship.name}</CardTitle>
-                    <CardDescription>
-                      {championship.city && championship.state 
-                        ? `${championship.city}, ${championship.state}`
-                        : 'Local não informado'}
-                    </CardDescription>
+                  <CardHeader className="flex-row items-center gap-4">
+                    <Avatar className="h-10 w-10 rounded-sm">
+                      <AvatarImage src={championship.logo_url || undefined} alt={championship.name} />
+                      <AvatarFallback className="rounded-sm">
+                        <Trophy className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <CardTitle>{championship.name}</CardTitle>
+                      <CardDescription>
+                        {championship.city && championship.state 
+                          ? `${championship.city}, ${championship.state}`
+                          : 'Local não informado'}
+                      </CardDescription>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground line-clamp-3">

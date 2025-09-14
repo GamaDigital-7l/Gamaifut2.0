@@ -424,15 +424,17 @@ const ChampionshipDetail = () => {
       </div>
 
       <Tabs defaultValue="teams" className="w-full mt-4">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7"> {/* Adjusted grid-cols for responsiveness */}
-          <TabsTrigger value="teams">Times</TabsTrigger>
-          <TabsTrigger value="groups">Grupos</TabsTrigger>
-          <TabsTrigger value="rounds">Rodadas</TabsTrigger>
-          <TabsTrigger value="matches-calendar">Calendário</TabsTrigger>
-          <TabsTrigger value="statistics">Estatísticas</TabsTrigger>
-          <TabsTrigger value="sponsors">Patrocínios</TabsTrigger>
-          <TabsTrigger value="settings">Configurações</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-2">
+          <TabsList className="grid w-max grid-flow-col gap-4">
+            <TabsTrigger value="teams">Times</TabsTrigger>
+            <TabsTrigger value="groups">Grupos</TabsTrigger>
+            <TabsTrigger value="rounds">Rodadas</TabsTrigger>
+            <TabsTrigger value="matches-calendar">Calendário</TabsTrigger>
+            <TabsTrigger value="statistics">Estatísticas</TabsTrigger>
+            <TabsTrigger value="sponsors">Patrocínios</TabsTrigger>
+            <TabsTrigger value="settings">Configurações</TabsTrigger>
+          </TabsList>
+        </div>
         
         <TabsContent value="teams" className="mt-4">
           <Card>
