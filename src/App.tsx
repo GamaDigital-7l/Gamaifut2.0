@@ -10,9 +10,10 @@ import Dashboard from "./pages/Dashboard";
 import ChampionshipDetail from "./pages/ChampionshipDetail";
 import ChampionshipTheme from "./pages/ChampionshipTheme";
 import Profile from "./pages/Profile";
-import UserManagement from "./pages/UserManagement"; // Updated import
+import UserManagement from "./pages/UserManagement";
 import OfficialDashboard from "./pages/OfficialDashboard";
 import TeamDetail from "./pages/TeamDetail";
+import PublicChampionshipView from "./pages/PublicChampionshipView"; // New import
 import { SessionProvider } from "./components/SessionProvider";
 import MainLayout from "./components/MainLayout";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -30,13 +31,14 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/public/championship/:id" element={<PublicChampionshipView />} /> {/* New public route */}
               
               <Route element={<MainLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/championship/:id" element={<ChampionshipDetail />} />
                 <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/users" element={<UserManagement />} /> {/* Updated route path */}
+                <Route path="/users" element={<UserManagement />} />
                 <Route path="/official-dashboard" element={<OfficialDashboard />} />
                 <Route path="/team/:teamId" element={<TeamDetail />} />
               </Route>

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, X, Palette, CalendarIcon, MapPin } from 'lucide-react';
+import { MoreHorizontal, X, Palette, CalendarIcon, MapPin, Share2 } from 'lucide-react'; // Added Share2 icon
 import { CreateTeamDialog } from '@/components/CreateTeamDialog';
 import { EditTeamDialog } from '@/components/EditTeamDialog';
 import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { showSuccess, showError } from '@/utils/toast'; // Import toast utilities
 
 type Championship = {
   id: string;
@@ -192,6 +193,15 @@ const ChampionshipDetail = () => {
     ? matches
     : matches.filter(match => match.round_id === selectedRoundFilter);
 
+  const handleCopyPublicLink = () => {
+    if (id) {
+      const publicLink = `${window.location.origin}/public/championship/${id}`;
+      navigator.clipboard.writeText(publicLink)
+        .then(() => showSuccess('Link público copiado para a área de transferência!'))
+        .catch(() => showError('Erro ao copiar o link.'));
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-4 p-4 lg:p-6">
@@ -291,12 +301,18 @@ const ChampionshipDetail = () => {
           <h1 className="text-3xl font-bold">{championship.name}</h1>
           <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
         </div>
-        <Button asChild variant="outline">
-          <Link to={`/championship/${championship.id}/theme`}>
-            <Palette className="mr-2 h-4 w-4" />
-            Configurar Tema
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleCopyPublicLink}>
+            <Share2 className="mr-2 h-4 w-4" />
+            Link Público
+          </Button>
+          <Button asChild variant="outline">
+            <Link to={`/championship/${championship.id}/theme`}>
+              <Palette className="mr-2 h-4 w-4" />
+              Configurar Tema
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
