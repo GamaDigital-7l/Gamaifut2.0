@@ -29,8 +29,10 @@ const ChampionshipTheme = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [logoUrl, setLogoUrl] = useState('');
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoUrl, setLogoUrl] = useState(''); // This holds the URL for display/preview (either from DB or local blob)
+  const [logoFile, setLogoFile] = useState<File | null>(null); // This holds the actual file to upload
+  const [originalLogoUrl, setOriginalLogoUrl] = useState(''); // To keep track of the logo from DB
+
   const [primaryColor, setPrimaryColor] = useState('#007bff');
   const [secondaryColor, setSecondaryColor] = useState('#6c757d');
   const [accentColor, setAccentColor] = useState('#28a745');
@@ -51,7 +53,8 @@ const ChampionshipTheme = () => {
       showError('Erro ao carregar tema do campeonato: ' + error.message);
       console.error('Error fetching championship theme:', error);
     } else if (data) {
-      setLogoUrl(data.logo_url || '');
+      setLogoUrl(data.logo_url || ''); // Set initial logoUrl from DB
+      setOriginalLogoUrl(data.logo_url || ''); // Store original URL
       setPrimaryColor(data.theme_primary || '#007bff');
       setSecondaryColor(data.theme_secondary || '#6c757d');
       setAccentColor(data.theme_accent || '#28a745');
@@ -72,9 +75,7 @@ const ChampionshipTheme = () => {
       setLogoUrl(URL.createObjectURL(e.target.files[0])); // For live preview
     } else {
       setLogoFile(null);
-      // If no file selected, revert to existing logo_url or empty
-      // Re-fetch to get the original logo_url if it exists
-      fetchChampionshipTheme(); 
+      setLogoUrl(originalLogoUrl); // Revert to original DB URL if input is cleared
     }
   };
 
@@ -109,17 +110,22 @@ const ChampionshipTheme = () => {
     if (!id) return;
 
     setIsSubmitting(true);
-    let newLogoUrl = logoUrl;
+    let newLogoUrl: string | null = originalLogoUrl; // Start with the original URL from DB
 
-    if (logoFile) {
+    if (logoFile) { // If a new file was selected
       const uploadedUrl = await uploadLogo();
       if (uploadedUrl) {
-        newLogoUrl = uploadedUrl;
+        newLogoUrl = uploadedUrl; // Use the newly uploaded URL
       } else {
         setIsSubmitting(false);
         return; // Stop if upload failed
       }
+    } else if (logoUrl === '' && originalLogoUrl !== '') {
+      // If logoFile is null, logoUrl is empty (user cleared it), and there was an original logo
+      newLogoUrl = null; // Explicitly set to null to clear from DB
     }
+    // If logoFile is null and logoUrl is the same as originalLogoUrl, no change needed.
+    // If logoFile is null and logoUrl is empty and originalLogoUrl was also empty, no change needed.
 
     const updates: ChampionshipThemeData = {
       logo_url: newLogoUrl,
@@ -169,9 +175,9 @@ const ChampionshipTheme = () => {
                     onChange={handleLogoFileChange}
                     className="col-span-3"
                   />
-                  {logoUrl && (
+                  {(logoUrl || logoFile) && ( // Display if there's a logo URL or a file selected
                     <p className="text-sm text-muted-foreground mt-1">
-                      Logo atual: <a href={logoUrl} target="_blank" rel="noopener noreferrer" className="underline">{logoUrl.split('/').pop()}</a>
+                      Logo atual: {logoFile ? logoFile.name : <a href={logoUrl} target="_blank" rel="noopener noreferrer" className="underline">{logoUrl.split('/').pop()}</a>}
                     </p>
                   )}
                 </div>
