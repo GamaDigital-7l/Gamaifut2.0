@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils'; // Import cn for conditional classes
 
 // Re-using types for consistency
 type Championship = {
@@ -178,16 +179,16 @@ const PublicChampionshipView = () => {
       <PublicHeader />
       <main className="flex-1 p-4 md:gap-8 md:p-10"> {/* Adjusted padding */}
         <div className="grid w-full gap-6"> {/* Removed max-w-6xl and mx-auto */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
+          <div className="flex flex-col items-center text-center gap-4 mb-6"> {/* Centralized content */}
             {championship.logo_url && (
-              <div className="w-28 h-28 relative flex-shrink-0"> {/* Increased size */}
+              <div className="w-32 h-32 relative flex-shrink-0"> {/* Increased size */}
                 <AspectRatio ratio={1 / 1}>
                   <img src={championship.logo_url} alt={championship.name} className="rounded-md object-contain" />
                 </AspectRatio>
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-bold">{championship.name}</h1> {/* Slightly smaller title */}
+              <h1 className="text-3xl font-bold">{championship.name}</h1> {/* Larger title */}
               <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
             </div>
             {masterSponsor && masterSponsor.logo_url && (
@@ -195,7 +196,10 @@ const PublicChampionshipView = () => {
                 href={masterSponsor.target_url || '#'} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="ml-auto flex items-center gap-2 p-2 border rounded-lg hover:shadow-md transition-shadow max-w-[150px] sm:max-w-[200px]"
+                className={cn(
+                  "flex items-center gap-2 p-2 border rounded-lg hover:shadow-md transition-shadow max-w-[150px] sm:max-w-[200px]",
+                  "mx-auto sm:ml-auto sm:mr-0" // Centralize on mobile, push right on larger screens
+                )}
               >
                 <span className="text-xs text-muted-foreground hidden sm:inline">Patrocínio Master:</span>
                 <img src={masterSponsor.logo_url} alt={masterSponsor.name} className="h-8 w-auto object-contain" />

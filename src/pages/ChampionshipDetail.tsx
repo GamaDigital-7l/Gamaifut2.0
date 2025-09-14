@@ -298,21 +298,19 @@ const ChampionshipDetail = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex items-center gap-4">
-          {championship.logo_url && (
-            <div className="w-28 h-28 relative flex-shrink-0"> {/* Increased size */}
-              <AspectRatio ratio={1 / 1}>
-                <img src={championship.logo_url} alt={championship.name} className="rounded-md object-contain" />
-              </AspectRatio>
-            </div>
-          )}
-          <div>
-            <h1 className="text-2xl font-bold">{championship.name}</h1> {/* Slightly smaller title */}
-            <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
+      <div className="flex flex-col items-center text-center gap-4 mb-6"> {/* Centralized content */}
+        {championship.logo_url && (
+          <div className="w-32 h-32 relative flex-shrink-0"> {/* Increased size */}
+            <AspectRatio ratio={1 / 1}>
+              <img src={championship.logo_url} alt={championship.name} className="rounded-md object-contain" />
+            </AspectRatio>
           </div>
+        )}
+        <div>
+          <h1 className="text-3xl font-bold">{championship.name}</h1> {/* Larger title */}
+          <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
         </div>
-        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+        <div className="flex gap-2 flex-wrap justify-center"> {/* Centralized buttons */}
           <Button variant="outline" onClick={handleCopyPublicLink}>
             <Share2 className="mr-2 h-4 w-4" />
             Link Público
