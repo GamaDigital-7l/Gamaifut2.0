@@ -96,10 +96,10 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           {/* Team 1 */}
-          <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 justify-center sm:justify-end">
-            <span className="font-semibold text-base sm:font-medium sm:text-sm text-right">{match.team1.name}</span>
+          <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 justify-center sm:justify-end min-w-0">
+            <span className="font-medium text-sm sm:text-base text-right break-words">{match.team1.name}</span>
             {match.team1.logo_url && (
-              <img src={match.team1.logo_url} alt={match.team1.name} className="h-10 w-10 sm:h-8 sm:w-8 object-contain" />
+              <img src={match.team1.logo_url} alt={match.team1.name} className="h-10 w-10 sm:h-8 sm:w-8 object-contain flex-shrink-0" />
             )}
           </div>
 
@@ -113,11 +113,11 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           </div>
 
           {/* Team 2 */}
-          <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 justify-center sm:justify-start">
+          <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 justify-center sm:justify-start min-w-0">
             {match.team2.logo_url && (
-              <img src={match.team2.logo_url} alt={match.team2.name} className="h-10 w-10 sm:h-8 sm:w-8 object-contain" />
+              <img src={match.team2.logo_url} alt={match.team2.name} className="h-10 w-10 sm:h-8 sm:w-8 object-contain flex-shrink-0" />
             )}
-            <span className="font-semibold text-base sm:font-medium sm:text-sm text-left">{match.team2.name}</span>
+            <span className="font-medium text-sm sm:text-base text-left break-words">{match.team2.name}</span>
           </div>
         </div>
 
