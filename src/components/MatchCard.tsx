@@ -96,33 +96,33 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           {/* Team 1 */}
-          <div className="flex items-center gap-2 w-full sm:w-auto sm:flex-1 justify-center sm:justify-end">
-            <span className="font-medium text-right">{match.team1.name}</span>
+          <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 justify-center sm:justify-end">
+            <span className="font-semibold text-base sm:font-medium sm:text-sm text-right">{match.team1.name}</span>
             {match.team1.logo_url && (
-              <img src={match.team1.logo_url} alt={match.team1.name} className="h-8 w-8 object-contain" />
+              <img src={match.team1.logo_url} alt={match.team1.name} className="h-10 w-10 sm:h-8 sm:w-8 object-contain" />
             )}
           </div>
 
           {/* Scores / Separator */}
-          <div className="flex items-center gap-2 text-xl font-bold my-2 sm:my-0">
+          <div className="flex items-center gap-3 text-2xl font-bold my-2 sm:my-0">
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
-            <div className="p-1 rounded-full bg-primary text-primary-foreground"> {/* Enhanced X icon */}
+            <div className="p-1 rounded-full bg-primary text-primary-foreground">
               <X className="h-4 w-4" /> 
             </div>
             <span>{isPlayed ? (match.team2_score ?? '-') : ''}</span>
           </div>
 
           {/* Team 2 */}
-          <div className="flex items-center gap-2 w-full sm:w-auto sm:flex-1 justify-center sm:justify-start">
+          <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 justify-center sm:justify-start">
             {match.team2.logo_url && (
-              <img src={match.team2.logo_url} alt={match.team2.name} className="h-8 w-8 object-contain" />
+              <img src={match.team2.logo_url} alt={match.team2.name} className="h-10 w-10 sm:h-8 sm:w-8 object-contain" />
             )}
-            <span className="font-medium text-left">{match.team2.name}</span>
+            <span className="font-semibold text-base sm:font-medium sm:text-sm text-left">{match.team2.name}</span>
           </div>
         </div>
 
         {isPlayed && (
-          <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground mt-3 border-t pt-2">
+          <div className="hidden sm:grid grid-cols-2 gap-2 text-sm text-muted-foreground mt-3 border-t pt-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <SquareDot className="h-3 w-3 text-yellow-500" /> Amarelos:
@@ -150,7 +150,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
         )}
 
         <div className="flex justify-end mt-2">
-          {isPublicView ? null : ( // Se for uma visualização pública, não renderiza nada aqui
+          {isPublicView ? null : (
             isOfficialView ? (
               <OfficialMatchUpdateDialog match={match} onMatchUpdated={onMatchUpdated}>
                 <Button variant="outline" size="sm">Atualizar Partida</Button>
