@@ -9,7 +9,7 @@ import { Trophy } from 'lucide-react';
 import { MatchCard } from '@/components/MatchCard';
 import { Leaderboard } from '@/components/Leaderboard';
 import { PublicHeader } from '@/components/PublicHeader';
-import { useChampionshipTheme } from '@/contexts/ThemeContext';
+import { useChampionshipTheme } from '@/contexts/ThemeContext'; // Keep for logo
 
 // Re-using types for consistency
 interface Team {
@@ -50,7 +50,7 @@ const PublicTeamDetail = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { fetchAndApplyChampionshipTheme, applyThemeToDocument } = useChampionshipTheme();
+  const { fetchChampionshipLogo } = useChampionshipTheme(); // Keep for logo
 
   const fetchTeamDetails = useCallback(async () => {
     if (!teamId) return;
@@ -66,11 +66,10 @@ const PublicTeamDetail = () => {
     if (teamError || !teamData) {
       setError('Time não encontrado ou erro ao carregar.');
       setLoading(false);
-      applyThemeToDocument(null);
       return;
     }
     setTeam(teamData as Team);
-    fetchAndApplyChampionshipTheme(teamData.championship_id);
+    fetchChampionshipLogo(teamData.championship_id); // Fetch and update logo in context
 
     const { data: matchesData, error: matchesError } = await supabase
       .from('matches')
@@ -85,14 +84,11 @@ const PublicTeamDetail = () => {
     }
 
     setLoading(false);
-  }, [teamId, fetchAndApplyChampionshipTheme, applyThemeToDocument]);
+  }, [teamId, fetchChampionshipLogo]);
 
   useEffect(() => {
     fetchTeamDetails();
-    return () => {
-      applyThemeToDocument(null);
-    };
-  }, [fetchTeamDetails, applyThemeToDocument]);
+  }, [fetchTeamDetails]);
 
   if (loading) {
     return (

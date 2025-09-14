@@ -8,7 +8,7 @@ import { Leaderboard } from '@/components/Leaderboard';
 import { SponsorDisplay } from '@/components/SponsorDisplay';
 import { MatchCard } from '@/components/MatchCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useChampionshipTheme } from '@/contexts/ThemeContext';
+import { useChampionshipTheme } from '@/contexts/ThemeContext'; // Keep for logo
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublicHeader } from '@/components/PublicHeader';
 import { PublicGroupsTab } from '@/components/PublicGroupsTab'; // Import new public groups tab
@@ -29,13 +29,7 @@ type Championship = {
   id: string;
   name: string;
   description: string | null;
-  logo_url: string | null;
-  theme_primary: string | null;
-  theme_secondary: string | null;
-  theme_accent: string | null;
-  theme_bg: string | null;
-  theme_text: string | null;
-  theme_mode: string | null;
+  logo_url: string | null; // Only logo_url remains
 };
 
 type Team = {
@@ -101,7 +95,7 @@ const PublicChampionshipView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all');
-  const { fetchAndApplyChampionshipTheme, applyThemeToDocument } = useChampionshipTheme();
+  const { fetchChampionshipLogo } = useChampionshipTheme(); // Keep for logo
 
   const fetchData = useCallback(async () => {
     if (!id) return;
@@ -110,7 +104,7 @@ const PublicChampionshipView = () => {
 
     // Fetch all data in parallel
     const [champRes, teamsRes, groupsRes, roundsRes, matchesRes, sponsorsRes] = await Promise.all([
-      supabase.from('championships').select('*').eq('id', id).single(),
+      supabase.from('championships').select('id, name, description, logo_url').eq('id', id).single(), // Only select logo_url
       supabase.from('teams').select('*').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('groups').select('*').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('rounds').select('*').eq('championship_id', id).order('order_index', { ascending: true }),
@@ -121,10 +115,9 @@ const PublicChampionshipView = () => {
     if (champRes.error) {
       console.error('Error fetching championship:', champRes.error);
       setError('Campeonato não encontrado ou erro ao carregar.');
-      applyThemeToDocument(null);
     } else {
       setChampionship(champRes.data as Championship);
-      fetchAndApplyChampionshipTheme(id);
+      fetchChampionshipLogo(id); // Fetch and update logo in context
     }
 
     if (teamsRes.error) console.error('Error fetching teams:', teamsRes.error);
@@ -144,14 +137,11 @@ const PublicChampionshipView = () => {
     else setMasterSponsor(null);
 
     setLoading(false);
-  }, [id, fetchAndApplyChampionshipTheme, applyThemeToDocument]);
+  }, [id, fetchChampionshipLogo]);
 
   useEffect(() => {
     fetchData();
-    return () => {
-      applyThemeToDocument(null); // Revert to global theme on unmount
-    };
-  }, [fetchData, applyThemeToDocument]);
+  }, [fetchData]);
 
   const filteredMatches = selectedRoundFilter === 'all'
     ? matches

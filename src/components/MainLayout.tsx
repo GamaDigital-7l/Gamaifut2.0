@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import { useChampionshipTheme } from "@/contexts/ThemeContext";
+// Removed useChampionshipTheme as it's no longer needed for main layout colors
 import { cn } from "@/lib/utils"; // Import cn for conditional classes
 
 const MainLayout = () => {
-  const { currentTheme } = useChampionshipTheme();
+  // Removed currentTheme from useChampionshipTheme
   const [isCollapsed, setIsCollapsed] = useState(false); // State for sidebar collapse
 
   const toggleCollapsed = () => {
@@ -29,10 +29,7 @@ const MainLayout = () => {
       <Sidebar isCollapsed={isCollapsed} toggleCollapsed={toggleCollapsed} />
       <div className="flex flex-col">
         <Header toggleSidebar={toggleCollapsed} /> {/* Pass toggle function to Header */}
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6" style={{ 
-            backgroundColor: currentTheme?.theme_bg ? `hsl(${currentTheme.theme_bg})` : 'hsl(var(--background))',
-            color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--foreground))'
-          }}>
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background text-foreground">
             <Outlet />
           </main>
       </div>

@@ -27,7 +27,7 @@ import { RoundsTab, Round } from '@/components/RoundsTab';
 import { CalendarTab } from '@/components/CalendarTab';
 import { StatisticsTab } from '@/components/StatisticsTab';
 import { format } from 'date-fns';
-import { useChampionshipTheme } from '@/contexts/ThemeContext';
+import { useChampionshipTheme } from '@/contexts/ThemeContext'; // Keep for logo
 import {
   Select,
   SelectContent,
@@ -43,6 +43,7 @@ type Championship = {
   id: string;
   name: string;
   description: string | null;
+  logo_url: string | null; // Added logo_url
 };
 
 export type Team = { // Export Team type for use in other components
@@ -86,7 +87,7 @@ const ChampionshipDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all'); // New state for round filter
-  const { fetchAndApplyChampionshipTheme } = useChampionshipTheme();
+  const { fetchChampionshipLogo } = useChampionshipTheme(); // Keep for logo
 
   const fetchData = useCallback(async () => {
     if (!id) return;
@@ -94,7 +95,7 @@ const ChampionshipDetail = () => {
 
     const { data: champData, error: champError } = await supabase
       .from('championships')
-      .select('*')
+      .select('id, name, description, logo_url') // Only select logo_url
       .eq('id', id)
       .single();
 
@@ -182,8 +183,8 @@ const ChampionshipDetail = () => {
     }
 
     setLoading(false);
-    fetchAndApplyChampionshipTheme(id);
-  }, [id, fetchAndApplyChampionshipTheme]);
+    fetchChampionshipLogo(id); // Fetch and update logo in context
+  }, [id, fetchChampionshipLogo]);
 
   useEffect(() => {
     fetchData();
@@ -309,7 +310,7 @@ const ChampionshipDetail = () => {
           <Button asChild variant="outline">
             <Link to={`/championship/${championship.id}/theme`}>
               <Palette className="mr-2 h-4 w-4" />
-              Configurar Tema
+              Configurar Logo
             </Link>
           </Button>
         </div>

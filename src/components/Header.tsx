@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { CircleUser, Menu, Trophy } from "lucide-react"; // Removed Sun, Moon icons
+import { CircleUser, Menu, Sun, Moon } from "lucide-react"; // Added Sun, Moon icons
 import { supabase } from "@/integrations/supabase/client";
 import { useChampionshipTheme } from "@/contexts/ThemeContext";
 import Sidebar from "./Sidebar";
@@ -20,21 +20,15 @@ interface HeaderProps {
 
 const Header = ({ toggleSidebar }: HeaderProps) => {
   const navigate = useNavigate();
-  const { currentTheme } = useChampionshipTheme(); // Removed toggleGlobalThemeMode, globalThemeMode
+  const { globalThemeMode, toggleGlobalThemeMode } = useChampionshipTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/login');
   };
 
-  // isDarkMode is no longer needed as theme is fixed to dark
-
   return (
-    <header className="flex h-14 items-center gap-4 border-b px-4 lg:h-[60px] lg:px-6" style={{
-      backgroundColor: currentTheme?.theme_bg ? `hsl(${currentTheme.theme_bg})` : 'hsl(var(--background))',
-      color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--foreground))',
-      borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--border))'
-    }}>
+    <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
@@ -42,11 +36,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="flex flex-col p-0" style={{
-          backgroundColor: currentTheme?.theme_bg ? `hsl(${currentTheme.theme_bg})` : 'hsl(var(--sidebar-background))',
-          color: currentTheme?.theme_text ? `hsl(${currentTheme.theme_text})` : 'hsl(var(--sidebar-foreground))',
-          borderColor: currentTheme?.theme_primary ? `hsl(${currentTheme.theme_primary})` : 'hsl(var(--sidebar-border))'
-        }}>
+        <SheetContent side="left" className="flex flex-col p-0 bg-sidebar-background border-sidebar-border">
           {/* Pass isCollapsed and toggleCollapsed to Sidebar within SheetContent for mobile */}
           <Sidebar isCollapsed={false} toggleCollapsed={() => { /* No-op for mobile sheet */ }} /> 
           <Button id="sheet-close-button" className="hidden" />
@@ -55,7 +45,14 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
       <div className="w-full flex-1">
         {/* Pode adicionar um search bar aqui no futuro */}
       </div>
-      {/* Removed theme toggle button */}
+      <Button variant="ghost" size="icon" onClick={toggleGlobalThemeMode}>
+        {globalThemeMode === 'dark' ? (
+          <Sun className="h-5 w-5" />
+        ) : (
+          <Moon className="h-5 w-5" />
+        )}
+        <span className="sr-only">Toggle theme</span>
+      </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="rounded-full">
