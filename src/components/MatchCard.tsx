@@ -54,9 +54,10 @@ interface MatchCardProps {
   groups: Group[]; // New prop
   rounds: Round[]; // New prop
   isOfficialView?: boolean; // New prop to indicate if it's for official dashboard
+  isPublicView?: boolean; // New prop to indicate if it's for public view
 }
 
-export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, isOfficialView = false }: MatchCardProps) {
+export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, isOfficialView = false, isPublicView = false }: MatchCardProps) {
   const matchDate = match.match_date ? new Date(match.match_date) : null;
   const isPlayed = match.team1_score !== null && match.team2_score !== null;
 
@@ -149,26 +150,28 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
         )}
 
         <div className="flex justify-end mt-2">
-          {isOfficialView ? (
-            <OfficialMatchUpdateDialog match={match} onMatchUpdated={onMatchUpdated}>
-              <Button variant="outline" size="sm">Atualizar Partida</Button>
-            </OfficialMatchUpdateDialog>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <EditMatchDialog match={match} groups={groups} rounds={rounds} onMatchUpdated={onMatchUpdated}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Partida</DropdownMenuItem>
-                </EditMatchDialog>
-                <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
-                </DeleteMatchDialog>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {isPublicView ? null : ( // Se for uma visualização pública, não renderiza nada aqui
+            isOfficialView ? (
+              <OfficialMatchUpdateDialog match={match} onMatchUpdated={onMatchUpdated}>
+                <Button variant="outline" size="sm">Atualizar Partida</Button>
+              </OfficialMatchUpdateDialog>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <EditMatchDialog match={match} groups={groups} rounds={rounds} onMatchUpdated={onMatchUpdated}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Partida</DropdownMenuItem>
+                  </EditMatchDialog>
+                  <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
+                  </DeleteMatchDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )
           )}
         </div>
       </CardContent>

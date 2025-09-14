@@ -207,7 +207,7 @@ const PublicChampionshipView = () => {
                   ) : (
                     <div className="space-y-2">
                       {matches.map((match, index) => (
-                        <MatchCard key={match.id} match={match} onMatchUpdated={() => {}} onMatchDeleted={() => {}} isEven={index % 2 === 0} groups={groups} rounds={rounds} />
+                        <MatchCard key={match.id} match={match} onMatchUpdated={() => {}} onMatchDeleted={() => {}} isEven={index % 2 === 0} groups={groups} rounds={rounds} isPublicView={true} />
                       ))}
                     </div>
                   )}

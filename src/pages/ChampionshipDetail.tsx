@@ -393,6 +393,7 @@ const ChampionshipDetail = () => {
                     isEven={index % 2 === 0}
                     groups={groups}
                     rounds={rounds}
+                    isPublicView={false} // Explicitly set to false for admin view
                   />
                 ))}
               </div>

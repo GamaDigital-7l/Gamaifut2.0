@@ -150,7 +150,7 @@ const PublicTeamDetail = () => {
               ) : (
                 <div className="space-y-2">
                   {matches.map((match, index) => (
-                    <MatchCard key={match.id} match={match} onMatchUpdated={() => {}} onMatchDeleted={() => {}} isEven={index % 2 === 0} groups={[]} rounds={[]} />
+                    <MatchCard key={match.id} match={match} onMatchUpdated={() => {}} onMatchDeleted={() => {}} isEven={index % 2 === 0} groups={[]} rounds={[]} isPublicView={true} />
                   ))}
                 </div>
               )}

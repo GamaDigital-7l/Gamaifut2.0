@@ -239,6 +239,7 @@ const AdminTeamDetail = () => {
                   isEven={index % 2 === 0}
                   groups={allGroups}
                   rounds={allRounds}
+                  isPublicView={false} // Explicitly set to false for admin view
                 />
               ))}
             </div>

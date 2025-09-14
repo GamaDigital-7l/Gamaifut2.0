@@ -163,6 +163,7 @@ const OfficialDashboard = () => {
               groups={allGroups}
               rounds={allRounds}
               isOfficialView={true} // Indicate that this card is in the official view
+              isPublicView={false} // Explicitly set to false
             />
           ))}
         </div>
