@@ -26,6 +26,7 @@ import { GroupsTab, Group } from '@/components/GroupsTab';
 import { RoundsTab, Round } from '@/components/RoundsTab';
 import { CalendarTab } from '@/components/CalendarTab';
 import { StatisticsTab } from '@/components/StatisticsTab';
+import { ChampionshipSettingsTab } from '@/components/ChampionshipSettingsTab'; // Import new settings tab
 import { format } from 'date-fns';
 import { useChampionshipTheme } from '@/contexts/ThemeContext'; // Keep for logo
 import {
@@ -44,7 +45,11 @@ type Championship = {
   id: string;
   name: string;
   description: string | null;
-  logo_url: string | null; // Added logo_url
+  logo_url: string | null;
+  points_for_win: number;
+  sport_type: string;
+  gender: string;
+  age_category: string;
 };
 
 export type Team = { // Export Team type for use in other components
@@ -96,7 +101,7 @@ const ChampionshipDetail = () => {
 
     const { data: champData, error: champError } = await supabase
       .from('championships')
-      .select('id, name, description, logo_url') // Only select logo_url
+      .select('*')
       .eq('id', id)
       .single();
 
@@ -339,6 +344,7 @@ const ChampionshipDetail = () => {
                     teams={teams.filter(team => team.group_id === group.id)} 
                     matches={matches.filter(match => match.group_id === group.id)} 
                     isPublicView={false}
+                    pointsForWin={championship.points_for_win}
                   />
                 </CardContent>
               </Card>
@@ -351,7 +357,12 @@ const ChampionshipDetail = () => {
               <CardDescription>Todos os times do campeonato.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Leaderboard teams={teams} matches={matches} isPublicView={false} />
+              <Leaderboard 
+                teams={teams} 
+                matches={matches} 
+                isPublicView={false} 
+                pointsForWin={championship.points_for_win}
+              />
             </CardContent>
           </Card>
         )}
@@ -413,13 +424,14 @@ const ChampionshipDetail = () => {
       </div>
 
       <Tabs defaultValue="teams" className="w-full mt-4">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"> {/* Adjusted grid-cols for responsiveness */}
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7"> {/* Adjusted grid-cols for responsiveness */}
           <TabsTrigger value="teams">Times</TabsTrigger>
           <TabsTrigger value="groups">Grupos</TabsTrigger>
           <TabsTrigger value="rounds">Rodadas</TabsTrigger>
           <TabsTrigger value="matches-calendar">Calendário</TabsTrigger>
           <TabsTrigger value="statistics">Estatísticas</TabsTrigger>
           <TabsTrigger value="sponsors">Patrocínios</TabsTrigger>
+          <TabsTrigger value="settings">Configurações</TabsTrigger>
         </TabsList>
         
         <TabsContent value="teams" className="mt-4">
@@ -514,6 +526,10 @@ const ChampionshipDetail = () => {
 
         <TabsContent value="sponsors" className="mt-4">
           <SponsorsTab championshipId={championship.id} />
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-4">
+          <ChampionshipSettingsTab championshipId={championship.id} />
         </TabsContent>
       </Tabs>
       

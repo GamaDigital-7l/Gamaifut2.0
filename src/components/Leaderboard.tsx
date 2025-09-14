@@ -24,6 +24,7 @@ interface LeaderboardProps {
   teams: Team[];
   matches: Match[];
   isPublicView?: boolean; // New prop to determine link path
+  pointsForWin?: number; // New prop for points rule
 }
 
 interface Standing {
@@ -43,7 +44,7 @@ interface Standing {
   positionChange: 'up' | 'down' | 'same' | 'new' | null; // Placeholder for now
 }
 
-export function Leaderboard({ teams, matches, isPublicView = false }: LeaderboardProps) {
+export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin = 3 }: LeaderboardProps) {
   if (teams.length === 0) {
     return (
       <div className="text-center py-10 border-2 border-dashed rounded-lg">
@@ -106,11 +107,11 @@ export function Leaderboard({ teams, matches, isPublicView = false }: Leaderboar
 
     if (match.team1_score > match.team2_score) {
       team1Standing.wins += 1;
-      team1Standing.points += 3;
+      team1Standing.points += pointsForWin;
       team2Standing.losses += 1;
     } else if (match.team1_score < match.team2_score) {
       team2Standing.wins += 1;
-      team2Standing.points += 3;
+      team2Standing.points += pointsForWin;
       team1Standing.losses += 1;
     } else {
       team1Standing.draws += 1;
@@ -123,7 +124,7 @@ export function Leaderboard({ teams, matches, isPublicView = false }: Leaderboar
   // Calculate percentage and recent form
   standingsMap.forEach(standing => {
     if (standing.played > 0) {
-      standing.percentage = (standing.points / (standing.played * 3)) * 100;
+      standing.percentage = (standing.points / (standing.played * pointsForWin)) * 100;
     } else {
       standing.percentage = 0;
     }

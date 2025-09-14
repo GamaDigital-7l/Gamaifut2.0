@@ -24,13 +24,18 @@ import {
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils'; // Import cn for conditional classes
+import { Badge } from '@/components/ui/badge'; // Import Badge
 
 // Re-using types for consistency
 type Championship = {
   id: string;
   name: string;
   description: string | null;
-  logo_url: string | null; // Only logo_url remains
+  logo_url: string | null;
+  points_for_win: number;
+  sport_type: string;
+  gender: string;
+  age_category: string;
 };
 
 type Team = {
@@ -105,7 +110,7 @@ const PublicChampionshipView = () => {
 
     // Fetch all data in parallel
     const [champRes, teamsRes, groupsRes, roundsRes, matchesRes, sponsorsRes] = await Promise.all([
-      supabase.from('championships').select('id, name, description, logo_url').eq('id', id).single(), // Only select logo_url
+      supabase.from('championships').select('*').eq('id', id).single(),
       supabase.from('teams').select('*').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('groups').select('*').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('rounds').select('*').eq('championship_id', id).order('order_index', { ascending: true }),
@@ -147,6 +152,10 @@ const PublicChampionshipView = () => {
   const filteredMatches = selectedRoundFilter === 'all'
     ? matches
     : matches.filter(match => match.round_id === selectedRoundFilter);
+
+  const formatRuleText = (text: string) => {
+    return text.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
 
   if (loading) {
     return (
@@ -190,6 +199,11 @@ const PublicChampionshipView = () => {
             <div>
               <h1 className="text-3xl font-bold">{championship.name}</h1> {/* Larger title */}
               <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
+              <div className="flex flex-wrap justify-center gap-2 mt-2">
+                <Badge variant="secondary">{formatRuleText(championship.sport_type)}</Badge>
+                <Badge variant="secondary">{formatRuleText(championship.gender)}</Badge>
+                <Badge variant="secondary">{formatRuleText(championship.age_category)}</Badge>
+              </div>
             </div>
             {masterSponsor && masterSponsor.logo_url && (
               <a 
@@ -222,6 +236,7 @@ const PublicChampionshipView = () => {
                         teams={teams.filter(team => team.group_id === group.id)} 
                         matches={matches.filter(match => match.group_id === group.id)} 
                         isPublicView={true}
+                        pointsForWin={championship.points_for_win}
                       />
                     </CardContent>
                   </Card>
@@ -234,7 +249,12 @@ const PublicChampionshipView = () => {
                   <CardDescription>Todos os times do campeonato.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Leaderboard teams={teams} matches={matches} isPublicView={true} />
+                  <Leaderboard 
+                    teams={teams} 
+                    matches={matches} 
+                    isPublicView={true} 
+                    pointsForWin={championship.points_for_win}
+                  />
                 </CardContent>
               </Card>
             )}
