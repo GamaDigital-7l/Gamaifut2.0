@@ -25,6 +25,13 @@ import {
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils'; // Import cn for conditional classes
 import { Badge } from '@/components/ui/badge'; // Import Badge
+import { 
+  Users, 
+  LayoutGrid, 
+  Milestone, 
+  Calendar as CalendarIconLucide, 
+  BarChart2 
+} from 'lucide-react';
 
 // Re-using types for consistency
 type Championship = {
@@ -311,12 +318,27 @@ const PublicChampionshipView = () => {
           </div>
 
           <Tabs defaultValue="teams" className="w-full mt-4">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-              <TabsTrigger value="teams">Times</TabsTrigger>
-              <TabsTrigger value="groups">Grupos</TabsTrigger>
-              <TabsTrigger value="rounds">Rodadas</TabsTrigger>
-              <TabsTrigger value="matches-calendar">Calendário</TabsTrigger>
-              <TabsTrigger value="statistics">Estatísticas</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="teams">
+                <Users className="h-5 w-5 sm:mr-2" />
+                <span className="hidden sm:inline">Times</span>
+              </TabsTrigger>
+              <TabsTrigger value="groups">
+                <LayoutGrid className="h-5 w-5 sm:mr-2" />
+                <span className="hidden sm:inline">Grupos</span>
+              </TabsTrigger>
+              <TabsTrigger value="rounds">
+                <Milestone className="h-5 w-5 sm:mr-2" />
+                <span className="hidden sm:inline">Rodadas</span>
+              </TabsTrigger>
+              <TabsTrigger value="matches-calendar">
+                <CalendarIconLucide className="h-5 w-5 sm:mr-2" />
+                <span className="hidden sm:inline">Calendário</span>
+              </TabsTrigger>
+              <TabsTrigger value="statistics">
+                <BarChart2 className="h-5 w-5 sm:mr-2" />
+                <span className="hidden sm:inline">Estatísticas</span>
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="teams" className="mt-4">
@@ -367,7 +389,6 @@ const PublicChampionshipView = () => {
                 rounds={rounds}
                 onMatchUpdated={() => {}} // No update action for public view
                 onMatchDeleted={() => {}} // No delete action for public view
-                isPublicView={true}
               />
             </TabsContent>
 

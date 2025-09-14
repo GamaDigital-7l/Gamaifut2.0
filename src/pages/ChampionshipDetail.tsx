@@ -2,7 +2,18 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, X, Palette, CalendarIcon, MapPin, Share2 } from 'lucide-react';
+import { 
+  MoreHorizontal, 
+  Palette, 
+  Share2,
+  Users,
+  LayoutGrid,
+  Milestone,
+  Calendar as CalendarIconLucide,
+  BarChart2,
+  HeartHandshake,
+  Settings
+} from 'lucide-react';
 import { CreateTeamDialog } from '@/components/CreateTeamDialog';
 import { EditTeamDialog } from '@/components/EditTeamDialog';
 import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
@@ -268,7 +279,36 @@ const ChampionshipDetail = () => {
       </div>
 
       <Tabs defaultValue="teams" className="w-full mt-4">
-        <div className="overflow-x-auto pb-2"><TabsList className="grid w-max grid-flow-col gap-4"><TabsTrigger value="teams">Times</TabsTrigger><TabsTrigger value="groups">Grupos</TabsTrigger><TabsTrigger value="rounds">Rodadas</TabsTrigger><TabsTrigger value="matches-calendar">Calendário</TabsTrigger><TabsTrigger value="statistics">Estatísticas</TabsTrigger><TabsTrigger value="sponsors">Patrocínios</TabsTrigger><TabsTrigger value="settings">Configurações</TabsTrigger></TabsList></div>
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="teams">
+            <Users className="h-5 w-5 sm:mr-2" />
+            <span className="hidden sm:inline">Times</span>
+          </TabsTrigger>
+          <TabsTrigger value="groups">
+            <LayoutGrid className="h-5 w-5 sm:mr-2" />
+            <span className="hidden sm:inline">Grupos</span>
+          </TabsTrigger>
+          <TabsTrigger value="rounds">
+            <Milestone className="h-5 w-5 sm:mr-2" />
+            <span className="hidden sm:inline">Rodadas</span>
+          </TabsTrigger>
+          <TabsTrigger value="matches-calendar">
+            <CalendarIconLucide className="h-5 w-5 sm:mr-2" />
+            <span className="hidden sm:inline">Calendário</span>
+          </TabsTrigger>
+          <TabsTrigger value="statistics">
+            <BarChart2 className="h-5 w-5 sm:mr-2" />
+            <span className="hidden sm:inline">Estatísticas</span>
+          </TabsTrigger>
+          <TabsTrigger value="sponsors">
+            <HeartHandshake className="h-5 w-5 sm:mr-2" />
+            <span className="hidden sm:inline">Patrocínios</span>
+          </TabsTrigger>
+          <TabsTrigger value="settings">
+            <Settings className="h-5 w-5 sm:mr-2" />
+            <span className="hidden sm:inline">Configurações</span>
+          </TabsTrigger>
+        </TabsList>
         <TabsContent value="teams" className="mt-4">
           <Card>
             <CardHeader><div className="flex justify-between items-center"><div><CardTitle>Times</CardTitle><CardDescription>Gerencie os times participantes.</CardDescription></div><CreateTeamDialog championshipId={championship.id} onTeamCreated={invalidateQueries} groups={groups} /></div></CardHeader>
