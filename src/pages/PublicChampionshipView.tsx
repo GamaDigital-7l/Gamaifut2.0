@@ -186,8 +186,8 @@ const PublicChampionshipView = () => {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <PublicHeader />
-      <main className="flex-1 p-4 md:gap-8 md:p-10">
-        <div className="mx-auto grid w-full max-w-6xl gap-6">
+      <main className="flex-1 p-4 md:gap-8 md:p-10"> {/* Adjusted padding */}
+        <div className="grid w-full gap-6"> {/* Removed max-w-6xl and mx-auto */}
           <div className="flex items-center gap-4 mb-6">
             {championship.logo_url && (
               <div className="w-20 h-20 relative">

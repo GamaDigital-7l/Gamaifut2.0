@@ -51,14 +51,14 @@ const Index = () => {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <PublicHeader />
-      <main className="flex flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-10">
-        <div className="mx-auto grid w-full max-w-6xl gap-2">
+      <main className="flex flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-10"> {/* Adjusted padding */}
+        <div className="grid w-full gap-2"> {/* Removed mx-auto and max-w-6xl */}
           <h1 className="text-3xl font-semibold">Encontre Campeonatos</h1>
           <p className="text-muted-foreground">
             Busque por nome, cidade ou estado para encontrar o campeonato que você procura.
           </p>
         </div>
-        <div className="mx-auto grid w-full max-w-6xl items-start gap-6">
+        <div className="grid w-full items-start gap-6"> {/* Removed mx-auto and max-w-6xl */}
           <form onSubmit={handleSearch} className="flex items-center gap-2">
             <Input
               type="search"
