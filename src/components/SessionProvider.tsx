@@ -1,20 +1,23 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, Suspense, lazy } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
-import Index from "@/pages/Index";
-import NotFound from "@/pages/NotFound";
-import Login from "@/pages/Login";
-import Dashboard from "@/pages/Dashboard";
-import ChampionshipDetail from "@/pages/ChampionshipDetail";
-import ChampionshipTheme from "@/pages/ChampionshipTheme";
-import Profile from "@/pages/Profile";
-import UserManagement from "@/pages/UserManagement";
-import OfficialDashboard from "@/pages/OfficialDashboard";
-import AdminTeamDetail from "@/pages/AdminTeamDetail";
-import PublicChampionshipView from "@/pages/PublicChampionshipView";
-import PublicTeamDetail from "@/pages/PublicTeamDetail";
-import MainLayout from "@/components/MainLayout";
+
+// Lazy load pages
+const Index = lazy(() => import("@/pages/Index"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const Login = lazy(() => import("@/pages/Login"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const ChampionshipDetail = lazy(() => import("@/pages/ChampionshipDetail"));
+const ChampionshipTheme = lazy(() => import("@/pages/ChampionshipTheme"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const UserManagement = lazy(() => import("@/pages/UserManagement"));
+const OfficialDashboard = lazy(() => import("@/pages/OfficialDashboard"));
+const AdminTeamDetail = lazy(() => import("@/pages/AdminTeamDetail"));
+const PublicChampionshipView = lazy(() => import("@/pages/PublicChampionshipView"));
+const PublicTeamDetail = lazy(() => import("@/pages/PublicTeamDetail"));
+const MainLayout = lazy(() => import("@/components/MainLayout"));
+
 
 interface UserProfile {
   id: string;
@@ -116,35 +119,41 @@ export const useSession = () => {
   return useContext(SessionContext);
 };
 
+const LoadingSpinner = () => (
+  <div className="flex h-screen items-center justify-center">Carregando...</div>
+);
+
 // We need to wrap the Routes with a component that can use the context
 export const AppRoutes = () => {
   const { loading } = useSession();
 
   if (loading) {
-    return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+    return <LoadingSpinner />;
   }
 
   return (
     <>
       <AppRedirects />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/public/championship/:id" element={<PublicChampionshipView />} />
-        <Route path="/public/team/:teamId" element={<PublicTeamDetail />} />
-        
-        <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/championship/:id" element={<ChampionshipDetail />} />
-          <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/users" element={<UserManagement />} />
-          <Route path="/official-dashboard" element={<OfficialDashboard />} />
-          <Route path="/team/:teamId" element={<AdminTeamDetail />} />
-        </Route>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/public/championship/:id" element={<PublicChampionshipView />} />
+          <Route path="/public/team/:teamId" element={<PublicTeamDetail />} />
+          
+          <Route element={<MainLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/championship/:id" element={<ChampionshipDetail />} />
+            <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/users" element={<UserManagement />} />
+            <Route path="/official-dashboard" element={<OfficialDashboard />} />
+            <Route path="/team/:teamId" element={<AdminTeamDetail />} />
+          </Route>
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </>
   );
 }

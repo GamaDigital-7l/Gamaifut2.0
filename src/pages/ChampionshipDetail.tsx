@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -50,37 +50,14 @@ import { showSuccess, showError } from '@/utils/toast';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-// Data fetching functions
-const fetchChampionship = async (id: string) => {
-  const { data, error } = await supabase.from('championships').select('*').eq('id', id).single();
+// Combined data fetching function using the Edge Function
+const fetchChampionshipDetails = async (id: string) => {
+  const { data, error } = await supabase.functions.invoke('get-championship-details', {
+    body: { championshipId: id },
+  });
   if (error) throw new Error(error.message);
   return data;
 };
-
-const fetchTeams = async (id: string) => {
-  const { data, error } = await supabase.from('teams').select('*').eq('championship_id', id).order('created_at', { ascending: true });
-  if (error) throw new Error(error.message);
-  return data;
-};
-
-const fetchGroups = async (id: string) => {
-  const { data, error } = await supabase.from('groups').select('*').eq('championship_id', id).order('name', { ascending: true });
-  if (error) throw new Error(error.message);
-  return data;
-};
-
-const fetchRounds = async (id: string) => {
-  const { data, error } = await supabase.from('rounds').select('*').eq('championship_id', id).order('order_index', { ascending: true }).order('name', { ascending: true });
-  if (error) throw new Error(error.message);
-  return data;
-};
-
-const fetchMatches = async (id: string) => {
-  const { data, error } = await supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(name, logo_url), team2:teams!matches_team2_id_fkey(name, logo_url), groups(name), rounds(name)`).eq('championship_id', id).order('match_date', { ascending: true });
-  if (error) throw new Error(error.message);
-  return data;
-};
-
 
 export type Team = {
   id: string;
@@ -119,35 +96,13 @@ const ChampionshipDetail = () => {
   const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all');
   const { fetchChampionshipLogo } = useChampionshipTheme();
 
-  const { data: championship, isLoading: isLoadingChampionship, error: errorChampionship } = useQuery({
-    queryKey: ['championship', id],
-    queryFn: () => fetchChampionship(id!),
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['championshipDetails', id],
+    queryFn: () => fetchChampionshipDetails(id!),
     enabled: !!id,
   });
 
-  const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
-    queryKey: ['teams', id],
-    queryFn: () => fetchTeams(id!),
-    enabled: !!id,
-  });
-
-  const { data: groups = [], isLoading: isLoadingGroups } = useQuery({
-    queryKey: ['groups', id],
-    queryFn: () => fetchGroups(id!),
-    enabled: !!id,
-  });
-
-  const { data: rounds = [], isLoading: isLoadingRounds } = useQuery({
-    queryKey: ['rounds', id],
-    queryFn: () => fetchRounds(id!),
-    enabled: !!id,
-  });
-
-  const { data: matches = [], isLoading: isLoadingMatches } = useQuery({
-    queryKey: ['matches', id],
-    queryFn: () => fetchMatches(id!),
-    enabled: !!id,
-  });
+  const { championship, teams = [], groups = [], rounds = [], matches = [] } = data || {};
 
   useEffect(() => {
     if (id) {
@@ -156,15 +111,12 @@ const ChampionshipDetail = () => {
   }, [id, fetchChampionshipLogo]);
 
   const invalidateQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ['teams', id] });
-    queryClient.invalidateQueries({ queryKey: ['matches', id] });
-    queryClient.invalidateQueries({ queryKey: ['groups', id] });
-    queryClient.invalidateQueries({ queryKey: ['rounds', id] });
+    queryClient.invalidateQueries({ queryKey: ['championshipDetails', id] });
   };
 
   const filteredMatches = selectedRoundFilter === 'all'
     ? matches
-    : matches.filter(match => match.round_id === selectedRoundFilter);
+    : matches.filter((match: Match) => match.round_id === selectedRoundFilter);
 
   const handleCopyPublicLink = () => {
     if (id) {
@@ -174,8 +126,6 @@ const ChampionshipDetail = () => {
         .catch(() => showError('Erro ao copiar o link.'));
     }
   };
-
-  const isLoading = isLoadingChampionship || isLoadingTeams || isLoadingMatches || isLoadingGroups || isLoadingRounds;
 
   if (isLoading) {
     return (
@@ -196,7 +146,7 @@ const ChampionshipDetail = () => {
     );
   }
 
-  if (errorChampionship) {
+  if (error) {
     return (
       <div className="p-8 text-center">
         <p className="text-red-500 mb-4">Campeonato não encontrado ou erro ao carregar.</p>
@@ -206,7 +156,7 @@ const ChampionshipDetail = () => {
   }
 
   if (!championship) {
-    return null; // Should be handled by error state
+    return null;
   }
 
   return (
@@ -232,10 +182,10 @@ const ChampionshipDetail = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {groups.length > 0 ? (
           <div className="space-y-4">
-            {groups.map(group => (
+            {groups.map((group: Group) => (
               <Card key={group.id}>
                 <CardHeader><CardTitle>Classificação - {group.name}</CardTitle><CardDescription>Times do grupo {group.name}</CardDescription></CardHeader>
-                <CardContent><Leaderboard teams={teams.filter(team => team.group_id === group.id)} matches={matches.filter(match => match.group_id === group.id)} isPublicView={false} pointsForWin={championship.points_for_win} /></CardContent>
+                <CardContent><Leaderboard teams={teams.filter((team: Team) => team.group_id === group.id)} matches={matches.filter((match: Match) => match.group_id === group.id)} isPublicView={false} pointsForWin={championship.points_for_win} /></CardContent>
               </Card>
             ))}
           </div>
@@ -262,7 +212,7 @@ const ChampionshipDetail = () => {
                   <SelectTrigger id="round-filter" className="w-[180px]"><SelectValue placeholder="Filtrar por Rodada" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas as Rodadas</SelectItem>
-                    {rounds.map(round => (<SelectItem key={round.id} value={round.id}>{round.name}</SelectItem>))}
+                    {rounds.map((round: Round) => (<SelectItem key={round.id} value={round.id}>{round.name}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
@@ -272,7 +222,7 @@ const ChampionshipDetail = () => {
             {filteredMatches.length === 0 ? (
               <div className="text-center py-10 border-2 border-dashed rounded-lg"><p className="text-gray-500">Nenhuma partida agendada.</p></div>
             ) : (
-              <div className="space-y-2">{filteredMatches.map((match, index) => (<MatchCard key={match.id} match={match} onMatchUpdated={invalidateQueries} onMatchDeleted={invalidateQueries} isEven={index % 2 === 0} groups={groups} rounds={rounds} isPublicView={false} />))}</div>
+              <div className="space-y-2">{filteredMatches.map((match: Match, index: number) => (<MatchCard key={match.id} match={match} onMatchUpdated={invalidateQueries} onMatchDeleted={invalidateQueries} isEven={index % 2 === 0} groups={groups} rounds={rounds} isPublicView={false} />))}</div>
             )}
           </CardContent>
         </Card>
@@ -313,7 +263,7 @@ const ChampionshipDetail = () => {
           <Card>
             <CardHeader><div className="flex justify-between items-center"><div><CardTitle>Times</CardTitle><CardDescription>Gerencie os times participantes.</CardDescription></div><CreateTeamDialog championshipId={championship.id} onTeamCreated={invalidateQueries} groups={groups} /></div></CardHeader>
             <CardContent>
-              {teams.length === 0 ? (<div className="text-center py-10 border-2 border-dashed rounded-lg"><p className="text-gray-500">Ainda não há times.</p></div>) : (<div className="space-y-2">{teams.map((team) => (<Card key={team.id}><CardHeader className="flex flex-row items-center justify-between p-4"><div className="flex items-center gap-4">{team.logo_url && <img src={team.logo_url} alt={team.name} className="h-10 w-10 object-contain" />}<CardTitle className="text-base font-medium"><Link to={`/team/${team.id}`} className="hover:underline">{team.name}</Link></CardTitle>{team.group_id && (<span className="text-sm text-muted-foreground">({groups.find(g => g.id === team.group_id)?.name || 'Grupo Desconhecido'})</span>)}</div><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent><EditTeamDialog team={team} onTeamUpdated={invalidateQueries} groups={groups}><DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem></EditTeamDialog><DeleteTeamDialog team={team} onTeamDeleted={invalidateQueries}><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem></DeleteTeamDialog></DropdownMenuContent></DropdownMenu></CardHeader></Card>))}</div>)}
+              {teams.length === 0 ? (<div className="text-center py-10 border-2 border-dashed rounded-lg"><p className="text-gray-500">Ainda não há times.</p></div>) : (<div className="space-y-2">{teams.map((team: Team) => (<Card key={team.id}><CardHeader className="flex flex-row items-center justify-between p-4"><div className="flex items-center gap-4">{team.logo_url && <img src={team.logo_url} alt={team.name} className="h-10 w-10 object-contain" />}<CardTitle className="text-base font-medium"><Link to={`/team/${team.id}`} className="hover:underline">{team.name}</Link></CardTitle>{team.group_id && (<span className="text-sm text-muted-foreground">({groups.find((g: Group) => g.id === team.group_id)?.name || 'Grupo Desconhecido'})</span>)}</div><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent><EditTeamDialog team={team} onTeamUpdated={invalidateQueries} groups={groups}><DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem></EditTeamDialog><DeleteTeamDialog team={team} onTeamDeleted={invalidateQueries}><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem></DeleteTeamDialog></DropdownMenuContent></DropdownMenu></CardHeader></Card>))}</div>)}
             </CardContent>
           </Card>
         </TabsContent>
