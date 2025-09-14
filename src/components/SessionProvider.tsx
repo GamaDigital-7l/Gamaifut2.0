@@ -1,7 +1,20 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Session, User } from '@supabase/supabase-js';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Session } from '@supabase/supabase-js';
+import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
+import Index from "@/pages/Index";
+import NotFound from "@/pages/NotFound";
+import Login from "@/pages/Login";
+import Dashboard from "@/pages/Dashboard";
+import ChampionshipDetail from "@/pages/ChampionshipDetail";
+import ChampionshipTheme from "@/pages/ChampionshipTheme";
+import Profile from "@/pages/Profile";
+import UserManagement from "@/pages/UserManagement";
+import OfficialDashboard from "@/pages/OfficialDashboard";
+import AdminTeamDetail from "@/pages/AdminTeamDetail";
+import PublicChampionshipView from "@/pages/PublicChampionshipView";
+import PublicTeamDetail from "@/pages/PublicTeamDetail";
+import MainLayout from "@/components/MainLayout";
 
 interface UserProfile {
   id: string;
@@ -104,7 +117,7 @@ export const useSession = () => {
 };
 
 // We need to wrap the Routes with a component that can use the context
-const AppRoutes = () => {
+export const AppRoutes = () => {
   const { loading } = useSession();
 
   if (loading) {
