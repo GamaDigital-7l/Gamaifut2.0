@@ -68,19 +68,9 @@ export function SponsorDisplay({ championshipId }: SponsorDisplayProps) {
                 href={sponsor.target_url || '#'} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className={cn(
-                  "block p-2 border rounded-lg hover:shadow-md transition-all duration-200 ease-in-out flex flex-col items-center justify-center text-center",
-                  sponsor.level === 'ouro' && "col-span-2 sm:col-span-3 md:col-span-2 lg:col-span-2 xl:col-span-2 p-4 border-2 border-yellow-500 shadow-lg scale-105", // Larger for Ouro
-                  sponsor.level === 'prata' && "p-3 border-gray-400 shadow-md scale-100", // Slightly larger for Prata
-                  sponsor.level === 'bronze' && "p-2 border-gray-300" // Standard for Bronze
-                )}
+                className="block p-2 border rounded-lg hover:shadow-md transition-all duration-200 ease-in-out flex flex-col items-center justify-center text-center"
               >
-                <AspectRatio ratio={16 / 9} className={cn(
-                  "w-full",
-                  sponsor.level === 'ouro' && "max-w-[180px]", // Max width for ouro logo
-                  sponsor.level === 'prata' && "max-w-[140px]", // Max width for prata logo
-                  sponsor.level === 'bronze' && "max-w-[100px]" // Max width for bronze logo
-                )}>
+                <AspectRatio ratio={16 / 9} className="w-full max-w-[120px]"> {/* Tamanho uniforme para todos */}
                   {sponsor.logo_url ? (
                     <img src={sponsor.logo_url} alt={sponsor.name} className="object-contain w-full h-full" />
                   ) : (
@@ -89,8 +79,6 @@ export function SponsorDisplay({ championshipId }: SponsorDisplayProps) {
                     </div>
                   )}
                 </AspectRatio>
-                {/* Optionally display name below logo for better visibility */}
-                {/* <p className="mt-2 text-sm font-medium text-foreground">{sponsor.name}</p> */}
               </a>
             ))}
           </div>
