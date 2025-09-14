@@ -23,9 +23,9 @@ const Sidebar = ({ isCollapsed, toggleCollapsed }: SidebarProps) => {
       roles: ['user', 'official', 'admin'], // Visible to all authenticated users
     },
     {
-      href: "/officials",
+      href: "/users", // Updated href
       icon: <Users className="h-4 w-4" />,
-      label: "Gerenciar Usuários",
+      label: "Gerenciar Usuários", // Updated label
       roles: ['admin'], // Only visible to admins
     },
     {

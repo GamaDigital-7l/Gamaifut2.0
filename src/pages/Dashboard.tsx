@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, ClipboardList } from 'lucide-react'; // Import ClipboardList icon
+import { MoreHorizontal } from 'lucide-react'; // Removed ClipboardList icon
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/components/SessionProvider'; // Import useSession
 
@@ -52,14 +52,7 @@ const Dashboard = () => {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold">Meus Campeonatos</h1>
         <div className="flex gap-2">
-          {userProfile?.role === 'admin' && ( // Conditionally render for admin
-            <Button asChild variant="outline">
-              <Link to="/official-dashboard">
-                <ClipboardList className="mr-2 h-4 w-4" />
-                Painel do Mesário
-              </Link>
-            </Button>
-          )}
+          {/* Removed conditional button for Official Dashboard, now in Sidebar */}
           <CreateChampionshipDialog onChampionshipCreated={fetchChampionships} />
         </div>
       </div>

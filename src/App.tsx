@@ -10,9 +10,9 @@ import Dashboard from "./pages/Dashboard";
 import ChampionshipDetail from "./pages/ChampionshipDetail";
 import ChampionshipTheme from "./pages/ChampionshipTheme";
 import Profile from "./pages/Profile";
-import Officials from "./pages/Officials";
+import UserManagement from "./pages/UserManagement"; // Updated import
 import OfficialDashboard from "./pages/OfficialDashboard";
-import TeamDetail from "./pages/TeamDetail"; // Import the new TeamDetail page
+import TeamDetail from "./pages/TeamDetail";
 import { SessionProvider } from "./components/SessionProvider";
 import MainLayout from "./components/MainLayout";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -36,9 +36,9 @@ const App = () => (
                 <Route path="/championship/:id" element={<ChampionshipDetail />} />
                 <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/officials" element={<Officials />} />
+                <Route path="/users" element={<UserManagement />} /> {/* Updated route path */}
                 <Route path="/official-dashboard" element={<OfficialDashboard />} />
-                <Route path="/team/:teamId" element={<TeamDetail />} /> {/* New route for Team Detail */}
+                <Route path="/team/:teamId" element={<TeamDetail />} />
               </Route>
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
