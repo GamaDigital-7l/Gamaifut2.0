@@ -11,6 +11,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useChampionshipTheme } from '@/contexts/ThemeContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublicHeader } from '@/components/PublicHeader';
+import { PublicGroupsTab } from '@/components/PublicGroupsTab'; // Import new public groups tab
+import { PublicRoundsTab } from '@/components/PublicRoundsTab'; // Import new public rounds tab
+import { CalendarTab } from '@/components/CalendarTab'; // Re-use CalendarTab
+import { StatisticsTab } from '@/components/StatisticsTab'; // Re-use StatisticsTab
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from '@/components/ui/label';
 
 // Re-using types for consistency
 type Championship = {
@@ -78,6 +90,7 @@ const PublicChampionshipView = () => {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all'); // New state for round filter
   const { fetchAndApplyChampionshipTheme, applyThemeToDocument } = useChampionshipTheme();
 
   const fetchData = useCallback(async () => {
@@ -125,6 +138,10 @@ const PublicChampionshipView = () => {
     };
   }, [fetchData, applyThemeToDocument]);
 
+  const filteredMatches = selectedRoundFilter === 'all'
+    ? matches
+    : matches.filter(match => match.round_id === selectedRoundFilter);
+
   if (loading) {
     return (
       <div className="flex min-h-screen w-full flex-col">
@@ -156,7 +173,7 @@ const PublicChampionshipView = () => {
       <PublicHeader />
       <main className="flex-1 p-4 md:gap-8 md:p-10">
         <div className="mx-auto grid w-full max-w-6xl gap-6">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mb-6">
             {championship.logo_url && (
               <div className="w-20 h-20 relative">
                 <AspectRatio ratio={1 / 1}>
@@ -170,57 +187,109 @@ const PublicChampionshipView = () => {
             </div>
           </div>
 
-          <Tabs defaultValue="leaderboard" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="leaderboard">Classificação</TabsTrigger>
-              <TabsTrigger value="matches">Partidas</TabsTrigger>
-              <TabsTrigger value="teams">Times</TabsTrigger>
-              <TabsTrigger value="sponsors">Patrocinadores</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="leaderboard" className="mt-4">
-              {groups.length > 0 ? (
-                <div className="space-y-4">
-                  {groups.map(group => (
-                    <Card key={group.id}>
-                      <CardHeader><CardTitle>Classificação - {group.name}</CardTitle></CardHeader>
-                      <CardContent>
-                        <Leaderboard teams={teams.filter(t => t.group_id === group.id)} matches={matches.filter(m => m.group_id === group.id)} />
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardHeader><CardTitle>Classificação Geral</CardTitle></CardHeader>
-                  <CardContent><Leaderboard teams={teams} matches={matches} /></CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="matches" className="mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Leaderboards por Grupo */}
+            {groups.length > 0 ? (
+              <div className="space-y-4">
+                {groups.map(group => (
+                  <Card key={group.id}>
+                    <CardHeader>
+                      <CardTitle>Classificação - {group.name}</CardTitle>
+                      <CardDescription>Times do grupo {group.name}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Leaderboard 
+                        teams={teams.filter(team => team.group_id === group.id)} 
+                        matches={matches.filter(match => match.group_id === group.id)} 
+                      />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
               <Card>
-                <CardHeader><CardTitle>Partidas</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle>Classificação Geral</CardTitle>
+                  <CardDescription>Todos os times do campeonato.</CardDescription>
+                </CardHeader>
                 <CardContent>
-                  {matches.length === 0 ? (
-                    <div className="text-center py-10"><p className="text-gray-500">Nenhuma partida agendada.</p></div>
-                  ) : (
-                    <div className="space-y-2">
-                      {matches.map((match, index) => (
-                        <MatchCard key={match.id} match={match} onMatchUpdated={() => {}} onMatchDeleted={() => {}} isEven={index % 2 === 0} groups={groups} rounds={rounds} isPublicView={true} />
-                      ))}
-                    </div>
-                  )}
+                  <Leaderboard teams={teams} matches={matches} />
                 </CardContent>
               </Card>
-            </TabsContent>
+            )}
 
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center mb-2">
+                  <div>
+                    <CardTitle>Jogos</CardTitle>
+                    <CardDescription>Partidas agendadas e resultados.</CardDescription>
+                  </div>
+                </div>
+                {/* Round Filter */}
+                {rounds.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="round-filter" className="text-right sr-only">Filtrar por Rodada</Label>
+                    <Select value={selectedRoundFilter} onValueChange={setSelectedRoundFilter}>
+                      <SelectTrigger id="round-filter" className="w-[180px]">
+                        <SelectValue placeholder="Filtrar por Rodada" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as Rodadas</SelectItem>
+                        {rounds.map(round => (
+                          <SelectItem key={round.id} value={round.id}>{round.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </CardHeader>
+              <CardContent>
+                {filteredMatches.length === 0 ? (
+                  <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                    <p className="text-gray-500">Nenhuma partida agendada.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {filteredMatches.map((match, index) => (
+                      <MatchCard
+                        key={match.id}
+                        match={match}
+                        onMatchUpdated={() => {}} // No update action for public view
+                        onMatchDeleted={() => {}} // No delete action for public view
+                        isEven={index % 2 === 0}
+                        groups={groups}
+                        rounds={rounds}
+                        isPublicView={true}
+                      />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Tabs defaultValue="teams" className="w-full mt-4">
+            <TabsList className="grid w-full grid-cols-5"> {/* Adjusted grid-cols */}
+              <TabsTrigger value="teams">Times</TabsTrigger>
+              <TabsTrigger value="groups">Grupos</TabsTrigger>
+              <TabsTrigger value="rounds">Rodadas</TabsTrigger>
+              <TabsTrigger value="matches-calendar">Calendário</TabsTrigger>
+              <TabsTrigger value="statistics">Estatísticas</TabsTrigger>
+              {/* Sponsors tab is already outside, no need for it here */}
+            </TabsList>
+            
             <TabsContent value="teams" className="mt-4">
               <Card>
-                <CardHeader><CardTitle>Times Participantes</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle>Times Participantes</CardTitle>
+                  <CardDescription>Todos os times inscritos no campeonato.</CardDescription>
+                </CardHeader>
                 <CardContent>
                   {teams.length === 0 ? (
-                    <div className="text-center py-10"><p className="text-gray-500">Nenhum time cadastrado.</p></div>
+                    <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                      <p className="text-gray-500">Nenhum time cadastrado.</p>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {teams.map(team => (
@@ -228,6 +297,11 @@ const PublicChampionshipView = () => {
                           <Card className="text-center p-4 hover:shadow-lg transition-shadow">
                             {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-16 w-16 mx-auto object-contain mb-2" />}
                             <p className="font-semibold">{team.name}</p>
+                            {team.group_id && (
+                              <p className="text-sm text-muted-foreground">
+                                ({groups.find(g => g.id === team.group_id)?.name || 'Grupo Desconhecido'})
+                              </p>
+                            )}
                           </Card>
                         </Link>
                       ))}
@@ -237,10 +311,37 @@ const PublicChampionshipView = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="sponsors" className="mt-4">
-              <SponsorDisplay championshipId={championship.id} />
+            <TabsContent value="groups" className="mt-4">
+              <PublicGroupsTab championshipId={championship.id} teams={teams} />
+            </TabsContent>
+
+            <TabsContent value="rounds" className="mt-4">
+              <PublicRoundsTab championshipId={championship.id} />
+            </TabsContent>
+
+            <TabsContent value="matches-calendar" className="mt-4">
+              <CalendarTab 
+                championshipId={championship.id} 
+                matches={matches} 
+                groups={groups}
+                rounds={rounds}
+                onMatchUpdated={() => {}} // No update action for public view
+                onMatchDeleted={() => {}} // No delete action for public view
+                isPublicView={true}
+              />
+            </TabsContent>
+
+            <TabsContent value="statistics" className="mt-4">
+              <StatisticsTab 
+                championshipId={championship.id} 
+                teams={teams} 
+                matches={matches} 
+              />
             </TabsContent>
           </Tabs>
+          
+          {/* Sponsors are displayed outside the tabs, as per the admin page layout */}
+          <SponsorDisplay championshipId={championship.id} />
         </div>
       </main>
     </div>
