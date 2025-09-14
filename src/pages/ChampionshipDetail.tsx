@@ -364,7 +364,7 @@ const ChampionshipDetail = () => {
                 <Label htmlFor="round-filter" className="text-right sr-only">Filtrar por Rodada</Label>
                 <Select value={selectedRoundFilter} onValueChange={setSelectedRoundFilter}>
                   <SelectTrigger id="round-filter" className="w-[180px]">
-                    <SelectValue placeholder="Filtrar por Rodada" />
+                        <SelectValue placeholder="Filtrar por Rodada" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas as Rodadas</SelectItem>
@@ -403,7 +403,7 @@ const ChampionshipDetail = () => {
       </div>
 
       <Tabs defaultValue="teams" className="w-full mt-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"> {/* Adjusted grid-cols for responsiveness */}
           <TabsTrigger value="teams">Times</TabsTrigger>
           <TabsTrigger value="groups">Grupos</TabsTrigger>
           <TabsTrigger value="rounds">Rodadas</TabsTrigger>

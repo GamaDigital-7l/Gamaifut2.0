@@ -270,7 +270,7 @@ const PublicChampionshipView = () => {
           </div>
 
           <Tabs defaultValue="teams" className="w-full mt-4">
-            <TabsList className="grid w-full grid-cols-5"> {/* Adjusted grid-cols */}
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"> {/* Adjusted grid-cols for responsiveness */}
               <TabsTrigger value="teams">Times</TabsTrigger>
               <TabsTrigger value="groups">Grupos</TabsTrigger>
               <TabsTrigger value="rounds">Rodadas</TabsTrigger>

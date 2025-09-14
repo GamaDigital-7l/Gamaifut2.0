@@ -172,26 +172,26 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
         <Table className="min-w-max"> {/* Added min-w-max here */}
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50px] text-center px-2 py-2">#</TableHead>
-              <TableHead className="w-[30px] text-center px-2 py-2">Var.</TableHead> {/* Position Change */}
+              <TableHead className="w-[50px] text-center px-2 py-2">Pos.</TableHead> {/* Changed # to Pos. */}
+              <TableHead className="w-[30px] text-center px-2 py-2 hidden sm:table-cell">Var.</TableHead> {/* Hidden on small screens */}
               <TableHead className="px-2 py-2">Time</TableHead> {/* Removed explicit width */}
               <TableHead className="text-center px-2 py-2">P</TableHead>
               <TableHead className="text-center px-2 py-2">J</TableHead>
-              <TableHead className="text-center px-2 py-2">V</TableHead>
-              <TableHead className="text-center px-2 py-2">E</TableHead>
-              <TableHead className="text-center px-2 py-2">D</TableHead>
-              <TableHead className="text-center px-2 py-2">GP</TableHead>
-              <TableHead className="text-center px-2 py-2">GC</TableHead>
+              <TableHead className="text-center px-2 py-2 hidden md:table-cell">V</TableHead> {/* Hidden on mobile */}
+              <TableHead className="text-center px-2 py-2 hidden md:table-cell">E</TableHead> {/* Hidden on mobile */}
+              <TableHead className="text-center px-2 py-2 hidden md:table-cell">D</TableHead> {/* Hidden on mobile */}
+              <TableHead className="text-center px-2 py-2 hidden md:table-cell">GP</TableHead> {/* Hidden on mobile */}
+              <TableHead className="text-center px-2 py-2 hidden md:table-cell">GC</TableHead> {/* Hidden on mobile */}
               <TableHead className="text-center px-2 py-2">SG</TableHead>
-              <TableHead className="text-center px-2 py-2">%</TableHead> {/* Percentage */}
-              <TableHead className="text-center px-2 py-2">Recentes</TableHead> {/* Recent Form */}
+              <TableHead className="text-center px-2 py-2 hidden md:table-cell">%</TableHead> {/* Hidden on mobile */}
+              <TableHead className="text-center px-2 py-2 hidden md:table-cell">Recentes</TableHead> {/* Hidden on mobile */}
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedStandings.map((standing, index) => (
               <TableRow key={standing.teamId}>
                 <TableCell className="font-medium text-center px-2 py-2">{index + 1}</TableCell>
-                <TableCell className="text-center px-2 py-2">
+                <TableCell className="text-center px-2 py-2 hidden sm:table-cell"> {/* Hidden on small screens */}
                   {standing.positionChange === 'up' && <ArrowUp className="h-4 w-4 text-green-500 inline" />}
                   {standing.positionChange === 'down' && <ArrowDown className="h-4 w-4 text-red-500 inline" />}
                   {standing.positionChange === 'same' && <Minus className="h-4 w-4 text-gray-500 inline" />}
@@ -206,14 +206,14 @@ export function Leaderboard({ teams, matches }: LeaderboardProps) {
                 </TableCell>
                 <TableCell className="text-center font-bold px-2 py-2">{standing.points}</TableCell>
                 <TableCell className="text-center px-2 py-2">{standing.played}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.wins}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.draws}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.losses}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.goalsFor}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.goalsAgainst}</TableCell>
+                <TableCell className="text-center px-2 py-2 hidden md:table-cell">{standing.wins}</TableCell> {/* Hidden on mobile */}
+                <TableCell className="text-center px-2 py-2 hidden md:table-cell">{standing.draws}</TableCell> {/* Hidden on mobile */}
+                <TableCell className="text-center px-2 py-2 hidden md:table-cell">{standing.losses}</TableCell> {/* Hidden on mobile */}
+                <TableCell className="text-center px-2 py-2 hidden md:table-cell">{standing.goalsFor}</TableCell> {/* Hidden on mobile */}
+                <TableCell className="text-center px-2 py-2 hidden md:table-cell">{standing.goalsAgainst}</TableCell> {/* Hidden on mobile */}
                 <TableCell className="text-center px-2 py-2">{standing.goalDifference}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.percentage.toFixed(1)}%</TableCell>
-                <TableCell className="text-center px-2 py-2"> {/* Removed min-w */}
+                <TableCell className="text-center px-2 py-2 hidden md:table-cell">{standing.percentage.toFixed(1)}%</TableCell> {/* Hidden on mobile */}
+                <TableCell className="text-center px-2 py-2 hidden md:table-cell"> {/* Hidden on mobile */}
                   <div className="flex justify-center gap-1">
                     {standing.recentForm.map((form, i) => (
                       <span
