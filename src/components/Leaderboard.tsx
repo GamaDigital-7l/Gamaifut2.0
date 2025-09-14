@@ -170,36 +170,28 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
 
   return (
     <div>
-      <div className="rounded-md border overflow-x-auto"> {/* Keep overflow-x-auto as a fallback for very small screens */}
-        <Table className="w-full">
+      <div className="rounded-md border overflow-x-auto">
+        <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[40px] text-center px-2 py-2">Pos.</TableHead>
-              <TableHead className="w-[30px] text-center px-2 py-2 hidden">Var.</TableHead> {/* Hidden completely */}
-              <TableHead className="flex-1 min-w-[100px] px-2 py-2">Time</TableHead>
+              <TableHead className="min-w-[150px] px-2 py-2">Time</TableHead>
               <TableHead className="w-[40px] text-center px-2 py-2">P</TableHead>
               <TableHead className="w-[40px] text-center px-2 py-2">J</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2 hidden lg:table-cell">V</TableHead> {/* Show only on lg */}
-              <TableHead className="w-[40px] text-center px-2 py-2 hidden lg:table-cell">E</TableHead> {/* Show only on lg */}
-              <TableHead className="w-[40px] text-center px-2 py-2 hidden lg:table-cell">D</TableHead> {/* Show only on lg */}
-              <TableHead className="w-[50px] text-center px-2 py-2 hidden xl:table-cell">GP</TableHead> {/* Show only on xl */}
-              <TableHead className="w-[50px] text-center px-2 py-2 hidden xl:table-cell">GC</TableHead> {/* Show only on xl */}
+              <TableHead className="w-[40px] text-center px-2 py-2">V</TableHead>
+              <TableHead className="w-[40px] text-center px-2 py-2">E</TableHead>
+              <TableHead className="w-[40px] text-center px-2 py-2">D</TableHead>
+              <TableHead className="w-[50px] text-center px-2 py-2">GP</TableHead>
+              <TableHead className="w-[50px] text-center px-2 py-2">GC</TableHead>
               <TableHead className="w-[50px] text-center px-2 py-2">SG</TableHead>
-              <TableHead className="w-[60px] text-center px-2 py-2 hidden lg:table-cell">%</TableHead> {/* Show only on lg */}
-              <TableHead className="w-[100px] text-center px-2 py-2 hidden xl:table-cell">Recentes</TableHead> {/* Show only on xl */}
+              <TableHead className="w-[60px] text-center px-2 py-2">%</TableHead>
+              <TableHead className="w-[100px] text-center px-2 py-2">Recentes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedStandings.map((standing, index) => (
               <TableRow key={standing.teamId}>
                 <TableCell className="font-medium text-center px-2 py-2">{index + 1}</TableCell>
-                <TableCell className="text-center px-2 py-2 hidden"> {/* Hidden completely */}
-                  {standing.positionChange === 'up' && <ArrowUp className="h-4 w-4 text-green-500 inline" />}
-                  {standing.positionChange === 'down' && <ArrowDown className="h-4 w-4 text-red-500 inline" />}
-                  {standing.positionChange === 'same' && <Minus className="h-4 w-4 text-gray-500 inline" />}
-                  {standing.positionChange === 'new' && <span className="text-blue-500 text-xs">Novo</span>}
-                  {!standing.positionChange && <Minus className="h-4 w-4 text-gray-500 inline" />}
-                </TableCell>
                 <TableCell className="flex items-center gap-2 px-2 py-2">
                   {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-6 w-6 object-contain" />}
                   <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline">
@@ -208,14 +200,14 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
                 </TableCell>
                 <TableCell className="text-center font-bold px-2 py-2">{standing.points}</TableCell>
                 <TableCell className="text-center px-2 py-2">{standing.played}</TableCell>
-                <TableCell className="text-center px-2 py-2 hidden lg:table-cell">{standing.wins}</TableCell>
-                <TableCell className="text-center px-2 py-2 hidden lg:table-cell">{standing.draws}</TableCell>
-                <TableCell className="text-center px-2 py-2 hidden lg:table-cell">{standing.losses}</TableCell>
-                <TableCell className="text-center px-2 py-2 hidden xl:table-cell">{standing.goalsFor}</TableCell>
-                <TableCell className="text-center px-2 py-2 hidden xl:table-cell">{standing.goalsAgainst}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.wins}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.draws}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.losses}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.goalsFor}</TableCell>
+                <TableCell className="text-center px-2 py-2">{standing.goalsAgainst}</TableCell>
                 <TableCell className="text-center px-2 py-2">{standing.goalDifference}</TableCell>
-                <TableCell className="text-center px-2 py-2 hidden lg:table-cell">{standing.percentage.toFixed(1)}%</TableCell>
-                <TableCell className="text-center px-2 py-2 hidden xl:table-cell">
+                <TableCell className="text-center px-2 py-2">{standing.percentage.toFixed(1)}%</TableCell>
+                <TableCell className="text-center px-2 py-2">
                   <div className="flex justify-center gap-1">
                     {standing.recentForm.map((form, i) => (
                       <span

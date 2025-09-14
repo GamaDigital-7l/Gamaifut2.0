@@ -66,6 +66,26 @@ export function AddMatchesToRoundDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { session } = useSession();
 
+  // Effect to auto-select group if both teams are from the same group
+  useEffect(() => {
+    const updatedMatches = matchesToCreate.map(match => {
+      if (match.team1Id && match.team2Id) {
+        const team1 = teams.find(t => t.id === match.team1Id);
+        const team2 = teams.find(t => t.id === match.team2Id);
+        if (team1?.group_id && team1.group_id === team2?.group_id) {
+          if (match.groupId !== team1.group_id) {
+            return { ...match, groupId: team1.group_id };
+          }
+        }
+      }
+      return match;
+    });
+
+    if (JSON.stringify(updatedMatches) !== JSON.stringify(matchesToCreate)) {
+      setMatchesToCreate(updatedMatches);
+    }
+  }, [matchesToCreate, teams]);
+
   useEffect(() => {
     // Reset form when dialog opens/closes or roundId changes
     if (!open) {

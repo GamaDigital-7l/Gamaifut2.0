@@ -67,8 +67,8 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
       isEven ? "bg-card" : "bg-muted/50 dark:bg-muted/20" // Alternating background
     )}>
       <CardContent className="p-4">
-        <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
-          <div className="flex items-center gap-1">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-muted-foreground mb-2 gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             {match.location && (
               <>
                 <MapPin className="h-3 w-3" />
@@ -94,9 +94,9 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           {/* Team 1 */}
-          <div className="flex items-center gap-2 flex-1 justify-end">
+          <div className="flex items-center gap-2 w-full sm:w-auto sm:flex-1 justify-center sm:justify-end">
             <span className="font-medium text-right">{match.team1.name}</span>
             {match.team1.logo_url && (
               <img src={match.team1.logo_url} alt={match.team1.name} className="h-8 w-8 object-contain" />
@@ -104,7 +104,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           </div>
 
           {/* Scores / Separator */}
-          <div className="flex items-center gap-2 text-xl font-bold">
+          <div className="flex items-center gap-2 text-xl font-bold my-2 sm:my-0">
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
             <div className="p-1 rounded-full bg-primary text-primary-foreground"> {/* Enhanced X icon */}
               <X className="h-4 w-4" /> 
@@ -113,7 +113,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           </div>
 
           {/* Team 2 */}
-          <div className="flex items-center gap-2 flex-1 justify-start">
+          <div className="flex items-center gap-2 w-full sm:w-auto sm:flex-1 justify-center sm:justify-start">
             {match.team2.logo_url && (
               <img src={match.team2.logo_url} alt={match.team2.name} className="h-8 w-8 object-contain" />
             )}
