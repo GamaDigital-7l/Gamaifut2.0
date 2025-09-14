@@ -329,6 +329,7 @@ const ChampionshipDetail = () => {
                   <Leaderboard 
                     teams={teams.filter(team => team.group_id === group.id)} 
                     matches={matches.filter(match => match.group_id === group.id)} 
+                    isPublicView={false}
                   />
                 </CardContent>
               </Card>
@@ -341,7 +342,7 @@ const ChampionshipDetail = () => {
               <CardDescription>Todos os times do campeonato.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Leaderboard teams={teams} matches={matches} />
+              <Leaderboard teams={teams} matches={matches} isPublicView={false} />
             </CardContent>
           </Card>
         )}

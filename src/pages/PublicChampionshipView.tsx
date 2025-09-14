@@ -201,6 +201,7 @@ const PublicChampionshipView = () => {
                       <Leaderboard 
                         teams={teams.filter(team => team.group_id === group.id)} 
                         matches={matches.filter(match => match.group_id === group.id)} 
+                        isPublicView={true}
                       />
                     </CardContent>
                   </Card>
@@ -213,7 +214,7 @@ const PublicChampionshipView = () => {
                   <CardDescription>Todos os times do campeonato.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Leaderboard teams={teams} matches={matches} />
+                  <Leaderboard teams={teams} matches={matches} isPublicView={true} />
                 </CardContent>
               </Card>
             )}
