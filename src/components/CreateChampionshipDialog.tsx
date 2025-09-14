@@ -24,6 +24,8 @@ export function CreateChampionshipDialog({ onChampionshipCreated }: CreateChampi
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { session } = useSession();
 
@@ -41,6 +43,8 @@ export function CreateChampionshipDialog({ onChampionshipCreated }: CreateChampi
       .insert([{ 
         name, 
         description,
+        city,
+        state,
         user_id: session.user.id 
       }]);
 
@@ -52,6 +56,8 @@ export function CreateChampionshipDialog({ onChampionshipCreated }: CreateChampi
       showSuccess("Campeonato criado com sucesso!");
       setName('');
       setDescription('');
+      setCity('');
+      setState('');
       setOpen(false);
       onChampionshipCreated();
     }
@@ -94,6 +100,30 @@ export function CreateChampionshipDialog({ onChampionshipCreated }: CreateChampi
                 onChange={(e) => setDescription(e.target.value)}
                 className="col-span-3"
                 placeholder="Descrição opcional do campeonato"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="city" className="text-right">
+                Cidade
+              </Label>
+              <Input
+                id="city"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="col-span-3"
+                placeholder="São Paulo"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="state" className="text-right">
+                Estado
+              </Label>
+              <Input
+                id="state"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                className="col-span-3"
+                placeholder="SP"
               />
             </div>
           </div>
