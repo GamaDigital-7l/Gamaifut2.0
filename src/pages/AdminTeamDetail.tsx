@@ -53,7 +53,7 @@ interface Round {
   type: string;
 }
 
-const TeamDetail = () => {
+const AdminTeamDetail = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const [team, setTeam] = useState<Team | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
@@ -249,4 +249,4 @@ const TeamDetail = () => {
   );
 };
 
-export default TeamDetail;
+export default AdminTeamDetail;

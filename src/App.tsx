@@ -13,7 +13,8 @@ import Profile from "./pages/Profile";
 import UserManagement from "./pages/UserManagement";
 import OfficialDashboard from "./pages/OfficialDashboard";
 import TeamDetail from "./pages/TeamDetail";
-import PublicChampionshipView from "./pages/PublicChampionshipView"; // New import
+import PublicChampionshipView from "./pages/PublicChampionshipView";
+import PublicTeamDetail from "./pages/PublicTeamDetail"; // New import
 import { SessionProvider } from "./components/SessionProvider";
 import MainLayout from "./components/MainLayout";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -31,7 +32,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/public/championship/:id" element={<PublicChampionshipView />} /> {/* New public route */}
+              <Route path="/public/championship/:id" element={<PublicChampionshipView />} />
+              <Route path="/public/team/:teamId" element={<PublicTeamDetail />} /> {/* New public route */}
               
               <Route element={<MainLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
