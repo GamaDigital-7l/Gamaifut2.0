@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EditMatchDialog } from "./EditMatchDialog";
 import { DeleteMatchDialog } from "./DeleteMatchDialog";
-import { OfficialMatchUpdateDialog } from "./OfficialMatchUpdateDialog"; // Import new dialog
-import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, Goal, MinusCircle, PlusCircle } from "lucide-react"; // Changed Swords to X, added new icons
+import { OfficialMatchUpdateDialog } from "./OfficialMatchUpdateDialog";
+import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
-import { cn } from "@/lib/utils"; // Import cn utility
-import { Group } from './GroupsTab'; // Import Group type
-import { Round } from '@/components/RoundsTab'; // Import Round type
+import { cn } from "@/lib/utils";
+import { Group } from './GroupsTab';
+import { Round } from '@/components/RoundsTab';
 
 interface Team {
   id: string;
@@ -30,31 +30,31 @@ interface Match {
   team2_score: number | null;
   match_date: string | null;
   location: string | null;
-  group_id: string | null; // Added group_id
-  round_id: string | null; // Added round_id
-  assigned_official_id: string | null; // Added assigned_official_id
-  team1_yellow_cards: number | null; // New field
-  team2_yellow_cards: number | null; // New field
-  team1_red_cards: number | null; // New field
-  team2_red_cards: number | null; // New field
-  team1_fouls: number | null; // New field
-  team2_fouls: number | null; // New field
-  notes: string | null; // New field
+  group_id: string | null;
+  round_id: string | null;
+  assigned_official_id: string | null;
+  team1_yellow_cards: number | null;
+  team2_yellow_cards: number | null;
+  team1_red_cards: number | null;
+  team2_red_cards: number | null;
+  team1_fouls: number | null;
+  team2_fouls: number | null;
+  notes: string | null;
   team1: Team;
   team2: Team;
-  groups: { name: string } | null; // Nested group data
-  rounds: { name: string } | null; // Nested round data
+  groups: { name: string } | null;
+  rounds: { name: string } | null;
 }
 
 interface MatchCardProps {
   match: Match;
   onMatchUpdated: () => void;
   onMatchDeleted: () => void;
-  isEven: boolean; // New prop for alternating colors
-  groups: Group[]; // New prop
-  rounds: Round[]; // New prop
-  isOfficialView?: boolean; // New prop to indicate if it's for official dashboard
-  isPublicView?: boolean; // New prop to indicate if it's for public view
+  isEven: boolean;
+  groups: Group[];
+  rounds: Round[];
+  isOfficialView?: boolean;
+  isPublicView?: boolean;
 }
 
 export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, isOfficialView = false, isPublicView = false }: MatchCardProps) {
@@ -64,7 +64,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
   return (
     <Card className={cn(
       "w-full",
-      isEven ? "bg-card" : "bg-muted/50 dark:bg-muted/20" // Alternating background
+      isEven ? "bg-card" : "bg-muted/50 dark:bg-muted/20"
     )}>
       <CardContent className="p-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-muted-foreground mb-2 gap-1">
@@ -94,17 +94,17 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-2 sm:gap-x-3">
           {/* Team 1 */}
-          <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 justify-center sm:justify-end min-w-0">
+          <div className="flex items-center gap-2 justify-end min-w-0">
             <span className="font-medium text-sm sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span>
             {match.team1.logo_url && (
-              <img src={match.team1.logo_url} alt={match.team1.name} className="h-10 w-10 sm:h-8 sm:w-8 object-contain flex-shrink-0" />
+              <img src={match.team1.logo_url} alt={match.team1.name} className="h-8 w-8 object-contain flex-shrink-0" />
             )}
           </div>
 
           {/* Scores / Separator */}
-          <div className="flex items-center gap-3 text-2xl font-bold my-2 sm:my-0">
+          <div className="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-bold">
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
             <div className="p-1 rounded-full bg-primary text-primary-foreground">
               <X className="h-4 w-4" /> 
@@ -113,9 +113,9 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           </div>
 
           {/* Team 2 */}
-          <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 justify-center sm:justify-start min-w-0">
+          <div className="flex items-center gap-2 justify-start min-w-0">
             {match.team2.logo_url && (
-              <img src={match.team2.logo_url} alt={match.team2.name} className="h-10 w-10 sm:h-8 sm:w-8 object-contain flex-shrink-0" />
+              <img src={match.team2.logo_url} alt={match.team2.name} className="h-8 w-8 object-contain flex-shrink-0" />
             )}
             <span className="font-medium text-sm sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span>
           </div>
