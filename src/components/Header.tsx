@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { CircleUser, Menu, Trophy, Sun, Moon } from "lucide-react";
+import { CircleUser, Menu, Trophy } from "lucide-react"; // Removed Sun, Moon icons
 import { supabase } from "@/integrations/supabase/client";
 import { useChampionshipTheme } from "@/contexts/ThemeContext";
 import Sidebar from "./Sidebar";
@@ -20,14 +20,14 @@ interface HeaderProps {
 
 const Header = ({ toggleSidebar }: HeaderProps) => {
   const navigate = useNavigate();
-  const { currentTheme, toggleGlobalThemeMode, globalThemeMode } = useChampionshipTheme();
+  const { currentTheme } = useChampionshipTheme(); // Removed toggleGlobalThemeMode, globalThemeMode
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/login');
   };
 
-  const isDarkMode = currentTheme?.theme_mode === 'dark' || (!currentTheme && globalThemeMode === 'dark');
+  // isDarkMode is no longer needed as theme is fixed to dark
 
   return (
     <header className="flex h-14 items-center gap-4 border-b px-4 lg:h-[60px] lg:px-6" style={{
@@ -55,10 +55,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
       <div className="w-full flex-1">
         {/* Pode adicionar um search bar aqui no futuro */}
       </div>
-      <Button variant="ghost" size="icon" onClick={toggleGlobalThemeMode} className="mr-2">
-        {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        <span className="sr-only">Toggle theme</span>
-      </Button>
+      {/* Removed theme toggle button */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="rounded-full">

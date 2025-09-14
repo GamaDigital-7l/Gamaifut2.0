@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,6 +39,18 @@ export function CreateSponsorDialog({ championshipId, existingSponsors, onSponso
   const [isActive, setIsActive] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { session } = useSession();
+
+  // Reset form fields when the dialog is closed
+  useEffect(() => {
+    if (!open) {
+      setName('');
+      setLevel(undefined);
+      setLogoFile(null);
+      setTargetUrl('');
+      setIsActive(true);
+      setIsSubmitting(false); // Ensure submitting state is also reset
+    }
+  }, [open]);
 
   const QUOTAS = {
     ouro: 1,
@@ -105,7 +117,7 @@ export function CreateSponsorDialog({ championshipId, existingSponsors, onSponso
       if (uploadedUrl) {
         logo_url = uploadedUrl;
       } else {
-        setIsSubmitting(false);
+        setIsSubmitting(false); // Reset submitting state on upload failure
         return; // Stop if upload failed
       }
     }
@@ -122,18 +134,13 @@ export function CreateSponsorDialog({ championshipId, existingSponsors, onSponso
         is_active: isActive,
       }]);
 
-    setIsSubmitting(false);
+    setIsSubmitting(false); // Reset submitting state after DB operation
 
     if (error) {
       showError(`Erro ao criar patrocinador: ${error.message}`);
     } else {
       showSuccess("Patrocinador criado com sucesso!");
-      setName('');
-      setLevel(undefined);
-      setLogoFile(null);
-      setTargetUrl('');
-      setIsActive(true);
-      setOpen(false);
+      setOpen(false); // Close dialog on success, which will trigger useEffect to reset fields
       onSponsorCreated();
     }
   };

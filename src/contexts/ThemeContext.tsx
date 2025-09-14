@@ -17,26 +17,21 @@ interface ThemeContextType {
   currentTheme: ChampionshipTheme | null;
   applyThemeToDocument: (theme: ChampionshipTheme | null) => void;
   fetchAndApplyChampionshipTheme: (championshipId: string) => void;
-  toggleGlobalThemeMode: () => void; // Add toggle function
-  globalThemeMode: 'light' | 'dark'; // Add global theme mode state
+  // Removed toggleGlobalThemeMode and globalThemeMode as theme is now fixed to dark
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentTheme, setCurrentTheme] = useState<ChampionshipTheme | null>(null);
-  const [globalThemeMode, setGlobalThemeMode] = useState<'light' | 'dark'>(() => {
-    // Initialize from localStorage or system preference
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const storedTheme = window.localStorage.getItem('globalThemeMode');
-      return storedTheme === 'dark' ? 'dark' : 'light';
-    }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  });
+  // Removed globalThemeMode state as theme is now fixed to dark
   const { id: championshipIdFromParams } = useParams<{ id: string }>();
 
   const applyThemeToDocument = useCallback((theme: ChampionshipTheme | null) => {
     const root = document.documentElement;
+    // Always ensure dark class is present
+    root.classList.add('dark'); 
+
     if (theme) {
       // Convert hex to HSL for custom properties
       root.style.setProperty('--championship-primary', hexToHsl(theme.theme_primary || '') || 'var(--primary)');
@@ -45,12 +40,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       root.style.setProperty('--championship-bg', hexToHsl(theme.theme_bg || '') || 'var(--background)');
       root.style.setProperty('--championship-text', hexToHsl(theme.theme_text || '') || 'var(--foreground)');
       
-      // Apply championship-specific dark/light mode
-      if (theme.theme_mode === 'dark') {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
+      // Championship-specific theme_mode is now ignored, always dark
     } else {
       // Clear custom properties if no theme is active
       root.style.removeProperty('--championship-primary');
@@ -59,14 +49,9 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       root.style.removeProperty('--championship-bg');
       root.style.removeProperty('--championship-text');
       
-      // Revert to global theme mode
-      if (globalThemeMode === 'dark') {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
+      // Always keep dark mode active
     }
-  }, [globalThemeMode]);
+  }, []); // Removed globalThemeMode from dependencies as it's no longer dynamic
 
   const fetchAndApplyChampionshipTheme = useCallback(async (id: string) => {
     const { data, error } = await supabase
@@ -78,45 +63,32 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     if (error) {
       console.error('Error fetching championship theme for context:', error);
       setCurrentTheme(null);
-      applyThemeToDocument(null); // Apply global theme if championship theme fails
+      applyThemeToDocument(null); // Apply default dark theme if championship theme fails
     } else if (data) {
       setCurrentTheme(data);
       applyThemeToDocument(data);
     }
   }, [applyThemeToDocument]);
 
-  const toggleGlobalThemeMode = useCallback(() => {
-    setGlobalThemeMode((prevMode) => {
-      const newMode = prevMode === 'light' ? 'dark' : 'light';
-      window.localStorage.setItem('globalThemeMode', newMode);
-      return newMode;
-    });
+  // Removed toggleGlobalThemeMode
+
+  // Effect to ensure dark mode is always applied
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
   }, []);
 
-  // Effect to apply global theme mode when championshipIdFromParams is not present
-  useEffect(() => {
-    const root = document.documentElement;
-    if (!championshipIdFromParams) {
-      if (globalThemeMode === 'dark') {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-    }
-  }, [globalThemeMode, championshipIdFromParams]);
-
-  // Effect to fetch and apply championship theme or revert to global theme
+  // Effect to fetch and apply championship theme or revert to default dark theme
   useEffect(() => {
     if (championshipIdFromParams) {
       fetchAndApplyChampionshipTheme(championshipIdFromParams);
     } else {
       setCurrentTheme(null);
-      applyThemeToDocument(null); // This will now correctly revert to globalThemeMode
+      applyThemeToDocument(null); // This will now correctly revert to default dark theme
     }
   }, [championshipIdFromParams, fetchAndApplyChampionshipTheme, applyThemeToDocument]);
 
   return (
-    <ThemeContext.Provider value={{ currentTheme, applyThemeToDocument, fetchAndApplyChampionshipTheme, toggleGlobalThemeMode, globalThemeMode }}>
+    <ThemeContext.Provider value={{ currentTheme, applyThemeToDocument, fetchAndApplyChampionshipTheme }}>
       {children}
     </ThemeContext.Provider>
   );

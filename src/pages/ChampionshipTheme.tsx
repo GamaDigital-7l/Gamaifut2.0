@@ -38,7 +38,7 @@ const ChampionshipTheme = () => {
   const [accentColor, setAccentColor] = useState('#28a745');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [textColor, setTextColor] = useState('#212529');
-  const [themeMode, setThemeMode] = useState('light');
+  // Removed themeMode state as it's no longer configurable by admin
 
   const fetchChampionshipTheme = useCallback(async () => {
     if (!id) return;
@@ -60,7 +60,7 @@ const ChampionshipTheme = () => {
       setAccentColor(data.theme_accent || '#28a745');
       setBgColor(data.theme_bg || '#ffffff');
       setTextColor(data.theme_text || '#212529');
-      setThemeMode(data.theme_mode || 'light');
+      // themeMode is no longer set here as it's fixed
     }
     setLoading(false);
   }, [id]);
@@ -134,7 +134,7 @@ const ChampionshipTheme = () => {
       theme_accent: accentColor,
       theme_bg: bgColor,
       theme_text: textColor,
-      theme_mode: themeMode,
+      theme_mode: 'dark', // Always save as dark mode
     };
 
     const { error } = await supabase
@@ -233,18 +233,7 @@ const ChampionshipTheme = () => {
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="themeMode">Modo do Tema</Label>
-                  <Select value={themeMode} onValueChange={setThemeMode}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o modo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">Claro</SelectItem>
-                      <SelectItem value="dark">Escuro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Removed theme mode selection */}
                 <div>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
