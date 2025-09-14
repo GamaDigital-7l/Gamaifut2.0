@@ -119,12 +119,12 @@ const PublicTeamDetail = () => {
       <main className="flex-1 p-4 md:gap-8 md:p-10"> {/* Adjusted padding */}
         <div className="grid w-full gap-6"> {/* Removed max-w-6xl and mx-auto */}
           <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
+            <Avatar className="h-20 w-20"> {/* Increased size */}
               <AvatarImage src={team.logo_url || undefined} alt={team.name} />
               <AvatarFallback><Trophy className="h-10 w-10 text-gray-500" /></AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-3xl font-bold">{team.name}</h1>
+              <h1 className="text-2xl font-bold">{team.name}</h1> {/* Slightly smaller title */}
               <Button asChild variant="link" className="p-0 h-auto mt-1">
                 <Link to={`/public/championship/${team.championship_id}`}>Voltar para o Campeonato</Link>
               </Button>
