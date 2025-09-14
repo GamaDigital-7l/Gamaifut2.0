@@ -61,7 +61,8 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         }
       } else {
         setUserProfile(null);
-        if (_event === 'SIGNED_OUT' && location.pathname !== '/login') {
+        // Do not redirect to login if on a public page
+        if (_event === 'SIGNED_OUT' && location.pathname !== '/login' && !location.pathname.startsWith('/public/')) {
           navigate('/login');
         }
       }
@@ -71,10 +72,14 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   }, [navigate, location.pathname]);
 
   useEffect(() => {
-    if (!loading && !session && location.pathname !== '/login') {
+    const isPublicRoute = location.pathname.startsWith('/public/');
+    const isLoginRoute = location.pathname === '/login';
+    const isIndexRoute = location.pathname === '/';
+
+    if (!loading && !session && !isPublicRoute && !isLoginRoute && !isIndexRoute) {
       navigate('/login');
     }
-    if (!loading && session && location.pathname === '/login') {
+    if (!loading && session && isLoginRoute) {
       navigate('/dashboard');
     }
   }, [session, loading, navigate, location.pathname]);
