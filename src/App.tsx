@@ -12,9 +12,9 @@ import ChampionshipTheme from "./pages/ChampionshipTheme";
 import Profile from "./pages/Profile";
 import UserManagement from "./pages/UserManagement";
 import OfficialDashboard from "./pages/OfficialDashboard";
-import TeamDetail from "./pages/TeamDetail";
+import AdminTeamDetail from "./pages/AdminTeamDetail"; // Updated import
 import PublicChampionshipView from "./pages/PublicChampionshipView";
-import PublicTeamDetail from "./pages/PublicTeamDetail"; // New import
+import PublicTeamDetail from "./pages/PublicTeamDetail";
 import { SessionProvider } from "./components/SessionProvider";
 import MainLayout from "./components/MainLayout";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -33,7 +33,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/public/championship/:id" element={<PublicChampionshipView />} />
-              <Route path="/public/team/:teamId" element={<PublicTeamDetail />} /> {/* New public route */}
+              <Route path="/public/team/:teamId" element={<PublicTeamDetail />} />
               
               <Route element={<MainLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
@@ -42,7 +42,7 @@ const App = () => (
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/users" element={<UserManagement />} />
                 <Route path="/official-dashboard" element={<OfficialDashboard />} />
-                <Route path="/team/:teamId" element={<TeamDetail />} />
+                <Route path="/team/:teamId" element={<AdminTeamDetail />} /> {/* Updated route */}
               </Route>
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
