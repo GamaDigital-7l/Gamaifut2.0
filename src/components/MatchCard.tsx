@@ -9,7 +9,8 @@ import {
 import { EditMatchDialog } from "./EditMatchDialog";
 import { DeleteMatchDialog } from "./DeleteMatchDialog";
 import { OfficialMatchUpdateDialog } from "./OfficialMatchUpdateDialog";
-import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle } from "lucide-react";
+import { QuickScoreUpdateDrawer } from "./QuickScoreUpdateDrawer"; // Import the new drawer
+import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle, Goal } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
@@ -149,28 +150,36 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           </div>
         )}
 
-        <div className="flex justify-end mt-2">
+        <div className="flex justify-end items-center mt-2 gap-2">
           {isPublicView ? null : (
             isOfficialView ? (
               <OfficialMatchUpdateDialog match={match} onMatchUpdated={onMatchUpdated}>
                 <Button variant="outline" size="sm">Atualizar Partida</Button>
               </OfficialMatchUpdateDialog>
             ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <MoreHorizontal className="h-4 w-4" />
+              <>
+                <QuickScoreUpdateDrawer match={match} onMatchUpdated={onMatchUpdated}>
+                  <Button variant="outline" size="sm" className="flex items-center gap-1">
+                    <Goal className="h-4 w-4" />
+                    <span className="hidden sm:inline">Placar Rápido</span>
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <EditMatchDialog match={match} groups={groups} rounds={rounds} onMatchUpdated={onMatchUpdated}>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Partida</DropdownMenuItem>
-                  </EditMatchDialog>
-                  <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
-                  </DeleteMatchDialog>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </QuickScoreUpdateDrawer>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <EditMatchDialog match={match} groups={groups} rounds={rounds} onMatchUpdated={onMatchUpdated}>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Detalhes</DropdownMenuItem>
+                    </EditMatchDialog>
+                    <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
+                    </DeleteMatchDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             )
           )}
         </div>

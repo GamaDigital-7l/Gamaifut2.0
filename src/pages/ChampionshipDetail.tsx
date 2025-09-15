@@ -14,11 +14,6 @@ import {
   HeartHandshake,
   Settings
 } from 'lucide-react';
-import { CreateTeamDialog } from '@/components/CreateTeamDialog';
-import { EditTeamDialog } from '@/components/EditTeamDialog';
-import { DeleteTeamDialog } from '@/components/DeleteTeamDialog';
-import { CreateMatchDialog } from '@/components/CreateMatchDialog';
-import { GenerateMatchesDialog } from '@/components/GenerateMatchesDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -27,96 +22,50 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Leaderboard } from '@/components/Leaderboard';
-import { SponsorsTab } from '@/components/SponsorsTab';
 import { SponsorDisplay } from '@/components/SponsorDisplay';
-import { MatchCard } from '@/components/MatchCard';
-import { GroupsTab, Group } from '@/components/GroupsTab';
-import { RoundsTab, Round } from '@/components/RoundsTab';
-import { CalendarTab } from '@/components/CalendarTab';
-import { StatisticsTab } from '@/components/StatisticsTab';
-import { ChampionshipSettingsTab } from '@/components/ChampionshipSettingsTab';
 import { useChampionshipTheme } from '@/contexts/ThemeContext';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { showSuccess, showError } from '@/utils/toast';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-// Combined data fetching function using the Edge Function
-const fetchChampionshipDetails = async (id: string) => {
-  const { data, error } = await supabase.functions.invoke('get-championship-details', {
-    body: { championshipId: id },
-  });
+// Import tab components that now handle their own data fetching
+import { TeamsTab } from '@/components/TeamsTab';
+import { MatchesTab } from '@/components/MatchesTab';
+import { LeaderboardTab } from '@/components/LeaderboardTab';
+import { GroupsTab } from '@/components/GroupsTab';
+import { RoundsTab } from '@/components/RoundsTab';
+import { CalendarTab } from '@/components/CalendarTab';
+import { StatisticsTab } from '@/components/StatisticsTab';
+import { SponsorsTab } from '@/components/SponsorsTab';
+import { ChampionshipSettingsTab } from '@/components/ChampionshipSettingsTab';
+
+const fetchChampionship = async (id: string) => {
+  const { data, error } = await supabase
+    .from('championships')
+    .select('*')
+    .eq('id', id)
+    .single();
   if (error) throw new Error(error.message);
   return data;
-};
-
-export type Team = {
-  id: string;
-  name: string;
-  logo_url: string | null;
-  group_id: string | null;
-};
-
-type Match = {
-  id: string;
-  team1_id: string;
-  team2_id: string;
-  team1_score: number | null;
-  team2_score: number | null;
-  match_date: string | null;
-  location: string | null;
-  group_id: string | null;
-  round_id: string | null;
-  assigned_official_id: string | null;
-  team1_yellow_cards: number | null;
-  team2_yellow_cards: number | null;
-  team1_red_cards: number | null;
-  team2_red_cards: number | null;
-  team1_fouls: number | null;
-  team2_fouls: number | null;
-  notes: string | null;
-  team1: { name: string; logo_url: string | null; };
-  team2: { name: string; logo_url: string | null; };
-  groups: { name: string } | null;
-  rounds: { name: string } | null;
 };
 
 const ChampionshipDetail = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all');
   const { fetchChampionshipLogo } = useChampionshipTheme();
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['championshipDetails', id],
-    queryFn: () => fetchChampionshipDetails(id!),
+  const { data: championship, isLoading, error } = useQuery({
+    queryKey: ['championship', id],
+    queryFn: () => fetchChampionship(id!),
     enabled: !!id,
   });
-
-  const { championship, teams = [], groups = [], rounds = [], matches = [] } = data || {};
 
   useEffect(() => {
     if (id) {
       fetchChampionshipLogo(id);
     }
   }, [id, fetchChampionshipLogo]);
-
-  const invalidateQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ['championshipDetails', id] });
-  };
-
-  const filteredMatches = selectedRoundFilter === 'all'
-    ? matches
-    : matches.filter((match: Match) => match.round_id === selectedRoundFilter);
 
   const handleCopyPublicLink = () => {
     if (id) {
@@ -137,11 +86,8 @@ const ChampionshipDetail = () => {
           </div>
           <Skeleton className="h-10 w-36" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card><CardHeader><Skeleton className="h-6 w-48 mb-2" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
-          <Card><CardHeader><Skeleton className="h-6 w-24 mb-2" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
-        </div>
-        <Card><CardHeader><Skeleton className="h-10 w-full" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        <Skeleton className="h-10 w-full mt-4" />
+        <Skeleton className="h-64 w-full mt-4" />
       </div>
     );
   }
@@ -179,101 +125,30 @@ const ChampionshipDetail = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {groups.length > 0 ? (
-          <div className="space-y-4">
-            {groups.map((group: Group) => (
-              <Card key={group.id}>
-                <CardHeader><CardTitle>Classificação - {group.name}</CardTitle><CardDescription>Times do grupo {group.name}</CardDescription></CardHeader>
-                <CardContent><Leaderboard teams={teams.filter((team: Team) => team.group_id === group.id)} matches={matches.filter((match: Match) => match.group_id === group.id)} isPublicView={false} pointsForWin={championship.points_for_win} /></CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardHeader><CardTitle>Classificação Geral</CardTitle><CardDescription>Todos os times do campeonato.</CardDescription></CardHeader>
-            <CardContent><Leaderboard teams={teams} matches={matches} isPublicView={false} pointsForWin={championship.points_for_win} /></CardContent>
-          </Card>
-        )}
-
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center mb-2">
-              <div><CardTitle>Jogos</CardTitle><CardDescription>Agende e atualize os resultados.</CardDescription></div>
-              <div className="flex gap-2">
-                <GenerateMatchesDialog championshipId={championship.id} teams={teams} groups={groups} rounds={rounds} onMatchesGenerated={invalidateQueries} />
-                <CreateMatchDialog championshipId={championship.id} teams={teams} groups={groups} rounds={rounds} onMatchCreated={invalidateQueries} />
-              </div>
-            </div>
-            {rounds.length > 0 && (
-              <div className="flex items-center gap-2">
-                <Label htmlFor="round-filter" className="text-right sr-only">Filtrar por Rodada</Label>
-                <Select value={selectedRoundFilter} onValueChange={setSelectedRoundFilter}>
-                  <SelectTrigger id="round-filter" className="w-[180px]"><SelectValue placeholder="Filtrar por Rodada" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as Rodadas</SelectItem>
-                    {rounds.map((round: Round) => (<SelectItem key={round.id} value={round.id}>{round.name}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </CardHeader>
-          <CardContent>
-            {filteredMatches.length === 0 ? (
-              <div className="text-center py-10 border-2 border-dashed rounded-lg"><p className="text-gray-500">Nenhuma partida agendada.</p></div>
-            ) : (
-              <div className="space-y-2">{filteredMatches.map((match: Match, index: number) => (<MatchCard key={match.id} match={match} onMatchUpdated={invalidateQueries} onMatchDeleted={invalidateQueries} isEven={index % 2 === 0} groups={groups} rounds={rounds} isPublicView={false} />))}</div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="teams" className="w-full mt-4">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="teams">
-            <Users className="h-5 w-5 sm:mr-2" />
-            <span className="hidden sm:inline">Times</span>
-          </TabsTrigger>
-          <TabsTrigger value="groups">
-            <LayoutGrid className="h-5 w-5 sm:mr-2" />
-            <span className="hidden sm:inline">Grupos</span>
-          </TabsTrigger>
-          <TabsTrigger value="rounds">
-            <Milestone className="h-5 w-5 sm:mr-2" />
-            <span className="hidden sm:inline">Rodadas</span>
-          </TabsTrigger>
-          <TabsTrigger value="matches-calendar">
-            <CalendarIconLucide className="h-5 w-5 sm:mr-2" />
-            <span className="hidden sm:inline">Calendário</span>
-          </TabsTrigger>
-          <TabsTrigger value="statistics">
-            <BarChart2 className="h-5 w-5 sm:mr-2" />
-            <span className="hidden sm:inline">Estatísticas</span>
-          </TabsTrigger>
-          <TabsTrigger value="sponsors">
-            <HeartHandshake className="h-5 w-5 sm:mr-2" />
-            <span className="hidden sm:inline">Patrocínios</span>
-          </TabsTrigger>
-          <TabsTrigger value="settings">
-            <Settings className="h-5 w-5 sm:mr-2" />
-            <span className="hidden sm:inline">Configurações</span>
-          </TabsTrigger>
+      <Tabs defaultValue="leaderboard" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 md:grid-cols-9">
+          <TabsTrigger value="leaderboard" className="md:col-span-1"><BarChart2 className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Classificação</span></TabsTrigger>
+          <TabsTrigger value="matches" className="md:col-span-1"><CalendarIconLucide className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Jogos</span></TabsTrigger>
+          <TabsTrigger value="teams" className="md:col-span-1"><Users className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Times</span></TabsTrigger>
+          <TabsTrigger value="groups" className="md:col-span-1"><LayoutGrid className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Grupos</span></TabsTrigger>
+          <TabsTrigger value="rounds" className="md:col-span-1"><Milestone className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Rodadas</span></TabsTrigger>
+          <TabsTrigger value="calendar" className="md:col-span-1"><CalendarIconLucide className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Calendário</span></TabsTrigger>
+          <TabsTrigger value="statistics" className="md:col-span-1"><BarChart2 className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Estatísticas</span></TabsTrigger>
+          <TabsTrigger value="sponsors" className="md:col-span-1"><HeartHandshake className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Patrocínios</span></TabsTrigger>
+          <TabsTrigger value="settings" className="md:col-span-1"><Settings className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Ajustes</span></TabsTrigger>
         </TabsList>
-        <TabsContent value="teams" className="mt-4">
-          <Card>
-            <CardHeader><div className="flex justify-between items-center"><div><CardTitle>Times</CardTitle><CardDescription>Gerencie os times participantes.</CardDescription></div><CreateTeamDialog championshipId={championship.id} onTeamCreated={invalidateQueries} groups={groups} /></div></CardHeader>
-            <CardContent>
-              {teams.length === 0 ? (<div className="text-center py-10 border-2 border-dashed rounded-lg"><p className="text-gray-500">Ainda não há times.</p></div>) : (<div className="space-y-2">{teams.map((team: Team) => (<Card key={team.id}><CardHeader className="flex flex-row items-center justify-between p-4"><div className="flex items-center gap-4">{team.logo_url && <img src={team.logo_url} alt={team.name} className="h-10 w-10 object-contain" />}<CardTitle className="text-base font-medium"><Link to={`/team/${team.id}`} className="hover:underline">{team.name}</Link></CardTitle>{team.group_id && (<span className="text-sm text-muted-foreground">({groups.find((g: Group) => g.id === team.group_id)?.name || 'Grupo Desconhecido'})</span>)}</div><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent><EditTeamDialog team={team} onTeamUpdated={invalidateQueries} groups={groups}><DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem></EditTeamDialog><DeleteTeamDialog team={team} onTeamDeleted={invalidateQueries}><DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem></DeleteTeamDialog></DropdownMenuContent></DropdownMenu></CardHeader></Card>))}</div>)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="groups" className="mt-4"><GroupsTab championshipId={championship.id} teams={teams} onTeamUpdated={invalidateQueries} /></TabsContent>
-        <TabsContent value="rounds" className="mt-4"><RoundsTab championshipId={championship.id} teams={teams} groups={groups} onMatchesAdded={invalidateQueries} /></TabsContent>
-        <TabsContent value="matches-calendar" className="mt-4"><CalendarTab championshipId={championship.id} matches={matches} groups={groups} rounds={rounds} onMatchUpdated={invalidateQueries} onMatchDeleted={invalidateQueries} /></TabsContent>
-        <TabsContent value="statistics" className="mt-4"><StatisticsTab championshipId={championship.id} teams={teams} matches={matches} /></TabsContent>
+        
+        <TabsContent value="leaderboard" className="mt-4"><LeaderboardTab championshipId={championship.id} /></TabsContent>
+        <TabsContent value="matches" className="mt-4"><MatchesTab championshipId={championship.id} /></TabsContent>
+        <TabsContent value="teams" className="mt-4"><TeamsTab championshipId={championship.id} /></TabsContent>
+        <TabsContent value="groups" className="mt-4"><GroupsTab championshipId={championship.id} /></TabsContent>
+        <TabsContent value="rounds" className="mt-4"><RoundsTab championshipId={championship.id} /></TabsContent>
+        <TabsContent value="calendar" className="mt-4"><CalendarTab championshipId={championship.id} /></TabsContent>
+        <TabsContent value="statistics" className="mt-4"><StatisticsTab championshipId={championship.id} /></TabsContent>
         <TabsContent value="sponsors" className="mt-4"><SponsorsTab championshipId={championship.id} /></TabsContent>
         <TabsContent value="settings" className="mt-4"><ChampionshipSettingsTab championshipId={championship.id} /></TabsContent>
       </Tabs>
+      
       <SponsorDisplay championshipId={championship.id} />
     </div>
   );
