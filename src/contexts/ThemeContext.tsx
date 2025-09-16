@@ -1,11 +1,9 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useParams } from 'react-router-dom';
-// Removed hexToHsl as it's no longer needed for custom colors
 
 interface ChampionshipTheme {
   logo_url: string | null;
-  // Removed theme_primary, theme_secondary, theme_accent, theme_bg, theme_text, theme_mode
 }
 
 interface ThemeContextType {
@@ -19,13 +17,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [championshipLogoUrl, setChampionshipLogoUrl] = useState<string | null>(null);
-  const [globalThemeMode, setGlobalThemeMode] = useState<'light' | 'dark'>(() => {
-    // Initialize from localStorage or default to 'dark'
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('theme') as 'light' | 'dark') || 'dark';
-    }
-    return 'dark';
-  });
+  const [globalThemeMode, setGlobalThemeMode] = useState<'light' | 'dark'>('dark');
   const { id: championshipIdFromParams } = useParams<{ id: string }>();
 
   const applyGlobalThemeToDocument = useCallback((mode: 'light' | 'dark') => {

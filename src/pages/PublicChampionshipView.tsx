@@ -318,28 +318,30 @@ const PublicChampionshipView = () => {
           </div>
 
           <Tabs defaultValue="teams" className="w-full mt-4">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="teams">
-                <Users className="h-5 w-5 sm:mr-2" />
-                <span className="hidden sm:inline">Times</span>
-              </TabsTrigger>
-              <TabsTrigger value="groups">
-                <LayoutGrid className="h-5 w-5 sm:mr-2" />
-                <span className="hidden sm:inline">Grupos</span>
-              </TabsTrigger>
-              <TabsTrigger value="rounds">
-                <Milestone className="h-5 w-5 sm:mr-2" />
-                <span className="hidden sm:inline">Rodadas</span>
-              </TabsTrigger>
-              <TabsTrigger value="matches-calendar">
-                <CalendarIconLucide className="h-5 w-5 sm:mr-2" />
-                <span className="hidden sm:inline">Calendário</span>
-              </TabsTrigger>
-              <TabsTrigger value="statistics">
-                <BarChart2 className="h-5 w-5 sm:mr-2" />
-                <span className="hidden sm:inline">Estatísticas</span>
-              </TabsTrigger>
-            </TabsList>
+            <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="teams">
+                  <Users className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Times</span>
+                </TabsTrigger>
+                <TabsTrigger value="groups">
+                  <LayoutGrid className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Grupos</span>
+                </TabsTrigger>
+                <TabsTrigger value="rounds">
+                  <Milestone className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Rodadas</span>
+                </TabsTrigger>
+                <TabsTrigger value="matches-calendar">
+                  <CalendarIconLucide className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Calendário</span>
+                </TabsTrigger>
+                <TabsTrigger value="statistics">
+                  <BarChart2 className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Estatísticas</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
             
             <TabsContent value="teams" className="mt-4">
               <Card>
