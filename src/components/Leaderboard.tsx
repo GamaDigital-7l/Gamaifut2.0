@@ -7,18 +7,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react"; // Import icons for position change
-import { Team } from '@/pages/ChampionshipDetail'; // Import Team type from ChampionshipDetail
+import { Team, Match } from '@/types';
 import { Link } from 'react-router-dom'; // Import Link
-
-interface Match {
-  id: string;
-  team1_id: string;
-  team2_id: string;
-  team1_score: number | null;
-  team2_score: number | null;
-  match_date: string | null; // Needed for recent form sorting
-  group_id: string | null; // Added group_id
-}
 
 interface LeaderboardProps {
   teams: Team[];

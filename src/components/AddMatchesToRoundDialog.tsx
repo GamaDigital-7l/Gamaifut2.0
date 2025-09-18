@@ -26,8 +26,7 @@ import { CalendarIcon, PlusCircle, MinusCircle } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
 import { showSuccess, showError } from '@/utils/toast';
-import { Team } from '@/pages/ChampionshipDetail'; // Assuming Team type is available
-import { Group } from './GroupsTab'; // Assuming Group type is available
+import { Team, Group } from '@/types';
 
 interface AddMatchesToRoundDialogProps {
   championshipId: string;

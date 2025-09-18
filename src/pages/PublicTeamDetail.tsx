@@ -10,39 +10,7 @@ import { MatchCard } from '@/components/MatchCard';
 import { Leaderboard } from '@/components/Leaderboard';
 import { PublicHeader } from '@/components/PublicHeader';
 import { useChampionshipTheme } from '@/contexts/ThemeContext'; // Keep for logo
-
-// Re-using types for consistency
-interface Team {
-  id: string;
-  name: string;
-  logo_url: string | null;
-  championship_id: string;
-  groups: { name: string } | null;
-}
-
-interface Match {
-  id: string;
-  team1_id: string;
-  team2_id: string;
-  team1_score: number | null;
-  team2_score: number | null;
-  match_date: string | null;
-  location: string | null;
-  group_id: string | null;
-  round_id: string | null;
-  assigned_official_id: string | null;
-  team1_yellow_cards: number | null;
-  team2_yellow_cards: number | null;
-  team1_red_cards: number | null;
-  team2_red_cards: number | null;
-  team1_fouls: number | null;
-  team2_fouls: number | null;
-  notes: string | null;
-  team1: { name: string; logo_url: string | null; };
-  team2: { name: string; logo_url: string | null; };
-  groups: { name: string } | null;
-  rounds: { name: string } | null;
-}
+import { Team, Match } from '@/types';
 
 const PublicTeamDetail = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -59,7 +27,7 @@ const PublicTeamDetail = () => {
 
     const { data: teamData, error: teamError } = await supabase
       .from('teams')
-      .select(`id, name, logo_url, championship_id, groups(name)`)
+      .select(`*, groups(name)`)
       .eq('id', teamId)
       .single();
 
@@ -73,7 +41,7 @@ const PublicTeamDetail = () => {
 
     const { data: matchesData, error: matchesError } = await supabase
       .from('matches')
-      .select(`*, team1:teams!matches_team1_id_fkey(name, logo_url), team2:teams!matches_team2_id_fkey(name, logo_url), groups(name), rounds(name)`)
+      .select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name)`)
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .order('match_date', { ascending: true });
 

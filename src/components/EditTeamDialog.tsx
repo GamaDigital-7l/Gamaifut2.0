@@ -21,14 +21,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider'; // Import useSession
 import { showSuccess, showError } from '@/utils/toast';
-import { Group } from './GroupsTab'; // Import Group type
-
-interface Team {
-  id: string;
-  name: string;
-  logo_url: string | null; // Add logo_url
-  group_id: string | null; // Add group_id
-}
+import { Team, Group } from '@/types';
 
 interface EditTeamDialogProps {
   team: Team;

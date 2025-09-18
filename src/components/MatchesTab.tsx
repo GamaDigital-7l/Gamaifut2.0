@@ -14,18 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
-
-type Team = { id: string; name: string; logo_url: string | null; group_id: string | null; };
-type Group = { id: string; name: string; };
-type Round = { id: string; name: string; order_index: number; type: string; };
-type Match = {
-  id: string; team1_id: string; team2_id: string; team1_score: number | null; team2_score: number | null;
-  match_date: string | null; location: string | null; group_id: string | null; round_id: string | null;
-  assigned_official_id: string | null; team1_yellow_cards: number | null; team2_yellow_cards: number | null;
-  team1_red_cards: number | null; team2_red_cards: number | null; team1_fouls: number | null;
-  team2_fouls: number | null; notes: string | null; team1: Team; team2: Team;
-  groups: { name: string } | null; rounds: { name: string } | null;
-};
+import { Team, Group, Round, Match } from '@/types';
 
 const fetchData = async (championshipId: string) => {
   const [teamsRes, groupsRes, roundsRes, matchesRes] = await Promise.all([

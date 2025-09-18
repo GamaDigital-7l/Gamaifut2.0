@@ -14,6 +14,7 @@ import {
 import { MoreHorizontal } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Championship } from '@/types';
 
 const fetchChampionships = async () => {
   const { data, error } = await supabase
@@ -22,13 +23,6 @@ const fetchChampionships = async () => {
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return data;
-};
-
-type Championship = {
-  id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
 };
 
 const Dashboard = () => {

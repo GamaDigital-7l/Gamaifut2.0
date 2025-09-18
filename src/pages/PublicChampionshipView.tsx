@@ -32,70 +32,7 @@ import {
   Calendar as CalendarIconLucide, 
   BarChart2 
 } from 'lucide-react';
-
-// Re-using types for consistency
-type Championship = {
-  id: string;
-  name: string;
-  description: string | null;
-  logo_url: string | null;
-  points_for_win: number;
-  sport_type: string;
-  gender: string;
-  age_category: string;
-};
-
-type Team = {
-  id: string;
-  name: string;
-  logo_url: string | null;
-  group_id: string | null;
-};
-
-type Match = {
-  id: string;
-  team1_id: string;
-  team2_id: string;
-  team1_score: number | null;
-  team2_score: number | null;
-  match_date: string | null;
-  location: string | null;
-  group_id: string | null;
-  round_id: string | null;
-  assigned_official_id: string | null;
-  team1_yellow_cards: number | null;
-  team2_yellow_cards: number | null;
-  team1_red_cards: number | null;
-  team2_red_cards: number | null;
-  team1_fouls: number | null;
-  team2_fouls: number | null;
-  notes: string | null;
-  team1: { name: string; logo_url: string | null; };
-  team2: { name: string; logo_url: string | null; };
-  groups: { name: string } | null;
-  rounds: { name: string } | null;
-};
-
-type Group = {
-  id: string;
-  name: string;
-};
-
-type Round = {
-  id: string;
-  name: string;
-  order_index: number;
-  type: string;
-};
-
-type Sponsor = {
-  id: string;
-  name: string;
-  level: 'ouro' | 'prata' | 'bronze';
-  logo_url: string | null;
-  target_url: string | null;
-  is_active: boolean;
-};
+import { Championship, Team, Match, Group, Round, Sponsor } from '@/types';
 
 const PublicChampionshipView = () => {
   const { id } = useParams<{ id: string }>();
@@ -121,7 +58,7 @@ const PublicChampionshipView = () => {
       supabase.from('teams').select('*').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('groups').select('*').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('rounds').select('*').eq('championship_id', id).order('order_index', { ascending: true }),
-      supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(name, logo_url), team2:teams!matches_team2_id_fkey(name, logo_url), groups(name), rounds(name)`).eq('championship_id', id).order('match_date', { ascending: true }),
+      supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name)`).eq('championship_id', id).order('match_date', { ascending: true }),
       supabase.from('sponsors').select('*').eq('championship_id', id).eq('is_active', true).eq('level', 'ouro').order('created_at', { ascending: true }).limit(1) // Fetch only one master sponsor
     ]);
 

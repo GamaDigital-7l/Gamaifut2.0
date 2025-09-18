@@ -2,10 +2,6 @@ import React, { createContext, useState, useEffect, useContext, useCallback } fr
 import { supabase } from '@/integrations/supabase/client';
 import { useParams } from 'react-router-dom';
 
-interface ChampionshipTheme {
-  logo_url: string | null;
-}
-
 interface ThemeContextType {
   championshipLogoUrl: string | null;
   globalThemeMode: 'light' | 'dark';

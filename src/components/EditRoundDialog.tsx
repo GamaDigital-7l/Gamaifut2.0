@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { Round } from './RoundsTab';
+import { Round } from '@/types';
 
 interface EditRoundDialogProps {
   round: Round;
@@ -111,7 +111,7 @@ export function EditRoundDialog({ round, onRoundUpdated, children }: EditRoundDi
               <Label htmlFor="type" className="text-right">
                 Tipo
               </Label>
-              <Select value={type} onValueChange={setType}>
+              <Select value={type} onValueChange={(value) => setType(value as Round['type'])}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>

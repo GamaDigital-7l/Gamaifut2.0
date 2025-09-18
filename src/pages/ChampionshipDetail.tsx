@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { 
-  MoreHorizontal, 
   Palette, 
   Share2,
   Users,
@@ -14,22 +13,16 @@ import {
   HeartHandshake,
   Settings
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SponsorDisplay } from '@/components/SponsorDisplay';
 import { useChampionshipTheme } from '@/contexts/ThemeContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { showSuccess, showError } from '@/utils/toast';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Championship, Team, Match, Group, Round } from '@/types';
 
-// Import tab components that now handle their own data fetching
+// Import tab components
 import { TeamsTab } from '@/components/TeamsTab';
 import { MatchesTab } from '@/components/MatchesTab';
 import { LeaderboardTab } from '@/components/LeaderboardTab';
@@ -40,14 +33,29 @@ import { StatisticsTab } from '@/components/StatisticsTab';
 import { SponsorsTab } from '@/components/SponsorsTab';
 import { ChampionshipSettingsTab } from '@/components/ChampionshipSettingsTab';
 
-const fetchChampionship = async (id: string) => {
-  const { data, error } = await supabase
-    .from('championships')
-    .select('*')
-    .eq('id', id)
-    .single();
-  if (error) throw new Error(error.message);
-  return data;
+// Combined fetch function for all championship data
+const fetchChampionshipData = async (id: string) => {
+  const [champRes, teamsRes, groupsRes, roundsRes, matchesRes] = await Promise.all([
+    supabase.from('championships').select('*').eq('id', id).single(),
+    supabase.from('teams').select('*').eq('championship_id', id),
+    supabase.from('groups').select('*').eq('championship_id', id),
+    supabase.from('rounds').select('*').eq('championship_id', id),
+    supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(*), team2:teams!matches_team2_id_fkey(*), groups(name), rounds(name)`).eq('championship_id', id)
+  ]);
+
+  if (champRes.error) throw new Error(champRes.error.message);
+  if (teamsRes.error) throw new Error(teamsRes.error.message);
+  if (groupsRes.error) throw new Error(groupsRes.error.message);
+  if (roundsRes.error) throw new Error(roundsRes.error.message);
+  if (matchesRes.error) throw new Error(matchesRes.error.message);
+
+  return {
+    championship: champRes.data as Championship,
+    teams: teamsRes.data as Team[],
+    groups: groupsRes.data as Group[],
+    rounds: roundsRes.data as Round[],
+    matches: matchesRes.data as Match[],
+  };
 };
 
 const ChampionshipDetail = () => {
@@ -55,17 +63,23 @@ const ChampionshipDetail = () => {
   const queryClient = useQueryClient();
   const { fetchChampionshipLogo } = useChampionshipTheme();
 
-  const { data: championship, isLoading, error } = useQuery({
-    queryKey: ['championship', id],
-    queryFn: () => fetchChampionship(id!),
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['championshipData', id],
+    queryFn: () => fetchChampionshipData(id!),
     enabled: !!id,
   });
+
+  const { championship, teams, matches, groups, rounds } = data || {};
 
   useEffect(() => {
     if (id) {
       fetchChampionshipLogo(id);
     }
   }, [id, fetchChampionshipLogo]);
+
+  const handleDataChange = () => {
+    queryClient.invalidateQueries({ queryKey: ['championshipData', id] });
+  };
 
   const handleCopyPublicLink = () => {
     if (id) {
@@ -101,7 +115,7 @@ const ChampionshipDetail = () => {
     );
   }
 
-  if (!championship) {
+  if (!championship || !teams || !matches || !groups || !rounds) {
     return null;
   }
 
@@ -143,10 +157,10 @@ const ChampionshipDetail = () => {
         <TabsContent value="leaderboard" className="mt-4"><LeaderboardTab championshipId={championship.id} /></TabsContent>
         <TabsContent value="matches" className="mt-4"><MatchesTab championshipId={championship.id} /></TabsContent>
         <TabsContent value="teams" className="mt-4"><TeamsTab championshipId={championship.id} /></TabsContent>
-        <TabsContent value="groups" className="mt-4"><GroupsTab championshipId={championship.id} /></TabsContent>
-        <TabsContent value="rounds" className="mt-4"><RoundsTab championshipId={championship.id} /></TabsContent>
-        <TabsContent value="calendar" className="mt-4"><CalendarTab championshipId={championship.id} /></TabsContent>
-        <TabsContent value="statistics" className="mt-4"><StatisticsTab championshipId={championship.id} /></TabsContent>
+        <TabsContent value="groups" className="mt-4"><GroupsTab championshipId={championship.id} teams={teams} onTeamUpdated={handleDataChange} /></TabsContent>
+        <TabsContent value="rounds" className="mt-4"><RoundsTab championshipId={championship.id} teams={teams} groups={groups} onMatchesAdded={handleDataChange} /></TabsContent>
+        <TabsContent value="calendar" className="mt-4"><CalendarTab championshipId={championship.id} matches={matches} groups={groups} rounds={rounds} onMatchUpdated={handleDataChange} onMatchDeleted={handleDataChange} /></TabsContent>
+        <TabsContent value="statistics" className="mt-4"><StatisticsTab championshipId={championship.id} teams={teams} matches={matches} /></TabsContent>
         <TabsContent value="sponsors" className="mt-4"><SponsorsTab championshipId={championship.id} /></TabsContent>
         <TabsContent value="settings" className="mt-4"><ChampionshipSettingsTab championshipId={championship.id} /></TabsContent>
       </Tabs>

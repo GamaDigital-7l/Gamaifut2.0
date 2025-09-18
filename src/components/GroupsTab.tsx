@@ -22,16 +22,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { showSuccess, showError } from '@/utils/toast';
-import { Team } from '@/pages/ChampionshipDetail'; // Import Team type
+import { Team, Group } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton'; // Importar Skeleton
 import { Badge } from '@/components/ui/badge'; // Importar Badge para os times
-
-export type Group = {
-  id: string;
-  name: string;
-  championship_id: string;
-  created_at: string;
-};
 
 interface GroupsTabProps {
   championshipId: string;

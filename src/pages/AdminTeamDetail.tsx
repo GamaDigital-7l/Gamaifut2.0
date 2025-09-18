@@ -8,50 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Frown, Trophy } from 'lucide-react';
 import { MatchCard } from '@/components/MatchCard';
 import { Leaderboard } from '@/components/Leaderboard'; // Re-use Leaderboard logic for single team stats
-
-interface Team {
-  id: string;
-  name: string;
-  logo_url: string | null;
-  championship_id: string;
-  groups: { name: string } | null;
-}
-
-interface Match {
-  id: string;
-  team1_id: string;
-  team2_id: string;
-  team1_score: number | null;
-  team2_score: number | null;
-  match_date: string | null;
-  location: string | null;
-  group_id: string | null;
-  round_id: string | null;
-  assigned_official_id: string | null;
-  team1_yellow_cards: number | null;
-  team2_yellow_cards: number | null;
-  team1_red_cards: number | null;
-  team2_red_cards: number | null;
-  team1_fouls: number | null;
-  team2_fouls: number | null;
-  notes: string | null;
-  team1: { name: string; logo_url: string | null; };
-  team2: { name: string; logo_url: string | null; };
-  groups: { name: string } | null;
-  rounds: { name: string } | null;
-}
-
-interface Group {
-  id: string;
-  name: string;
-}
-
-interface Round {
-  id: string;
-  name: string;
-  order_index: number;
-  type: string;
-}
+import { Team, Match, Group, Round } from '@/types';
 
 const AdminTeamDetail = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -71,10 +28,7 @@ const AdminTeamDetail = () => {
     const { data: teamData, error: teamError } = await supabase
       .from('teams')
       .select(`
-        id,
-        name,
-        logo_url,
-        championship_id,
+        *,
         groups(name)
       `)
       .eq('id', teamId)
@@ -105,25 +59,9 @@ const AdminTeamDetail = () => {
     const { data: matchesData, error: matchesError } = await supabase
       .from('matches')
       .select(`
-        id,
-        team1_id,
-        team2_id,
-        team1_score,
-        team2_score,
-        match_date,
-        location,
-        group_id,
-        round_id,
-        assigned_official_id,
-        team1_yellow_cards,
-        team2_yellow_cards,
-        team1_red_cards,
-        team2_red_cards,
-        team1_fouls,
-        team2_fouls,
-        notes,
-        team1:teams!matches_team1_id_fkey(name, logo_url),
-        team2:teams!matches_team2_id_fkey(name, logo_url),
+        *,
+        team1:teams!matches_team1_id_fkey(id, name, logo_url),
+        team2:teams!matches_team2_id_fkey(id, name, logo_url),
         groups(name),
         rounds(name)
       `)

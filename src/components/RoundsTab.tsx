@@ -25,18 +25,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { showSuccess, showError } from '@/utils/toast';
 import { Badge } from '@/components/ui/badge';
-import { Team } from '@/pages/ChampionshipDetail'; // Import Team type
-import { Group } from './GroupsTab'; // Import Group type
+import { Team, Group, Round } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
-
-export type Round = {
-  id: string;
-  name: string;
-  order_index: number;
-  type: 'group_stage' | 'round_of_16' | 'quarter_finals' | 'semi_finals' | 'final';
-  championship_id: string;
-  created_at: string;
-};
 
 interface RoundsTabProps {
   championshipId: string;

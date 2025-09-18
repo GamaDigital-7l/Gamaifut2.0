@@ -14,18 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from 'react-router-dom';
-
-export type Team = {
-  id: string;
-  name: string;
-  logo_url: string | null;
-  group_id: string | null;
-};
-
-type Group = {
-  id: string;
-  name: string;
-};
+import { Team, Group } from '@/types';
 
 const fetchTeams = async (championshipId: string) => {
   const { data, error } = await supabase
@@ -40,7 +29,7 @@ const fetchTeams = async (championshipId: string) => {
 const fetchGroups = async (championshipId: string) => {
   const { data, error } = await supabase
     .from('groups')
-    .select('id, name')
+    .select('*')
     .eq('championship_id', championshipId);
   if (error) throw new Error(error.message);
   return data as Group[];

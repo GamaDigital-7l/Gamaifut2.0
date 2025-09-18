@@ -5,48 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MatchCard } from '@/components/MatchCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { showError } from '@/utils/toast';
-
-interface Team {
-  id: string;
-  name: string;
-  logo_url: string | null;
-}
-
-interface Match {
-  id: string;
-  team1_id: string;
-  team2_id: string;
-  team1_score: number | null;
-  team2_score: number | null;
-  match_date: string | null;
-  location: string | null;
-  group_id: string | null;
-  round_id: string | null;
-  assigned_official_id: string | null;
-  team1_yellow_cards: number | null; // New field
-  team2_yellow_cards: number | null; // New field
-  team1_red_cards: number | null; // New field
-  team2_red_cards: number | null; // New field
-  team1_fouls: number | null; // New field
-  team2_fouls: number | null; // New field
-  notes: string | null; // New field
-  team1: { name: string; logo_url: string | null; };
-  team2: { name: string; logo_url: string | null; };
-  groups: { name: string } | null;
-  rounds: { name: string } | null;
-}
-
-interface Group {
-  id: string;
-  name: string;
-}
-
-interface Round {
-  id: string;
-  name: string;
-  order_index: number;
-  type: string;
-}
+import { Match, Group, Round } from '@/types';
 
 const OfficialDashboard = () => {
   const { session, userProfile } = useSession();
@@ -82,25 +41,9 @@ const OfficialDashboard = () => {
     const { data, error: matchesError } = await supabase
       .from('matches')
       .select(`
-        id,
-        team1_id,
-        team2_id,
-        team1_score,
-        team2_score,
-        match_date,
-        location,
-        group_id,
-        round_id,
-        assigned_official_id,
-        team1_yellow_cards,
-        team2_yellow_cards,
-        team1_red_cards,
-        team2_red_cards,
-        team1_fouls,
-        team2_fouls,
-        notes,
-        team1:teams!matches_team1_id_fkey(name, logo_url),
-        team2:teams!matches_team2_id_fkey(name, logo_url),
+        *,
+        team1:teams!matches_team1_id_fkey(id, name, logo_url),
+        team2:teams!matches_team2_id_fkey(id, name, logo_url),
         groups(name),
         rounds(name)
       `)
@@ -170,6 +113,6 @@ const OfficialDashboard = () => {
       )}
     </div>
   );
-};
+}
 
 export default OfficialDashboard;

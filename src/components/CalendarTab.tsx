@@ -5,30 +5,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { MatchCard } from './MatchCard'; // Re-use MatchCard for displaying details
-import { Group } from './GroupsTab'; // Import Group type
-import { Round } from '@/components/RoundsTab'; // Import Round type
-
-interface Team {
-  id: string;
-  name: string;
-  logo_url: string | null;
-}
-
-interface Match {
-  id: string;
-  team1_id: string;
-  team2_id: string;
-  team1_score: number | null;
-  team2_score: number | null;
-  match_date: string | null;
-  location: string | null;
-  group_id: string | null;
-  round_id: string | null;
-  team1: Team;
-  team2: Team;
-  groups: { name: string } | null;
-  rounds: { name: string } | null;
-}
+import { Match, Group, Round } from '@/types';
 
 interface CalendarTabProps {
   championshipId: string;
