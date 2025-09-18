@@ -11,13 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format, setHours, setMinutes, getHours, getMinutes } from "date-fns"; // Import setHours, setMinutes, getHours, getMinutes
-import { CalendarIcon } from "lucide-react";
-import { supabase } from '@/integrations/supabase/client';
-import { showSuccess, showError } from '@/utils/toast';
 import {
   Select,
   SelectContent,
@@ -25,8 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Group } from './GroupsTab'; // Import Group type
-import { Round } from '@/components/RoundsTab'; // Import Round type
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format, setHours, setMinutes, getHours, getMinutes } from "date-fns"; // Import setHours, setMinutes, getHours, getMinutes
+import { CalendarIcon } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { showSuccess, showError } from '@/utils/toast';
+import { Group, Round } from '@/types'; // Import Group and Round from centralized types
 
 interface Match {
   id: string;

@@ -22,13 +22,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
 import { showSuccess, showError } from '@/utils/toast';
-import { Group } from './GroupsTab'; // Import Group type
-import { Round } from '@/components/RoundsTab'; // Import Round type
-
-interface Team {
-  id: string;
-  name: string;
-}
+import { Group, Round, Team } from '@/types'; // Import Group, Round, Team from centralized types
 
 interface GenerateMatchesDialogProps {
   championshipId: string;
@@ -51,7 +45,7 @@ export function GenerateMatchesDialog({ championshipId, teams, groups, rounds, o
     if (localTeams.length < 2) return [];
 
     if (localTeams.length % 2 !== 0) {
-      localTeams.push({ id: 'bye', name: 'Bye' });
+      localTeams.push({ id: 'bye', name: 'Bye', logo_url: null, group_id: null, championship_id: championshipId, groups: null }); // Add dummy fields for type compatibility
     }
 
     const numTeams = localTeams.length;

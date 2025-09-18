@@ -3,17 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Leaderboard } from '@/components/Leaderboard';
-
-type Team = { id: string; name: string; logo_url: string | null; group_id: string | null; };
-type Group = { id: string; name: string; };
-type Match = { id: string; team1_id: string; team2_id: string; team1_score: number | null; team2_score: number | null; match_date: string | null; group_id: string | null; };
-type Championship = { points_for_win: number; };
+import { Team, Group, Match, Championship } from '@/types'; // Import types from centralized types
 
 const fetchData = async (championshipId: string) => {
   const [teamsRes, groupsRes, matchesRes, championshipRes] = await Promise.all([
-    supabase.from('teams').select('*').eq('championship_id', championshipId),
+    supabase.from('teams').select('*, groups(name)').eq('championship_id', championshipId), // Fetch groups(name) for Team type
     supabase.from('groups').select('*').eq('championship_id', championshipId),
-    supabase.from('matches').select('*').eq('championship_id', championshipId),
+    supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name)`).eq('championship_id', championshipId), // Fetch all nested fields for Match type
     supabase.from('championships').select('points_for_win').eq('id', championshipId).single(),
   ]);
 

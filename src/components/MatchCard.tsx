@@ -14,38 +14,7 @@ import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle, Goal }
 import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
-import { Group } from './GroupsTab';
-import { Round } from '@/components/RoundsTab';
-
-interface Team {
-  id: string;
-  name: string;
-  logo_url: string | null;
-}
-
-interface Match {
-  id: string;
-  team1_id: string;
-  team2_id: string;
-  team1_score: number | null;
-  team2_score: number | null;
-  match_date: string | null;
-  location: string | null;
-  group_id: string | null;
-  round_id: string | null;
-  assigned_official_id: string | null;
-  team1_yellow_cards: number | null;
-  team2_yellow_cards: number | null;
-  team1_red_cards: number | null;
-  team2_red_cards: number | null;
-  team1_fouls: number | null;
-  team2_fouls: number | null;
-  notes: string | null;
-  team1: Team;
-  team2: Team;
-  groups: { name: string } | null;
-  rounds: { name: string } | null;
-}
+import { Group, Round, Team, Match } from '@/types'; // Import types from centralized types
 
 interface MatchCardProps {
   match: Match;
