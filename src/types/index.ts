@@ -40,11 +40,20 @@ export interface Round {
   public_edit_token: string | null; // Novo campo para o token de edição pública
 }
 
--- A representation of a team as returned in a match query
 export interface MatchTeam {
   id: string;
   name: string;
   logo_url: string | null;
+}
+
+export interface MatchGoal {
+  id: string;
+  match_id: string;
+  team_id: string;
+  player_name: string;
+  jersey_number: number | null;
+  created_at: string;
+  user_id: string | null;
 }
 
 export interface Match {
@@ -68,6 +77,7 @@ export interface Match {
   team2: MatchTeam;
   groups: { name: string } | null;
   rounds: { name: string } | null;
+  goals: MatchGoal[]; // NEW: Array of goals for this match
 }
 
 export interface Sponsor {

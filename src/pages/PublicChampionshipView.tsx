@@ -58,7 +58,7 @@ const PublicChampionshipView = () => {
       supabase.from('teams').select('*').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('groups').select('*').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('rounds').select('*').eq('championship_id', id).order('order_index', { ascending: true }),
-      supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name)`).eq('championship_id', id).order('match_date', { ascending: true }),
+      supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(*)`).eq('championship_id', id).order('match_date', { ascending: true }),
       supabase.from('sponsors').select('*').eq('championship_id', id).eq('is_active', true).eq('level', 'ouro').order('created_at', { ascending: true }).limit(1) // Fetch only one master sponsor
     ]);
 

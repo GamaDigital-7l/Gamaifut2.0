@@ -9,7 +9,7 @@ import {
 import { EditMatchDialog } from "./EditMatchDialog";
 import { DeleteMatchDialog } from "./DeleteMatchDialog";
 import { QuickScoreUpdateDrawer } from "./QuickScoreUpdateDrawer"; // Import the new drawer
-import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle, Goal } from "lucide-react";
+import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle, Goal, Shirt } from "lucide-react"; // Added Shirt icon
 import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
@@ -31,6 +31,9 @@ interface MatchCardProps {
 export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false, publicRoundId, publicRoundToken }: MatchCardProps) {
   const matchDate = match.match_date ? new Date(match.match_date) : null;
   const isPlayed = match.team1_score !== null && match.team2_score !== null;
+
+  const team1Goals = match.goals.filter(g => g.team_id === match.team1_id);
+  const team2Goals = match.goals.filter(g => g.team_id === match.team2_id);
 
   return (
     <Card className={cn(
@@ -91,6 +94,30 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             <span className="font-medium text-sm sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span>
           </div>
         </div>
+
+        {/* Goal Scorers Display */}
+        {(team1Goals.length > 0 || team2Goals.length > 0) && (
+          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mt-3 border-t pt-2">
+            <div className="flex flex-col items-end pr-2 border-r">
+              {team1Goals.map(goal => (
+                <span key={goal.id} className="flex items-center gap-1">
+                  {goal.jersey_number && <Shirt className="h-3 w-3" />}
+                  {goal.jersey_number && <span className="font-bold">{goal.jersey_number}</span>}
+                  {goal.player_name}
+                </span>
+              ))}
+            </div>
+            <div className="flex flex-col items-start pl-2">
+              {team2Goals.map(goal => (
+                <span key={goal.id} className="flex items-center gap-1">
+                  {goal.jersey_number && <Shirt className="h-3 w-3" />}
+                  {goal.jersey_number && <span className="font-bold">{goal.jersey_number}</span>}
+                  {goal.player_name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {isPlayed && (
           <div className="hidden sm:grid grid-cols-2 gap-2 text-sm text-muted-foreground mt-3 border-t pt-2">

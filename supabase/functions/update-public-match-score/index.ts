@@ -23,7 +23,7 @@ serve(async (req) => {
       }
     );
 
-    const { matchId, team1Score, team2Score, roundId, roundToken } = await req.json();
+    const { matchId, team1Score, team2Score, goals, roundId, roundToken } = await req.json();
 
     if (!matchId || !roundId || !roundToken) {
       return new Response(JSON.stringify({ error: 'Missing required fields: matchId, roundId, roundToken' }), {
@@ -37,7 +37,7 @@ serve(async (req) => {
       .from('rounds')
       .select('id, public_edit_token')
       .eq('id', roundId)
-      .eq('public_edit_token', roundToken)
+      .eq('public_edit_edit_token', roundToken) // Corrigido o nome da coluna aqui
       .single();
 
     if (roundError || !roundData) {
@@ -49,7 +49,7 @@ serve(async (req) => {
     }
 
     // Update the match scores
-    const { error: updateError } = await supabaseClient
+    const { error: updateMatchError } = await supabaseClient
       .from('matches')
       .update({
         team1_score: team1Score,
@@ -57,15 +57,53 @@ serve(async (req) => {
       })
       .eq('id', matchId);
 
-    if (updateError) {
-      console.error('Error updating match:', updateError.message);
-      return new Response(JSON.stringify({ error: updateError.message }), {
+    if (updateMatchError) {
+      console.error('Error updating match scores:', updateMatchError.message);
+      return new Response(JSON.stringify({ error: updateMatchError.message }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify({ message: 'Match score updated successfully' }), {
+    // Handle goals: delete existing and insert new ones
+    // Delete existing goals for this match
+    const { error: deleteGoalsError } = await supabaseClient
+      .from('match_goals')
+      .delete()
+      .eq('match_id', matchId);
+
+    if (deleteGoalsError) {
+      console.error('Error deleting existing goals:', deleteGoalsError.message);
+      return new Response(JSON.stringify({ error: deleteGoalsError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Insert new goals if provided
+    if (goals && goals.length > 0) {
+      const goalsToInsert = goals.map((goal: any) => ({
+        match_id: matchId,
+        team_id: goal.team_id,
+        player_name: goal.player_name,
+        jersey_number: goal.jersey_number,
+        // user_id will be null for public updates, as there's no authenticated user
+      }));
+
+      const { error: insertGoalsError } = await supabaseClient
+        .from('match_goals')
+        .insert(goalsToInsert);
+
+      if (insertGoalsError) {
+        console.error('Error inserting new goals:', insertGoalsError.message);
+        return new Response(JSON.stringify({ error: insertGoalsError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    return new Response(JSON.stringify({ message: 'Match score and goals updated successfully' }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

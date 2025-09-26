@@ -67,7 +67,7 @@ const PublicTeamDetail = () => {
 
     const { data: matchesData, error: matchesError } = await supabase
       .from('matches')
-      .select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name)`)
+      .select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(*)`)
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .order('match_date', { ascending: true });
 

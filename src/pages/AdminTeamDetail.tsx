@@ -67,7 +67,8 @@ const AdminTeamDetail = () => {
         team1:teams!matches_team1_id_fkey(id, name, logo_url),
         team2:teams!matches_team2_id_fkey(id, name, logo_url),
         groups(name),
-        rounds(name)
+        rounds(name),
+        goals:match_goals(*)
       `)
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .order('match_date', { ascending: true });
@@ -94,7 +95,7 @@ const AdminTeamDetail = () => {
           <div>
             <Skeleton className="h-7 w-48 mb-2" />
             <Skeleton className="h-5 w-32" />
-          </div>
+          </div
         </div>
         <Skeleton className="h-10 w-full mb-4" />
         <Skeleton className="h-40 w-full" />
@@ -147,7 +148,7 @@ const AdminTeamDetail = () => {
             <Link to={`/championship/${team.championship_id}`}>Voltar para o Campeonato</Link>
           </Button>
         </div>
-      </div>
+      </div
 
       <Card>
         <CardHeader>

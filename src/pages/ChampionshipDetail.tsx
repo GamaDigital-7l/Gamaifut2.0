@@ -43,7 +43,7 @@ const fetchChampionshipData = async (id: string) => {
     supabase.from('teams').select('*, groups(name)').eq('championship_id', id), // Fetch groups(name) for Team type
     supabase.from('groups').select('*').eq('championship_id', id),
     supabase.from('rounds').select('*').eq('championship_id', id),
-    supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name)`).eq('championship_id', id) // Fetch all nested fields for Match type
+    supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(*)`).eq('championship_id', id) // Fetch all nested fields for Match type, including goals
   ]);
 
   if (champRes.error) throw new Error(champRes.error.message);

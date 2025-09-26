@@ -85,7 +85,8 @@ const PublicRoundScoreboard = () => {
           team1:teams!matches_team1_id_fkey(id, name, logo_url),
           team2:teams!matches_team2_id_fkey(id, name, logo_url),
           groups(name),
-          rounds(name)
+          rounds(name),
+          goals:match_goals(*)
         `).eq('championship_id', championshipId).eq('round_id', roundId).order('match_date', { ascending: true }),
       ]);
 
