@@ -45,7 +45,15 @@ export function GenerateMatchesDialog({ championshipId, teams, groups, rounds, o
     if (localTeams.length < 2) return [];
 
     if (localTeams.length % 2 !== 0) {
-      localTeams.push({ id: 'bye', name: 'Bye', logo_url: null, group_id: null, championship_id: championshipId, groups: null }); // Add dummy fields for type compatibility
+      localTeams.push({ 
+        id: 'bye', 
+        name: 'Bye', 
+        logo_url: null, 
+        group_id: null, 
+        championship_id: championshipId, 
+        user_id: '00000000-0000-0000-0000-000000000000', // Adicionado user_id de placeholder
+        groups: null 
+      }); 
     }
 
     const numTeams = localTeams.length;
