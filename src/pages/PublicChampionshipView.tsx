@@ -327,6 +327,7 @@ const PublicChampionshipView = () => {
                 matches={matches} 
                 groups={groups}
                 rounds={rounds}
+                teams={teams} // Adicionado: Passar todos os times para MatchCard
                 isLoading={loading} // Passando isLoading
                 onDataChange={() => {}} // Passando onDataChange (vazio para public view)
               />

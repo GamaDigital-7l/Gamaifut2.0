@@ -228,6 +228,7 @@ const ChampionshipDetail = () => {
             matches={matches} 
             groups={groups} 
             rounds={rounds} 
+            teams={teams} // Adicionado: Passar todos os times para MatchCard
             isLoading={isLoading} // Passando isLoading
             onDataChange={handleDataChange} // Passando onDataChange
           />

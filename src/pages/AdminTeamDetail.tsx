@@ -181,7 +181,7 @@ const AdminTeamDetail = () => {
                   isEven={index % 2 === 0}
                   groups={allGroups}
                   rounds={allRounds}
-                  teams={allTeams} {/* Passando a prop teams */}
+                  teams={allTeams}
                   isPublicView={false} // Explicitly set to false for admin view
                 />
               ))}
