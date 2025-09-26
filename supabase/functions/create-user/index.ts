@@ -19,6 +19,7 @@ serve(async (req) => {
   try {
     console.log('Request Headers:', Object.fromEntries(req.headers.entries()));
     console.log('Content-Type header received:', req.headers.get('content-type')); // Diagnostic log
+    console.log('Content-Length header received:', req.headers.get('content-length')); // NEW Diagnostic log
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -74,6 +75,7 @@ serve(async (req) => {
     try {
       const rawBody = await req.text(); // Read as raw text first
       console.log('Raw request body received:', rawBody);
+      console.log('Raw body length:', rawBody.length); // NEW Diagnostic log
 
       if (!rawBody) {
         console.error('JSON parsing error: Request body is empty.');

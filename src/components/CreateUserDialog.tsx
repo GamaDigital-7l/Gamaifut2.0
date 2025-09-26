@@ -60,7 +60,7 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       console.log('Client: Sending Content-Type header: application/json');
 
       const { data, error } = await supabase.functions.invoke('create-user', {
-        body: payload, // Pass the object directly
+        body: JSON.stringify(payload), // Explicitamente stringificar o payload
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json',
