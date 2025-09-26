@@ -14,8 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { Plus, Minus, Trash2 } from 'lucide-react'; // Added Trash2 icon
-import { Match, MatchGoal } from '@/types'; // Import MatchGoal type
+import { Plus, Trash2 } from 'lucide-react'; // Removed Minus, as score is direct input
+import { Match, MatchGoal } from '@/types';
 
 interface QuickScoreUpdateDrawerProps {
   match: Match;
@@ -61,15 +61,6 @@ export function QuickScoreUpdateDrawer({
       })));
     }
   }, [match, open]);
-
-  // Sync total scores with number of goals entered
-  useEffect(() => {
-    setTeam1Score(team1Goals.length);
-  }, [team1Goals]);
-
-  useEffect(() => {
-    setTeam2Score(team2Goals.length);
-  }, [team2Goals]);
 
   const handleGoalChange = (team: 'team1' | 'team2', tempId: string, field: keyof GoalInput, value: any) => {
     const setGoals = team === 'team1' ? setTeam1Goals : setTeam2Goals;
@@ -202,20 +193,20 @@ export function QuickScoreUpdateDrawer({
         <div className="mx-auto w-full max-w-md">
           <DrawerHeader>
             <DrawerTitle>Placar Rápido e Gols</DrawerTitle>
-            <DrawerDescription>Atualize o placar da partida e registre os marcadores de gols.</DrawerDescription>
+            <DrawerDescription>Atualize o placar da partida e, opcionalmente, registre os marcadores de gols.</DrawerDescription>
           </DrawerHeader>
           <div className="p-4 pb-0 space-y-6">
             {/* Score Section */}
             <div className="flex items-center justify-center space-x-2">
               {/* Team 1 Score */}
               <div className="flex-1 text-center space-y-2">
-                <Label htmlFor="team1-score" className="truncate">{match.team1.name}</Label>
+                <Label htmlFor="team1-score" className="truncate text-sm">{match.team1.name}</Label> {/* Added text-sm */}
                 <div className="flex items-center justify-center space-x-2">
                   <Input
                     id="team1-score"
                     type="number"
                     value={team1Score}
-                    readOnly // Score is derived from goals
+                    onChange={(e) => setTeam1Score(parseInt(e.target.value, 10) || 0)} {/* Made editable */}
                     className="w-16 h-16 text-center text-2xl"
                   />
                 </div>
@@ -223,13 +214,13 @@ export function QuickScoreUpdateDrawer({
               <span className="text-2xl font-bold">X</span>
               {/* Team 2 Score */}
               <div className="flex-1 text-center space-y-2">
-                <Label htmlFor="team2-score" className="truncate">{match.team2.name}</Label>
+                <Label htmlFor="team2-score" className="truncate text-sm">{match.team2.name}</Label> {/* Added text-sm */}
                 <div className="flex items-center justify-center space-x-2">
                   <Input
                     id="team2-score"
                     type="number"
                     value={team2Score}
-                    readOnly // Score is derived from goals
+                    onChange={(e) => setTeam2Score(parseInt(e.target.value, 10) || 0)} {/* Made editable */}
                     className="w-16 h-16 text-center text-2xl"
                   />
                 </div>
@@ -240,57 +231,57 @@ export function QuickScoreUpdateDrawer({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Team 1 Goals */}
               <div className="space-y-3 border p-3 rounded-md">
-                <h3 className="font-semibold text-center">{match.team1.name} - Gols ({team1Goals.length})</h3>
+                <h3 className="font-semibold text-center text-sm">{match.team1.name} - Gols</h3> {/* Added text-sm */}
                 {team1Goals.map((goal, index) => (
                   <div key={goal.tempId} className="flex items-center gap-2">
                     <Input
                       placeholder="Nome do Jogador"
                       value={goal.player_name}
                       onChange={(e) => handleGoalChange('team1', goal.tempId, 'player_name', e.target.value)}
-                      className="flex-grow"
+                      className="flex-grow h-8 text-xs" // Made smaller
                     />
                     <Input
                       type="number"
                       placeholder="Camisa"
                       value={goal.jersey_number ?? ''}
                       onChange={(e) => handleGoalChange('team1', goal.tempId, 'jersey_number', parseInt(e.target.value, 10) || null)}
-                      className="w-20"
+                      className="w-16 h-8 text-xs" // Made smaller
                     />
-                    <Button variant="ghost" size="icon" onClick={() => removeGoal('team1', goal.tempId)}>
+                    <Button variant="ghost" size="icon" onClick={() => removeGoal('team1', goal.tempId)} className="h-8 w-8"> {/* Made smaller */}
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => addGoal('team1')} className="w-full">
-                  <Plus className="mr-2 h-4 w-4" /> Adicionar Gol
+                <Button variant="outline" size="sm" onClick={() => addGoal('team1')} className="w-full h-8 text-xs"> {/* Made smaller */}
+                  <Plus className="mr-2 h-3 w-3" /> Adicionar Gol
                 </Button>
               </div>
 
               {/* Team 2 Goals */}
               <div className="space-y-3 border p-3 rounded-md">
-                <h3 className="font-semibold text-center">{match.team2.name} - Gols ({team2Goals.length})</h3>
+                <h3 className="font-semibold text-center text-sm">{match.team2.name} - Gols</h3> {/* Added text-sm */}
                 {team2Goals.map((goal, index) => (
                   <div key={goal.tempId} className="flex items-center gap-2">
                     <Input
                       placeholder="Nome do Jogador"
                       value={goal.player_name}
                       onChange={(e) => handleGoalChange('team2', goal.tempId, 'player_name', e.target.value)}
-                      className="flex-grow"
+                      className="flex-grow h-8 text-xs" // Made smaller
                     />
                     <Input
                       type="number"
                       placeholder="Camisa"
                       value={goal.jersey_number ?? ''}
                       onChange={(e) => handleGoalChange('team2', goal.tempId, 'jersey_number', parseInt(e.target.value, 10) || null)}
-                      className="w-20"
+                      className="w-16 h-8 text-xs" // Made smaller
                     />
-                    <Button variant="ghost" size="icon" onClick={() => removeGoal('team2', goal.tempId)}>
+                    <Button variant="ghost" size="icon" onClick={() => removeGoal('team2', goal.tempId)} className="h-8 w-8"> {/* Made smaller */}
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => addGoal('team2')} className="w-full">
-                  <Plus className="mr-2 h-4 w-4" /> Adicionar Gol
+                <Button variant="outline" size="sm" onClick={() => addGoal('team2')} className="w-full h-8 text-xs"> {/* Made smaller */}
+                  <Plus className="mr-2 h-3 w-3" /> Adicionar Gol
                 </Button>
               </div>
             </div>
