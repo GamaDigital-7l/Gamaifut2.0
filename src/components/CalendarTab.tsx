@@ -86,7 +86,7 @@ export function CalendarTab({ championshipId, matches, groups, rounds, teams, is
                   isEven={index % 2 === 0}
                   groups={groups}
                   rounds={rounds}
-                  teams={teams} {/* Passando a prop teams */}
+                  teams={teams}
                 />
               ))}
             </div>
