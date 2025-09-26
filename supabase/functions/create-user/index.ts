@@ -66,36 +66,17 @@ serve(async (req) => {
     }
 
     // Create user in auth.users
+    // The public.profiles table insertion is handled by the 'handle_new_user' database trigger.
     const { data: newUser, error: authError } = await supabaseClient.auth.admin.createUser({
       email,
       password,
       email_confirm: true, // Automatically confirm email
-      user_metadata: { first_name, last_name },
+      user_metadata: { first_name, last_name, role }, // Pass role in metadata for trigger
     });
 
     if (authError) {
       return new Response(JSON.stringify({ error: authError.message }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Insert profile data into public.profiles
-    const { error: profileInsertError } = await supabaseClient
-      .from('profiles')
-      .insert({
-        id: newUser.user?.id,
-        first_name,
-        last_name,
-        role,
-      });
-
-    if (profileInsertError) {
-      // If profile insertion fails, consider rolling back user creation (more complex)
-      // For simplicity, we'll just log and return an error for now.
-      console.error('Error inserting profile:', profileInsertError);
-      return new Response(JSON.stringify({ error: 'User created, but failed to create profile: ' + profileInsertError.message }), {
-        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
