@@ -137,6 +137,7 @@ export function EditMatchDialog({ match, groups, rounds, teams, onMatchUpdated, 
       finalMatchDate = setMinutes(finalMatchDate, minutes);
     }
 
+    console.log('EditMatchDialog: Submitting match with assigned_official_id:', assignedOfficialId); // DIAGNOSTIC LOG
     const { error } = await supabase
       .from('matches')
       .update({ 

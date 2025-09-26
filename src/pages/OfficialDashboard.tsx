@@ -19,11 +19,14 @@ const OfficialDashboard = () => {
     if (!session?.user?.id || (userProfile?.role !== 'official' && userProfile?.role !== 'admin')) {
       setLoading(false);
       setError('Você não tem permissão para acessar este painel.');
+      console.log('OfficialDashboard: Permissão negada. User ID:', session?.user?.id, 'User Role:', userProfile?.role); // DIAGNOSTIC LOG
       return;
     }
 
     setLoading(true);
     setError(null);
+
+    console.log('OfficialDashboard: Fetching matches for User ID:', session.user.id, 'with Role:', userProfile?.role); // DIAGNOSTIC LOG
 
     // Fetch all groups and rounds for MatchCard to display names
     const { data: groupsData, error: groupsError } = await supabase
@@ -51,9 +54,10 @@ const OfficialDashboard = () => {
       .order('match_date', { ascending: true });
 
     if (matchesError) {
-      console.error('Error fetching assigned matches:', matchesError);
+      console.error('OfficialDashboard: Error fetching assigned matches:', matchesError); // DIAGNOSTIC LOG
       setError('Erro ao carregar suas partidas atribuídas.');
     } else {
+      console.log('OfficialDashboard: Fetched matches data:', data); // DIAGNOSTIC LOG
       setAssignedMatches(data as Match[]);
     }
     setLoading(false);

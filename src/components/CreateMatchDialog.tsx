@@ -116,6 +116,7 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
       finalMatchDate = setMinutes(finalMatchDate, minutes);
     }
 
+    console.log('CreateMatchDialog: Submitting match with assigned_official_id:', assignedOfficialId); // DIAGNOSTIC LOG
     const { error } = await supabase
       .from('matches')
       .insert([{ 
