@@ -28,9 +28,19 @@ interface QuickScoreUpdateDrawerProps {
   match: Match;
   onMatchUpdated: () => void;
   children: React.ReactNode;
+  isPublicView?: boolean; // New prop: true if used in public context
+  publicRoundId?: string; // Required if isPublicView is true
+  publicRoundToken?: string; // Required if isPublicView is true
 }
 
-export function QuickScoreUpdateDrawer({ match, onMatchUpdated, children }: QuickScoreUpdateDrawerProps) {
+export function QuickScoreUpdateDrawer({
+  match,
+  onMatchUpdated,
+  children,
+  isPublicView = false,
+  publicRoundId,
+  publicRoundToken,
+}: QuickScoreUpdateDrawerProps) {
   const [open, setOpen] = useState(false);
   const [team1Score, setTeam1Score] = useState(match.team1_score ?? 0);
   const [team2Score, setTeam2Score] = useState(match.team2_score ?? 0);
@@ -51,22 +61,65 @@ export function QuickScoreUpdateDrawer({ match, onMatchUpdated, children }: Quic
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    const { error } = await supabase
-      .from('matches')
-      .update({ 
-        team1_score: team1Score, 
-        team2_score: team2Score,
-      })
-      .eq('id', match.id);
 
-    setIsSubmitting(false);
+    if (isPublicView) {
+      if (!publicRoundId || !publicRoundToken) {
+        showError("Erro: Informações de autenticação pública incompletas.");
+        setIsSubmitting(false);
+        return;
+      }
 
-    if (error) {
-      showError(`Erro ao atualizar placar: ${error.message}`);
+      try {
+        const edgeFunctionUrl = `https://rrwtsnecjuugqlwmpgzd.supabase.co/functions/v1/update-public-match-score`;
+        const response = await fetch(edgeFunctionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            matchId: match.id,
+            team1Score,
+            team2Score,
+            roundId: publicRoundId,
+            roundToken: publicRoundToken,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Erro desconhecido ao atualizar placar publicamente.');
+        }
+
+        showSuccess("Placar atualizado com sucesso!");
+        setOpen(false);
+        onMatchUpdated();
+      } catch (error: any) {
+        console.error('Error updating public match score:', error);
+        showError('Erro ao atualizar placar: ' + error.message);
+      } finally {
+        setIsSubmitting(false);
+      }
+
     } else {
-      showSuccess("Placar atualizado com sucesso!");
-      setOpen(false);
-      onMatchUpdated();
+      // Existing logic for authenticated users
+      const { error } = await supabase
+        .from('matches')
+        .update({
+          team1_score: team1Score,
+          team2_score: team2Score,
+        })
+        .eq('id', match.id);
+
+      setIsSubmitting(false);
+
+      if (error) {
+        showError(`Erro ao atualizar placar: ${error.message}`);
+      } else {
+        showSuccess("Placar atualizado com sucesso!");
+        setOpen(false);
+        onMatchUpdated();
+      }
     }
   };
 

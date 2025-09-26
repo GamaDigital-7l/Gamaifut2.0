@@ -24,9 +24,11 @@ interface MatchCardProps {
   rounds: Round[];
   teams: Team[]; // Added teams prop
   isPublicView?: boolean;
+  publicRoundId?: string; // New prop for public editing
+  publicRoundToken?: string; // New prop for public editing
 }
 
-export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false }: MatchCardProps) {
+export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false, publicRoundId, publicRoundToken }: MatchCardProps) {
   const matchDate = match.match_date ? new Date(match.match_date) : null;
   const isPlayed = match.team1_score !== null && match.team2_score !== null;
 
@@ -119,30 +121,37 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
         )}
 
         <div className="flex justify-end items-center mt-2 gap-2">
-          {isPublicView ? null : (
-            <>
-              <QuickScoreUpdateDrawer match={match} onMatchUpdated={onMatchUpdated}>
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
-                  <Goal className="h-4 w-4" />
-                  <span className="hidden sm:inline">Placar Rápido</span>
+          {/* QuickScoreUpdateDrawer is always available, but its behavior changes based on isPublicView */}
+          <QuickScoreUpdateDrawer
+            match={match}
+            onMatchUpdated={onMatchUpdated}
+            isPublicView={isPublicView}
+            publicRoundId={publicRoundId}
+            publicRoundToken={publicRoundToken}
+          >
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Goal className="h-4 w-4" />
+              <span className="hidden sm:inline">Placar Rápido</span>
+            </Button>
+          </QuickScoreUpdateDrawer>
+
+          {/* Dropdown menu for authenticated actions (edit/delete) */}
+          {!isPublicView && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
-              </QuickScoreUpdateDrawer>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <EditMatchDialog match={match} groups={groups} rounds={rounds} teams={teams} onMatchUpdated={onMatchUpdated}>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Detalhes</DropdownMenuItem>
-                  </EditMatchDialog>
-                  <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
-                  </DeleteMatchDialog>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <EditMatchDialog match={match} groups={groups} rounds={rounds} teams={teams} onMatchUpdated={onMatchUpdated}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Detalhes</DropdownMenuItem>
+                </EditMatchDialog>
+                <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
+                </DeleteMatchDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </CardContent>

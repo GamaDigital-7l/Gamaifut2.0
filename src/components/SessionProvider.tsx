@@ -16,6 +16,7 @@ const UserManagement = lazy(() => import("@/pages/UserManagement"));
 const AdminTeamDetail = lazy(() => import("@/pages/AdminTeamDetail"));
 const PublicChampionshipView = lazy(() => import("@/pages/PublicChampionshipView"));
 const PublicTeamDetail = lazy(() => import("@/pages/PublicTeamDetail"));
+const PublicRoundScoreboard = lazy(() => import("@/pages/PublicRoundScoreboard")); // Import new PublicRoundScoreboard
 const MainLayout = lazy(() => import("@/components/MainLayout"));
 
 
@@ -154,10 +155,11 @@ export const AppRoutes = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/public/championship/:id" element={<PublicChampionshipView />} />
           <Route path="/public/team/:teamId" element={<PublicTeamDetail />} />
+          <Route path="/public/round/:championshipId/:roundId/:roundToken" element={<PublicRoundScoreboard />} /> {/* New public route */}
           
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/official-dashboard" element={<OfficialDashboard />} /> {/* New route */}
+            <Route path="/official-dashboard" element={<OfficialDashboard />} />
             <Route path="/championship/:id" element={<ChampionshipDetail />} />
             <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
             <Route path="/profile" element={<Profile />} />

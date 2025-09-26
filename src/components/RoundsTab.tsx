@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Trash2, Edit, PlusCircle } from 'lucide-react'; // Import PlusCircle
+import { MoreHorizontal, Trash2, Edit, PlusCircle, Link as LinkIcon } from 'lucide-react'; // Import LinkIcon
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CreateRoundDialog } from './CreateRoundDialog';
 import { EditRoundDialog } from './EditRoundDialog';
-import { AddMatchesToRoundDialog } from './AddMatchesToRoundDialog'; // Import AddMatchesToRoundDialog
+import { AddMatchesToRoundDialog } from './AddMatchesToRoundDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +26,7 @@ import {
 import { showSuccess, showError } from '@/utils/toast';
 import { Badge } from '@/components/ui/badge';
 import { Team, Group, Round } from '@/types';
-import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface RoundsTabProps {
   championshipId: string;
@@ -38,32 +38,7 @@ interface RoundsTabProps {
 }
 
 export function RoundsTab({ championshipId, teams, groups, rounds, isLoading, onDataChange }: RoundsTabProps) {
-  // No longer fetching rounds internally, relying on props
-  // const [rounds, setRounds] = useState<Round[]>([]);
-  // const [loading, setLoading] = useState(true); // Use isLoading from props
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // const fetchRounds = useCallback(async () => {
-  //   setLoading(true);
-  //   const { data, error } = await supabase
-  //     .from('rounds')
-  //     .select('*')
-  //     .eq('championship_id', championshipId)
-  //     .order('order_index', { ascending: true })
-  //     .order('name', { ascending: true });
-
-  //   if (error) {
-  //     console.error('Error fetching rounds:', error);
-  //     showError('Erro ao carregar rodadas: ' + error.message);
-  //   } else {
-  //     setRounds(data as Round[]);
-  //   }
-  //   setLoading(false);
-  // }, [championshipId]);
-
-  // useEffect(() => {
-  //   fetchRounds();
-  // }, [fetchRounds]);
 
   const handleDeleteRound = async (roundId: string, roundName: string) => {
     setIsDeleting(true);
@@ -80,6 +55,17 @@ export function RoundsTab({ championshipId, teams, groups, rounds, isLoading, on
       showSuccess(`Rodada "${roundName}" excluída com sucesso!`);
       onDataChange(); // Notify parent to refetch all championship data
     }
+  };
+
+  const handleCopyPublicLink = (round: Round) => {
+    if (!round.public_edit_token) {
+      showError('Token de edição pública não disponível para esta rodada.');
+      return;
+    }
+    const publicLink = `${window.location.origin}/public/round/${championshipId}/${round.id}/${round.public_edit_token}`;
+    navigator.clipboard.writeText(publicLink)
+      .then(() => showSuccess('Link público de edição copiado para a área de transferência!'))
+      .catch(() => showError('Erro ao copiar o link.'));
   };
 
   const getTypeDisplayName = (type: Round['type']) => {
@@ -152,6 +138,9 @@ export function RoundsTab({ championshipId, teams, groups, rounds, isLoading, on
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
+                      <DropdownMenuItem onSelect={() => handleCopyPublicLink(round)}>
+                        <LinkIcon className="mr-2 h-4 w-4" /> Copiar Link Público
+                      </DropdownMenuItem>
                       <AddMatchesToRoundDialog
                         championshipId={championshipId}
                         roundId={round.id}

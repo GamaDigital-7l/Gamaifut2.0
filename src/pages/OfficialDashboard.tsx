@@ -19,7 +19,7 @@ const OfficialDashboard = () => {
     setLoading(true);
     let query = supabase
       .from('championships')
-      .select('id, name, description, city, state, logo_url, user_id');
+      .select('id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order'); // Select all championship fields
 
     if (userProfile?.role === 'user') {
       // Regular users should not access this dashboard
@@ -30,7 +30,7 @@ const OfficialDashboard = () => {
       // Officials can see championships they own or are associated with
       query = query.or(`user_id.eq.${userProfile.id},championship_users.user_id.eq.${userProfile.id}`);
       query = query.select(`
-        id, name, description, city, state, logo_url, user_id,
+        id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order,
         championship_users!inner(user_id, role_in_championship)
       `);
     }
@@ -53,7 +53,7 @@ const OfficialDashboard = () => {
             state: item.state,
             logo_url: item.logo_url,
             user_id: item.user_id,
-            points_for_win: item.points_for_win, // Ensure these are included if needed
+            points_for_win: item.points_for_win,
             sport_type: item.sport_type,
             gender: item.gender,
             age_category: item.age_category,
