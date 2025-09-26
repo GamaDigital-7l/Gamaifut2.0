@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format, setHours, setMinutes } from "date-fns"; // Import setHours and setMinutes
+import { format, setHours, setMinutes } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
@@ -35,8 +35,8 @@ interface Official extends Profile {
 interface CreateMatchDialogProps {
   championshipId: string;
   teams: Team[];
-  groups: Group[]; // Pass groups
-  rounds: Round[]; // Pass rounds
+  groups: Group[];
+  rounds: Round[];
   onMatchCreated: () => void;
 }
 
@@ -45,31 +45,56 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
   const [team1Id, setTeam1Id] = useState<string | undefined>(undefined);
   const [team2Id, setTeam2Id] = useState<string | undefined>(undefined);
   const [matchDate, setMatchDate] = useState<Date | undefined>(undefined);
-  const [matchTime, setMatchTime] = useState<string>(''); // New state for time
+  const [matchTime, setMatchTime] = useState<string>('');
   const [location, setLocation] = useState('');
-  const [groupId, setGroupId] = useState<string | undefined>(undefined); // New state for group
-  const [roundId, setRoundId] = useState<string | undefined>(undefined); // New state for round
-  const [assignedOfficialId, setAssignedOfficialId] = useState<string | undefined>(undefined); // New state for assigned official
-  const [officials, setOfficials] = useState<Official[]>([]); // State for officials list
+  const [groupId, setGroupId] = useState<string | undefined>(undefined);
+  const [roundId, setRoundId] = useState<string | undefined>(undefined);
+  const [assignedOfficialId, setAssignedOfficialId] = useState<string | undefined>(undefined);
+  const [officials, setOfficials] = useState<Profile[]>([]); // Changed to Profile[] to include admins/users
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { session } = useSession();
+  const { session, userProfile } = useSession();
 
+  // Fetch officials and set default assigned official
   useEffect(() => {
-    const fetchOfficials = async () => {
-      const { data, error } = await supabase
+    const fetchAndSetOfficials = async () => {
+      const { data: officialProfiles, error: officialError } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name')
+        .select('id, first_name, last_name, role')
         .eq('role', 'official')
         .order('first_name', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching officials:', error);
+      if (officialError) {
+        console.error('Error fetching officials:', officialError);
+        setOfficials([]);
       } else {
-        setOfficials(data as Official[]);
+        setOfficials(officialProfiles as Profile[]);
+        // Set default official if available
+        if (officialProfiles.length > 0) {
+          setAssignedOfficialId(officialProfiles[0].id);
+        } else if (userProfile) {
+          // Fallback: assign to the current user if no officials are registered
+          setAssignedOfficialId(userProfile.id);
+        }
       }
     };
-    fetchOfficials();
-  }, []);
+    fetchAndSetOfficials();
+  }, [userProfile]); // Re-run if userProfile changes (e.g., after login)
+
+  // Auto-assign group if both teams are from the same group
+  useEffect(() => {
+    if (team1Id && team2Id) {
+      const team1 = teams.find(t => t.id === team1Id);
+      const team2 = teams.find(t => t.id === team2Id);
+
+      if (team1?.group_id && team1.group_id === team2?.group_id) {
+        setGroupId(team1.group_id);
+      } else {
+        setGroupId(undefined); // Clear group if teams are from different groups or one is not in a group
+      }
+    } else {
+      setGroupId(undefined); // Clear group if not both teams are selected
+    }
+  }, [team1Id, team2Id, teams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,9 +125,9 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
         team2_id: team2Id,
         match_date: finalMatchDate?.toISOString() || null,
         location: location.trim() === '' ? null : location.trim(),
-        group_id: groupId || null, // Include group_id
-        round_id: roundId || null, // Include round_id
-        assigned_official_id: assignedOfficialId || null, // Include assigned_official_id
+        group_id: groupId || null,
+        round_id: roundId || null,
+        assigned_official_id: assignedOfficialId || null,
       }]);
 
     setIsSubmitting(false);
@@ -114,11 +139,11 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
       setTeam1Id(undefined);
       setTeam2Id(undefined);
       setMatchDate(undefined);
-      setMatchTime(''); // Reset time
+      setMatchTime('');
       setLocation('');
-      setGroupId(undefined); // Reset group
-      setRoundId(undefined); // Reset round
-      setAssignedOfficialId(undefined); // Reset assigned official
+      setGroupId(undefined);
+      setRoundId(undefined);
+      // Keep assignedOfficialId as default or current user, don't reset
       setOpen(false);
       onMatchCreated();
     }
@@ -263,7 +288,7 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
                 <SelectContent>
                   {officials.map(official => (
                     <SelectItem key={official.id} value={official.id}>
-                      {official.first_name} {official.last_name}
+                      {official.first_name} {official.last_name} {official.id === userProfile?.id ? '(Você)' : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>

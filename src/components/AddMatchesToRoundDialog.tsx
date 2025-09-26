@@ -26,7 +26,7 @@ import { CalendarIcon, PlusCircle, MinusCircle } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
 import { showSuccess, showError } from '@/utils/toast';
-import { Team, Group } from '@/types';
+import { Team, Group, Profile } from '@/types'; // Import Profile type
 
 interface AddMatchesToRoundDialogProps {
   championshipId: string;
@@ -46,6 +46,7 @@ interface MatchInput {
   matchTime: string;
   location: string;
   groupId: string | undefined;
+  assignedOfficialId: string | undefined; // Added assigned official ID
 }
 
 export function AddMatchesToRoundDialog({
@@ -59,11 +60,42 @@ export function AddMatchesToRoundDialog({
 }: AddMatchesToRoundDialogProps) {
   const [open, setOpen] = useState(false);
   const [matchesToCreate, setMatchesToCreate] = useState<MatchInput[]>([
-    { id: crypto.randomUUID(), team1Id: undefined, team2Id: undefined, matchDate: undefined, matchTime: '', location: '', groupId: undefined },
-    { id: crypto.randomUUID(), team1Id: undefined, team2Id: undefined, matchDate: undefined, matchTime: '', location: '', groupId: undefined },
-  ]); // Start with 2 empty match slots
+    { id: crypto.randomUUID(), team1Id: undefined, team2Id: undefined, matchDate: undefined, matchTime: '', location: '', groupId: undefined, assignedOfficialId: undefined },
+    { id: crypto.randomUUID(), team1Id: undefined, team2Id: undefined, matchDate: undefined, matchTime: '', location: '', groupId: undefined, assignedOfficialId: undefined },
+  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { session } = useSession();
+  const [officials, setOfficials] = useState<Profile[]>([]); // State for officials list
+  const { session, userProfile } = useSession();
+
+  // Fetch officials and set default assigned official for new slots
+  useEffect(() => {
+    const fetchAndSetOfficials = async () => {
+      const { data: officialProfiles, error: officialError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, role')
+        .eq('role', 'official')
+        .order('first_name', { ascending: true });
+
+      if (officialError) {
+        console.error('Error fetching officials:', officialError);
+        setOfficials([]);
+      } else {
+        setOfficials(officialProfiles as Profile[]);
+        // Set default official for new match slots
+        setMatchesToCreate(prev => prev.map(match => {
+          if (match.assignedOfficialId === undefined) { // Only set if not already set
+            if (officialProfiles.length > 0) {
+              return { ...match, assignedOfficialId: officialProfiles[0].id };
+            } else if (userProfile) {
+              return { ...match, assignedOfficialId: userProfile.id };
+            }
+          }
+          return match;
+        }));
+      }
+    };
+    fetchAndSetOfficials();
+  }, [userProfile, open]); // Re-run if userProfile changes or dialog opens
 
   // Effect to auto-select group if both teams are from the same group
   useEffect(() => {
@@ -75,11 +107,20 @@ export function AddMatchesToRoundDialog({
           if (match.groupId !== team1.group_id) {
             return { ...match, groupId: team1.group_id };
           }
+        } else {
+          if (match.groupId !== undefined) { // Clear if teams are from different groups or one is not in a group
+            return { ...match, groupId: undefined };
+          }
+        }
+      } else {
+        if (match.groupId !== undefined) { // Clear if not both teams are selected
+          return { ...match, groupId: undefined };
         }
       }
       return match;
     });
 
+    // Only update state if there's an actual change to prevent infinite loops
     if (JSON.stringify(updatedMatches) !== JSON.stringify(matchesToCreate)) {
       setMatchesToCreate(updatedMatches);
     }
@@ -89,8 +130,8 @@ export function AddMatchesToRoundDialog({
     // Reset form when dialog opens/closes or roundId changes
     if (!open) {
       setMatchesToCreate([
-        { id: crypto.randomUUID(), team1Id: undefined, team2Id: undefined, matchDate: undefined, matchTime: '', location: '', groupId: undefined },
-        { id: crypto.randomUUID(), team1Id: undefined, team2Id: undefined, matchDate: undefined, matchTime: '', location: '', groupId: undefined },
+        { id: crypto.randomUUID(), team1Id: undefined, team2Id: undefined, matchDate: undefined, matchTime: '', location: '', groupId: undefined, assignedOfficialId: undefined },
+        { id: crypto.randomUUID(), team1Id: undefined, team2Id: undefined, matchDate: undefined, matchTime: '', location: '', groupId: undefined, assignedOfficialId: undefined },
       ]);
       setIsSubmitting(false);
     }
@@ -105,9 +146,10 @@ export function AddMatchesToRoundDialog({
   };
 
   const addMatchSlot = () => {
+    const defaultOfficialId = officials.length > 0 ? officials[0].id : userProfile?.id;
     setMatchesToCreate(prev => [
       ...prev,
-      { id: crypto.randomUUID(), team1Id: undefined, team2Id: undefined, matchDate: undefined, matchTime: '', location: '', groupId: undefined },
+      { id: crypto.randomUUID(), team1Id: undefined, team2Id: undefined, matchDate: undefined, matchTime: '', location: '', groupId: undefined, assignedOfficialId: defaultOfficialId },
     ]);
   };
 
@@ -147,7 +189,8 @@ export function AddMatchesToRoundDialog({
         match_date: finalMatchDate?.toISOString() || null,
         location: m.location.trim() === '' ? null : m.location.trim(),
         group_id: m.groupId || null,
-        round_id: roundId, // This is the key part: associate with the current round
+        round_id: roundId,
+        assigned_official_id: m.assignedOfficialId || null, // Use the assigned official from the match input
       };
     });
 
@@ -283,6 +326,24 @@ export function AddMatchesToRoundDialog({
                       value={matchInput.matchTime}
                       onChange={(e) => handleMatchInputChange(index, 'matchTime', e.target.value)}
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`official-${matchInput.id}`}>Mesário</Label>
+                    <Select
+                      value={matchInput.assignedOfficialId}
+                      onValueChange={(value) => handleMatchInputChange(index, 'assignedOfficialId', value)}
+                    >
+                      <SelectTrigger id={`official-${matchInput.id}`}>
+                        <SelectValue placeholder="Atribuir mesário (opcional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {officials.map(official => (
+                          <SelectItem key={official.id} value={official.id}>
+                            {official.first_name} {official.last_name} {official.id === userProfile?.id ? '(Você)' : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
