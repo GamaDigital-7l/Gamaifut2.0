@@ -24,6 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import { Match, Team, Round } from '@/types';
+import { format } from 'date-fns'; // Import format for match date display
 
 interface UploadMediaDialogProps {
   championshipId: string;
@@ -67,33 +68,46 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
     }
   };
 
-  const uploadFileToStorage = async (file: File): Promise<string | null> => {
-    if (!session?.user) {
+  const uploadFileToMinIOViaEdgeFunction = async (file: File, champId: string): Promise<string | null> => {
+    if (!session?.access_token) {
       showError("Usuário não autenticado.");
       return null;
     }
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${championshipId}/${crypto.randomUUID()}.${fileExt}`; // Store under championship ID
-    const filePath = fileName;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('championshipId', champId);
+    // No need to append userId, it's derived from the session token in the Edge Function
 
-    const { error: uploadError } = await supabase.storage
-      .from('championship-media')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false,
+    try {
+      const edgeFunctionUrl = `https://rrwtsnecjuugqlwmpgzd.supabase.co/functions/v1/upload-media-to-minio`;
+      
+      const response = await fetch(edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          // 'Content-Type': 'multipart/form-data' is automatically set by fetch when using FormData
+        },
+        body: formData,
       });
 
-    if (uploadError) {
-      showError('Erro ao fazer upload do arquivo: ' + uploadError.message);
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Edge Function response error:', data);
+        throw new Error(data.error || 'Erro desconhecido ao fazer upload via Edge Function.');
+      }
+
+      if (data && data.url) {
+        return data.url;
+      } else {
+        throw new Error('URL do arquivo não retornada pela Edge Function.');
+      }
+    } catch (error: any) {
+      console.error('Error calling Edge Function for upload:', error);
+      showError('Erro ao fazer upload do arquivo: ' + error.message);
       return null;
     }
-
-    const { data } = supabase.storage
-      .from('championship-media')
-      .getPublicUrl(filePath);
-    
-    return data.publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,12 +136,12 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
       return;
     }
 
-    // Upload file to Supabase Storage
-    fileUrl = await uploadFileToStorage(file);
+    // Upload file to MinIO via Supabase Edge Function
+    fileUrl = await uploadFileToMinIOViaEdgeFunction(file, championshipId);
 
     if (!fileUrl) {
       setIsSubmitting(false);
-      return; // Error already shown by uploadFileToStorage
+      return; // Error already shown by uploadFileToMinIOViaEdgeFunction
     }
 
     // Insert metadata into Supabase database
@@ -151,8 +165,9 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
 
     if (dbError) {
       showError(`Erro ao salvar metadados da mídia: ${dbError.message}`);
-      // Optionally, delete the uploaded file from storage if metadata insertion fails
-      // await supabase.storage.from('championship-media').remove([fileUrl.split('/').pop()!]);
+      // If metadata insertion fails, you might want to delete the file from MinIO.
+      // This would require another Edge Function or direct call to MinIO from here (less secure).
+      // For now, we'll leave it as a potential orphaned file.
     } else {
       showSuccess("Mídia enviada com sucesso!");
       setOpen(false);
