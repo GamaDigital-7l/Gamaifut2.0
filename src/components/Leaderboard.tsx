@@ -162,45 +162,45 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
         <Table className="min-w-full table-fixed"> {/* Use table-fixed for consistent column widths */}
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">Pos.</TableHead>
-              <TableHead className="w-[110px] px-1 py-1 text-xs">Time</TableHead> {/* Fixed width for team name */}
-              <TableHead className="w-[20px] text-center px-1 py-1 text-xs whitespace-nowrap">P</TableHead>
-              <TableHead className="w-[20px] text-center px-1 py-1 text-xs whitespace-nowrap">J</TableHead>
-              <TableHead className="w-[20px] text-center px-1 py-1 text-xs whitespace-nowrap">V</TableHead>
-              <TableHead className="w-[20px] text-center px-1 py-1 text-xs whitespace-nowrap">E</TableHead>
-              <TableHead className="w-[20px] text-center px-1 py-1 text-xs whitespace-nowrap">D</TableHead>
-              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">GP</TableHead>
-              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">GC</TableHead>
-              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">SG</TableHead>
-              <TableHead className="w-[35px] text-center px-1 py-1 text-xs whitespace-nowrap">%</TableHead>
-              <TableHead className="w-[50px] text-center px-1 py-1 text-xs whitespace-nowrap">Recentes</TableHead>
+              <TableHead className="w-[20px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">Pos.</TableHead>
+              <TableHead className="w-[120px] px-1 py-1 text-xs">Time</TableHead> {/* Fixed width for team name */}
+              <TableHead className="w-[18px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">P</TableHead>
+              <TableHead className="w-[18px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">J</TableHead>
+              <TableHead className="w-[18px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">V</TableHead>
+              <TableHead className="w-[18px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">E</TableHead>
+              <TableHead className="w-[18px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">D</TableHead>
+              <TableHead className="w-[22px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">GP</TableHead>
+              <TableHead className="w-[22px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">GC</TableHead>
+              <TableHead className="w-[22px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">SG</TableHead>
+              <TableHead className="w-[30px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">%</TableHead>
+              <TableHead className="w-[45px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">Recentes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedStandings.map((standing, index) => (
               <TableRow key={standing.teamId}>
-                <TableCell className="font-medium text-center px-1 py-2 text-xs whitespace-nowrap">{index + 1}</TableCell> {/* Increased py to match team name cell */}
-                <TableCell className="flex items-center gap-1 px-1 py-2"> {/* Increased py to allow two lines */}
+                <TableCell className="font-medium text-center px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{index + 1}</TableCell> {/* Increased py to match team name cell */}
+                <TableCell className="flex items-center gap-1 px-1 py-2 w-[120px]"> {/* Increased py to allow two lines */}
                   {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-5 w-5 object-contain flex-shrink-0" />}
-                  <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline text-[0.65rem] leading-tight"> {/* Removed truncate, text will wrap */}
+                  <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline text-[0.65rem] leading-tight flex-1 min-w-0"> {/* flex-1 min-w-0 allows wrapping */}
                     {standing.teamName}
                   </Link>
                 </TableCell>
-                <TableCell className="text-center font-bold px-1 py-2 text-xs whitespace-nowrap">{standing.points}</TableCell> {/* Increased py */}
-                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.played}</TableCell> {/* Increased py */}
-                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.wins}</TableCell> {/* Increased py */}
-                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.draws}</TableCell> {/* Increased py */}
-                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.losses}</TableCell> {/* Increased py */}
-                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.goalsFor}</TableCell> {/* Increased py */}
-                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.goalsAgainst}</TableCell> {/* Increased py */}
-                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.goalDifference}</TableCell> {/* Increased py */}
-                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.percentage.toFixed(1)}%</TableCell> {/* Increased py */}
-                <TableCell className="text-center px-1 py-2 whitespace-nowrap"> {/* Increased py */}
+                <TableCell className="text-center font-bold px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{standing.points}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{standing.played}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{standing.wins}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{standing.draws}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{standing.losses}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{standing.goalsFor}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{standing.goalsAgainst}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{standing.goalDifference}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{standing.percentage.toFixed(1)}%</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-0.5 py-2 whitespace-nowrap"> {/* Increased py */}
                   <div className="flex justify-center gap-0.5"> {/* Smaller gap for circles */}
                     {standing.recentForm.map((form, i) => (
                       <span
                         key={i}
-                        className={`w-2.5 h-2.5 flex items-center justify-center text-xs font-bold rounded-full
+                        className={`w-2 h-2 flex items-center justify-center text-xs font-bold rounded-full
                           ${form === 'W' ? 'bg-green-500' :
                             form === 'D' ? 'bg-gray-400' :
                             form === 'L' ? 'bg-red-500' :
