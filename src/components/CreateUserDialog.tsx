@@ -54,13 +54,13 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
         role,
       };
 
-      const stringifiedPayload = JSON.stringify(payload);
-      console.log('Client: Sending stringified payload to Edge Function:', stringifiedPayload);
+      // Pass the payload object directly, let supabase.functions.invoke handle JSON.stringify
+      console.log('Client: Sending payload object to Edge Function:', payload);
       console.log('Client: Sending Authorization header:', `Bearer ${session?.access_token}`);
       console.log('Client: Sending Content-Type header: application/json');
 
       const { data, error } = await supabase.functions.invoke('create-user', {
-        body: stringifiedPayload,
+        body: payload, // Pass the object directly
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json',
