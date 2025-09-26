@@ -55,13 +55,14 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       };
 
       const stringifiedPayload = JSON.stringify(payload);
-      const edgeFunctionUrl = `https://rrwtsnecjuugqlwmpgzd.supabase.co/functions/v1/create-user`; // URL HARDCODADA DA SUA FUNÇÃO EDGE
+      const edgeFunctionUrl = `https://rrwtsnecjuugqlwmpgzd.supabase.co/functions/v1/create-user`;
 
       console.log('Client: Attempting direct fetch to Edge Function.');
       console.log('Client: Target URL:', edgeFunctionUrl);
       console.log('Client: Sending Authorization header:', `Bearer ${session?.access_token}`);
       console.log('Client: Sending Content-Type header: application/json');
       console.log('Client: Actual stringified payload being sent:', stringifiedPayload);
+      console.log('Client: Supabase Access Token:', session?.access_token ? 'Present' : 'Missing'); // NOVO LOG
 
       const response = await fetch(edgeFunctionUrl, {
         method: 'POST',

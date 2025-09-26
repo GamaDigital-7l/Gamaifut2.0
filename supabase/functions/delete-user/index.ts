@@ -66,22 +66,15 @@ serve(async (req) => {
     // --- Request Body Parsing ---
     let parsedBody;
     try {
-      const rawBody = await req.text(); // Read as raw text first
-      console.log('Raw request body received:', rawBody);
-      console.log('Raw body length:', rawBody.length); // Diagnostic log
-
-      if (!rawBody) {
-        console.error('JSON parsing error: Request body is empty.');
-        return new Response(JSON.stringify({ error: 'Invalid JSON in request body: Body is empty' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      parsedBody = JSON.parse(rawBody); // Then parse the text
-      console.log('Successfully parsed request body. Parsed data:', parsedBody);
+      parsedBody = await req.json(); // Tentar ler diretamente como JSON
+      console.log('Successfully parsed request body using req.json(). Parsed data:', parsedBody);
     } catch (jsonParseError: any) {
-      console.error('JSON parsing error: The request body is not valid JSON.', jsonParseError.message);
+      console.error('JSON parsing error: The request body is not valid JSON or is empty.', jsonParseError.message);
+      // Adicionar log do raw body para depuração, caso req.json() falhe
+      const rawBodyFallback = await req.text();
+      console.error('Fallback: Raw request body (if req.json() failed):', rawBodyFallback);
+      console.error('Fallback: Raw body length:', rawBodyFallback.length);
+
       return new Response(JSON.stringify({ error: 'Invalid JSON in request body: ' + jsonParseError.message }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
