@@ -336,7 +336,7 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
                 src={selectedMediaForFullscreen.url} 
                 controls 
                 autoPlay 
-                onEnded={() => setIsFullscreenOpen(false)} {/* NOVO: Fecha o diálogo quando o vídeo termina */}
+                onEnded={() => setIsFullscreenOpen(false)} 
                 className="max-w-full max-h-full object-contain"
               >
                 Seu navegador não suporta o elemento de vídeo.
