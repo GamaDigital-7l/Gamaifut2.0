@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Image, Video, Star, Users, CalendarIcon, LayoutGrid, Download, MoreHorizontal, Edit, Trash2, X } from 'lucide-react'; // Adicionado 'X' para o botão de fechar
+import { Image, Video, Star, Users, CalendarIcon, LayoutGrid, Download, MoreHorizontal, Edit, Trash2, X } from 'lucide-react';
 import { Media, Match, Team, Round } from '@/types';
 import { cn } from '@/lib/utils';
 import {
@@ -324,7 +324,6 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
             <span className="sr-only">Fechar</span>
           </Button>
 
-          {/* Removido DialogHeader com título e descrição */}
           {selectedMediaForFullscreen && (
             selectedMediaForFullscreen.type === 'image' ? (
               <img 
@@ -337,6 +336,7 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
                 src={selectedMediaForFullscreen.url} 
                 controls 
                 autoPlay 
+                onEnded={() => setIsFullscreenOpen(false)} {/* NOVO: Fecha o diálogo quando o vídeo termina */}
                 className="max-w-full max-h-full object-contain"
               >
                 Seu navegador não suporta o elemento de vídeo.
