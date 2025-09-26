@@ -9,6 +9,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const Login = lazy(() => import("@/pages/Login"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const OfficialDashboard = lazy(() => import("@/pages/OfficialDashboard")); // Import new OfficialDashboard
+const OfficialChampionshipMatches = lazy(() => import("@/pages/OfficialChampionshipMatches")); // NEW: Import OfficialChampionshipMatches
 const ChampionshipDetail = lazy(() => import("@/pages/ChampionshipDetail"));
 const ChampionshipTheme = lazy(() => import("@/pages/ChampionshipTheme"));
 const Profile = lazy(() => import("@/pages/Profile"));
@@ -155,11 +156,12 @@ export const AppRoutes = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/public/championship/:id" element={<PublicChampionshipView />} />
           <Route path="/public/team/:teamId" element={<PublicTeamDetail />} />
-          <Route path="/public/round/:championshipId/:roundId/:roundToken" element={<PublicRoundScoreboard />} /> {/* New public route */}
+          <Route path="/public/round/:championshipId/:roundId/:roundToken" element={<PublicRoundScoreboard />} />
           
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/official-dashboard" element={<OfficialDashboard />} />
+            <Route path="/official-championship-matches/:id" element={<OfficialChampionshipMatches />} /> {/* NEW ROUTE */}
             <Route path="/championship/:id" element={<ChampionshipDetail />} />
             <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
             <Route path="/profile" element={<Profile />} />

@@ -128,7 +128,7 @@ const OfficialDashboard = () => {
               </CardContent>
               <CardFooter className="flex justify-end items-center">
                 <Button asChild variant="outline" size="sm">
-                  <Link to={`/championship/${championship.id}`}>Gerenciar</Link>
+                  <Link to={`/official-championship-matches/${championship.id}`}>Gerenciar</Link>
                 </Button>
               </CardFooter>
             </Card>

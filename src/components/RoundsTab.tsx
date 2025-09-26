@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Trash2, Edit, PlusCircle, Link as LinkIcon } from 'lucide-react'; // Import LinkIcon
+import { MoreHorizontal, Trash2, Edit, PlusCircle } from 'lucide-react'; // Removed LinkIcon
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,16 +57,7 @@ export function RoundsTab({ championshipId, teams, groups, rounds, isLoading, on
     }
   };
 
-  const handleCopyPublicLink = (round: Round) => {
-    if (!round.public_edit_token) {
-      showError('Token de edição pública não disponível para esta rodada.');
-      return;
-    }
-    const publicLink = `${window.location.origin}/public/round/${championshipId}/${round.id}/${round.public_edit_token}`;
-    navigator.clipboard.writeText(publicLink)
-      .then(() => showSuccess('Link público de edição copiado para a área de transferência!'))
-      .catch(() => showError('Erro ao copiar o link.'));
-  };
+  // Removed handleCopyPublicLink function
 
   const getTypeDisplayName = (type: Round['type']) => {
     switch (type) {
@@ -138,9 +129,7 @@ export function RoundsTab({ championshipId, teams, groups, rounds, isLoading, on
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem onSelect={() => handleCopyPublicLink(round)}>
-                        <LinkIcon className="mr-2 h-4 w-4" /> Copiar Link Público
-                      </DropdownMenuItem>
+                      {/* Removed DropdownMenuItem for Copy Public Link */}
                       <AddMatchesToRoundDialog
                         championshipId={championshipId}
                         roundId={round.id}
