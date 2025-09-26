@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, Home, ChevronLeft, ChevronRight, Users } from "lucide-react"; // Removed ClipboardList icon
+import { Trophy, Home, ChevronLeft, ChevronRight, Users, ClipboardList } from "lucide-react"; // Added ClipboardList icon
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useSession } from '@/components/SessionProvider'; // Import useSession
@@ -21,12 +21,17 @@ const Sidebar = ({ isCollapsed, toggleCollapsed }: SidebarProps) => {
       roles: ['user', 'official', 'admin'], // Visible to all authenticated users
     },
     {
-      href: "/users", // Updated href
+      href: "/official-dashboard", // New link for official dashboard
+      icon: <ClipboardList className="h-4 w-4" />,
+      label: "Painel do Mesário",
+      roles: ['official', 'admin'], // Visible to officials and admins
+    },
+    {
+      href: "/users",
       icon: <Users className="h-4 w-4" />,
-      label: "Gerenciar Usuários", // Updated label
+      label: "Gerenciar Usuários",
       roles: ['admin'], // Only visible to admins
     },
-    // Removed the "Painel do Mesário" link
   ];
 
   const closeSheet = () => {

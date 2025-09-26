@@ -8,6 +8,7 @@ const Index = lazy(() => import("@/pages/Index"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Login = lazy(() => import("@/pages/Login"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const OfficialDashboard = lazy(() => import("@/pages/OfficialDashboard")); // Import new OfficialDashboard
 const ChampionshipDetail = lazy(() => import("@/pages/ChampionshipDetail"));
 const ChampionshipTheme = lazy(() => import("@/pages/ChampionshipTheme"));
 const Profile = lazy(() => import("@/pages/Profile"));
@@ -156,6 +157,7 @@ export const AppRoutes = () => {
           
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/official-dashboard" element={<OfficialDashboard />} /> {/* New route */}
             <Route path="/championship/:id" element={<ChampionshipDetail />} />
             <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
             <Route path="/profile" element={<Profile />} />
