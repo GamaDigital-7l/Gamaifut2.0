@@ -55,11 +55,12 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       };
 
       const stringifiedPayload = JSON.stringify(payload);
-      console.log('Client sending stringified payload to Edge Function:', stringifiedPayload);
-      console.log('Client sending Authorization header:', `Bearer ${session?.access_token}`);
+      console.log('Client: Sending stringified payload to Edge Function:', stringifiedPayload);
+      console.log('Client: Sending Authorization header:', `Bearer ${session?.access_token}`);
+      console.log('Client: Sending Content-Type header: application/json');
 
       const { data, error } = await supabase.functions.invoke('create-user', {
-        body: stringifiedPayload, // <--- ALTERADO AQUI: Explicitamente stringify
+        body: stringifiedPayload,
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json',
@@ -70,7 +71,8 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
         throw error;
       }
 
-      if (data.error) {
+      // Check for application-level errors returned by the Edge Function
+      if (data && data.error) {
         throw new Error(data.error);
       }
 
@@ -83,7 +85,7 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       setOpen(false);
       onUserCreated();
     } catch (error: any) {
-      console.error('Error creating user from client:', error);
+      console.error('Client: Error creating user:', error);
       showError('Erro ao criar usuário: ' + (error.message || 'Erro desconhecido'));
     } finally {
       setIsSubmitting(false);
