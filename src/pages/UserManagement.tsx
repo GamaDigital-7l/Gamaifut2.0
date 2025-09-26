@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User as UserIcon, PlusCircle, Trash2 } from 'lucide-react';
+import { User as UserIcon, Trash2 } from 'lucide-react';
 import { useSession } from '@/components/SessionProvider';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { showSuccess, showError } from '@/utils/toast';
+import { CreateUserDialog } from '@/components/CreateUserDialog'; // Import the new dialog
 
 interface Profile {
   id: string;
@@ -25,7 +26,7 @@ interface Profile {
 }
 
 const UserManagement = () => {
-  const { userProfile } = useSession();
+  const { userProfile, session } = useSession();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +36,7 @@ const UserManagement = () => {
     setLoading(true);
     setError(null);
 
+    // Fetch profiles from the public.profiles table
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select(`
@@ -53,10 +55,9 @@ const UserManagement = () => {
       return;
     }
 
-    // NOTE: Fetching emails from auth.users requires a service role key,
-    // which should NOT be exposed on the client-side.
-    // For a real application, this would be done via a secure backend (e.g., Supabase Edge Function).
-    // For now, we'll display 'N/A' for emails if not fetched securely.
+    // For security, emails from auth.users are not directly accessible client-side.
+    // In a real app, you might fetch these via another secure Edge Function if needed.
+    // For now, we'll use a placeholder or assume email is not strictly needed here.
     const formattedData: Profile[] = profilesData.map((profile: any) => ({
       id: profile.id,
       first_name: profile.first_name,
@@ -94,7 +95,23 @@ const UserManagement = () => {
     }
   };
 
-  // Only allow 'admin' role to manage other users' roles
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (userProfile?.role !== 'admin') {
+      showError('Você não tem permissão para excluir usuários.');
+      return;
+    }
+    if (userId === userProfile?.id) {
+      showError('Você não pode excluir sua própria conta.');
+      return;
+    }
+
+    // This operation requires service_role key, so it must be done via an Edge Function
+    showError("A exclusão de usuários exige uma função de backend segura (Edge Function).");
+    // For now, this button will just show an error.
+    // In a real implementation, you'd invoke an Edge Function here.
+  };
+
+  // Only allow 'admin' role to manage other users' roles and create users
   const canManageRoles = userProfile?.role === 'admin';
 
   return (
@@ -105,9 +122,7 @@ const UserManagement = () => {
           <p className="text-muted-foreground mt-1">Visualize e gerencie as funções dos usuários cadastrados.</p>
         </div>
         <div className="flex gap-2">
-          <Button disabled onClick={() => showError("A criação de usuários exige uma função de backend segura.")}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Criar Usuário
-          </Button>
+          {canManageRoles && <CreateUserDialog onUserCreated={fetchProfiles} />}
         </div>
       </div>
 
@@ -167,7 +182,7 @@ const UserManagement = () => {
                         variant="destructive"
                         size="icon"
                         disabled={!canManageRoles}
-                        onClick={() => showError("A exclusão de usuários exige uma função de backend segura.")}
+                        onClick={() => handleDeleteUser(profile.id, `${profile.first_name} ${profile.last_name}`)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

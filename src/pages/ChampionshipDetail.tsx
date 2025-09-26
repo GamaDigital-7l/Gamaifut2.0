@@ -11,7 +11,8 @@ import {
   Calendar as CalendarIconLucide,
   BarChart2,
   HeartHandshake,
-  Settings
+  Settings,
+  UserPlus // Import UserPlus icon
 } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { showSuccess, showError } from '@/utils/toast';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Championship, Team, Match, Group, Round } from '@/types';
+import { useSession } from '@/components/SessionProvider'; // Import useSession
 
 // Import tab components
 import { TeamsTab } from '@/components/TeamsTab';
@@ -32,6 +34,7 @@ import { CalendarTab } from '@/components/CalendarTab';
 import { StatisticsTab } from '@/components/StatisticsTab';
 import { SponsorsTab } from '@/components/SponsorsTab';
 import { ChampionshipSettingsTab } from '@/components/ChampionshipSettingsTab';
+import { ManageChampionshipAccessDialog } from '@/components/ManageChampionshipAccessDialog'; // Import new dialog
 
 // Combined fetch function for all championship data
 const fetchChampionshipData = async (id: string) => {
@@ -62,6 +65,7 @@ const ChampionshipDetail = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const { fetchChampionshipLogo } = useChampionshipTheme();
+  const { userProfile } = useSession(); // Get current user profile
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['championshipData', id],
@@ -90,6 +94,9 @@ const ChampionshipDetail = () => {
         .catch(() => showError('Erro ao copiar o link.'));
     }
   };
+
+  // Check if the current user is the owner of this championship
+  const isChampionshipOwner = userProfile?.id === championship?.user_id;
 
   if (isLoading) {
     return (
@@ -136,7 +143,18 @@ const ChampionshipDetail = () => {
         </div>
         <div className="flex gap-2 flex-wrap justify-center">
           <Button variant="outline" onClick={handleCopyPublicLink}><Share2 className="mr-2 h-4 w-4" />Link Público</Button>
-          <Button asChild variant="outline"><Link to={`/championship/${championship.id}/theme`}><Palette className="mr-2 h-4 w-4" />Configurar Logo</Link></Button>
+          {isChampionshipOwner && (
+            <>
+              <Button asChild variant="outline"><Link to={`/championship/${championship.id}/theme`}><Palette className="mr-2 h-4 w-4" />Configurar Logo</Link></Button>
+              <ManageChampionshipAccessDialog
+                championshipId={championship.id}
+                championshipOwnerId={championship.user_id}
+                onAccessChanged={handleDataChange}
+              >
+                <Button variant="outline"><UserPlus className="mr-2 h-4 w-4" />Gerenciar Acessos</Button>
+              </ManageChampionshipAccessDialog>
+            </>
+          )}
         </div>
       </div>
 
