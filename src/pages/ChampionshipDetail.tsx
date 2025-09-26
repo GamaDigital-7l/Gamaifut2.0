@@ -228,8 +228,8 @@ const ChampionshipDetail = () => {
             matches={matches} 
             groups={groups} 
             rounds={rounds} 
-            isLoading={isLoading} 
-            onDataChange={handleDataChange} 
+            isLoading={isLoading} // Passando isLoading
+            onDataChange={handleDataChange} // Passando onDataChange
           />
         </TabsContent>
         <TabsContent value="statistics" className="mt-4">
@@ -237,8 +237,8 @@ const ChampionshipDetail = () => {
             championshipId={championship.id} 
             teams={teams} 
             matches={matches} 
-            isLoading={isLoading} 
-            onDataChange={handleDataChange} 
+            isLoading={isLoading} // Passando isLoading
+            onDataChange={handleDataChange} // Passando onDataChange
           />
         </TabsContent>
         <TabsContent value="sponsors" className="mt-4">

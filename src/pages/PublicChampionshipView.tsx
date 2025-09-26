@@ -326,8 +326,8 @@ const PublicChampionshipView = () => {
                 matches={matches} 
                 groups={groups}
                 rounds={rounds}
-                onMatchUpdated={() => {}} // No update action for public view
-                onMatchDeleted={() => {}} // No delete action for public view
+                isLoading={loading} // Passando isLoading
+                onDataChange={() => {}} // Passando onDataChange (vazio para public view)
               />
             </TabsContent>
 
@@ -336,6 +336,8 @@ const PublicChampionshipView = () => {
                 championshipId={championship.id} 
                 teams={teams} 
                 matches={matches} 
+                isLoading={loading} // Passando isLoading
+                onDataChange={() => {}} // Passando onDataChange (vazio para public view)
               />
             </TabsContent>
           </Tabs>

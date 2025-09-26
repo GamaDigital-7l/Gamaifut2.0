@@ -23,6 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import { Profile } from '@/types';
+import { Badge } from '@/components/ui/badge'; // Importado Badge
 
 interface ChampionshipUser {
   user_id: string;
@@ -58,8 +59,8 @@ export function ManageChampionshipAccessDialog({
       .select(`
         user_id,
         role_in_championship,
-        profiles (id, first_name, last_name, avatar_url, email, role)
-      `)
+        profiles (id, first_name, last_name, avatar_url, role)
+      `) // Removido 'email' da seleção de profiles
       .eq('championship_id', championshipId);
 
     if (error) {
@@ -67,7 +68,15 @@ export function ManageChampionshipAccessDialog({
       showError('Erro ao carregar usuários associados.');
       setAssociatedUsers([]);
     } else {
-      setAssociatedUsers(data as ChampionshipUser[]);
+      // A tipagem do Supabase pode retornar 'profiles' como um array mesmo em 1:1.
+      // Vamos garantir que seja um objeto único para cada ChampionshipUser.
+      const formattedData = data.map((item: any) => ({
+        user_id: item.user_id,
+        role_in_championship: item.role_in_championship,
+        profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles,
+      })).filter((item: any) => item.profiles !== null); // Filtrar se o perfil não for encontrado
+
+      setAssociatedUsers(formattedData as ChampionshipUser[]);
     }
     setIsLoading(false);
   }, [championshipId]);

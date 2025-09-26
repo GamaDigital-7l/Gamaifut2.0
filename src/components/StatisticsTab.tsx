@@ -8,8 +8,8 @@ interface StatisticsTabProps {
   championshipId: string;
   teams: Team[];
   matches: Match[];
-  isLoading: boolean;
-  onDataChange: () => void; // Callback to notify parent of data changes (though not used directly here, good practice)
+  isLoading: boolean; // Adicionado
+  onDataChange: () => void; // Adicionado
 }
 
 export function StatisticsTab({ championshipId, teams, matches, isLoading, onDataChange }: StatisticsTabProps) {

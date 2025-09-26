@@ -1,5 +1,6 @@
 export interface Championship {
   id: string;
+  user_id: string; // Adicionado user_id
   name: string;
   description: string | null;
   created_at: string;

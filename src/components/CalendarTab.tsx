@@ -6,14 +6,15 @@ import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { MatchCard } from './MatchCard'; // Re-use MatchCard for displaying details
 import { Match, Group, Round } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton'; // Importar Skeleton
 
 interface CalendarTabProps {
   championshipId: string;
   matches: Match[]; // Pass matches directly to avoid re-fetching
   groups: Group[]; // Pass groups for MatchCard
   rounds: Round[]; // Pass rounds for MatchCard
-  isLoading: boolean;
-  onDataChange: () => void; // Callback to notify parent of data changes
+  isLoading: boolean; // Adicionado
+  onDataChange: () => void; // Adicionado
 }
 
 export function CalendarTab({ championshipId, matches, groups, rounds, isLoading, onDataChange }: CalendarTabProps) {
