@@ -39,9 +39,9 @@ serve(async (req) => {
     const { data: { user: invokerUser }, error: invokerError } = await supabaseClient.auth.getUser(token);
 
     if (invokerError || !invokerUser) {
-      console.log('Unauthorized: Invalid token or invokerError', invokerError?.message);
-      return new Response(JSON.stringify({ error: 'Unauthorized: Invalid token' }), {
-        status: 401,
+      console.log('Forbidden: Invalid token or invokerError', invokerError?.message);
+      return new Response(JSON.stringify({ error: 'Forbidden: Invalid token' }), {
+        status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -62,15 +62,14 @@ serve(async (req) => {
     }
     console.log('Invoker is admin');
 
-    // --- NOVO LOG AQUI ---
-    const requestBodyText = await req.text(); // Lê o corpo da requisição como texto
+    const requestBodyText = await req.text();
     console.log('Raw request body received:', requestBodyText);
 
     let parsedBody;
     try {
-      parsedBody = JSON.parse(requestBodyText); // Tenta analisar o texto como JSON
+      parsedBody = JSON.parse(requestBodyText);
     } catch (jsonParseError: any) {
-      console.error('JSON parsing error:', jsonParseError.message);
+      console.error('JSON parsing error: The request body is not valid JSON.', jsonParseError.message);
       return new Response(JSON.stringify({ error: 'Invalid JSON in request body: ' + jsonParseError.message }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

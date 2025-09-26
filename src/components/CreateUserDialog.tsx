@@ -46,14 +46,19 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
     setIsSubmitting(true);
 
     try {
+      const payload = {
+        email,
+        password,
+        first_name: firstName,
+        last_name: lastName,
+        role,
+      };
+
+      console.log('Client sending payload to Edge Function:', payload);
+      console.log('Client sending Authorization header:', `Bearer ${session?.access_token}`);
+
       const { data, error } = await supabase.functions.invoke('create-user', {
-        body: JSON.stringify({
-          email,
-          password,
-          first_name: firstName,
-          last_name: lastName,
-          role,
-        }),
+        body: JSON.stringify(payload),
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json',
@@ -77,7 +82,7 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       setOpen(false);
       onUserCreated();
     } catch (error: any) {
-      console.error('Error creating user:', error);
+      console.error('Error creating user from client:', error);
       showError('Erro ao criar usuário: ' + (error.message || 'Erro desconhecido'));
     } finally {
       setIsSubmitting(false);
