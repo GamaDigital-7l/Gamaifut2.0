@@ -21,6 +21,16 @@ export interface MatchTeam {
   logo_url: string | null;
 }
 
+export interface Team { // Exporting Team interface
+  id: string;
+  name: string;
+  logo_url: string | null;
+  championship_id: string;
+  user_id: string;
+  group_id: string | null;
+  groups: { name: string } | null; // Nested group data
+}
+
 export interface Group {
   id: string;
   name: string;
