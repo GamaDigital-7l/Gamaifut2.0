@@ -37,10 +37,10 @@ import { ChampionshipSettingsTab } from '@/components/ChampionshipSettingsTab';
 const fetchChampionshipData = async (id: string) => {
   const [champRes, teamsRes, groupsRes, roundsRes, matchesRes] = await Promise.all([
     supabase.from('championships').select('*').eq('id', id).single(),
-    supabase.from('teams').select('*').eq('championship_id', id),
+    supabase.from('teams').select('*, groups(name)').eq('championship_id', id), // Fetch groups(name) for Team type
     supabase.from('groups').select('*').eq('championship_id', id),
     supabase.from('rounds').select('*').eq('championship_id', id),
-    supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(*), team2:teams!matches_team2_id_fkey(*), groups(name), rounds(name)`).eq('championship_id', id)
+    supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name)`).eq('championship_id', id) // Fetch all nested fields for Match type
   ]);
 
   if (champRes.error) throw new Error(champRes.error.message);
@@ -77,6 +77,7 @@ const ChampionshipDetail = () => {
     }
   }, [id, fetchChampionshipLogo]);
 
+  // Callback to invalidate and refetch all championship data
   const handleDataChange = () => {
     queryClient.invalidateQueries({ queryKey: ['championshipData', id] });
   };
@@ -154,15 +155,88 @@ const ChampionshipDetail = () => {
           </TabsList>
         </div>
         
-        <TabsContent value="leaderboard" className="mt-4"><LeaderboardTab championshipId={championship.id} /></TabsContent>
-        <TabsContent value="matches" className="mt-4"><MatchesTab championshipId={championship.id} /></TabsContent>
-        <TabsContent value="teams" className="mt-4"><TeamsTab championshipId={championship.id} /></TabsContent>
-        <TabsContent value="groups" className="mt-4"><GroupsTab championshipId={championship.id} teams={teams} onTeamUpdated={handleDataChange} /></TabsContent>
-        <TabsContent value="rounds" className="mt-4"><RoundsTab championshipId={championship.id} teams={teams} groups={groups} onMatchesAdded={handleDataChange} /></TabsContent>
-        <TabsContent value="calendar" className="mt-4"><CalendarTab championshipId={championship.id} matches={matches} groups={groups} rounds={rounds} onMatchUpdated={handleDataChange} onMatchDeleted={handleDataChange} /></TabsContent>
-        <TabsContent value="statistics" className="mt-4"><StatisticsTab championshipId={championship.id} teams={teams} matches={matches} /></TabsContent>
-        <TabsContent value="sponsors" className="mt-4"><SponsorsTab championshipId={championship.id} /></TabsContent>
-        <TabsContent value="settings" className="mt-4"><ChampionshipSettingsTab championshipId={championship.id} /></TabsContent>
+        <TabsContent value="leaderboard" className="mt-4">
+          <LeaderboardTab 
+            championshipId={championship.id} 
+            teams={teams} 
+            groups={groups} 
+            matches={matches} 
+            championship={championship} 
+            isLoading={isLoading} 
+          />
+        </TabsContent>
+        <TabsContent value="matches" className="mt-4">
+          <MatchesTab 
+            championshipId={championship.id} 
+            teams={teams} 
+            groups={groups} 
+            rounds={rounds} 
+            matches={matches} 
+            isLoading={isLoading} 
+            onDataChange={handleDataChange} 
+          />
+        </TabsContent>
+        <TabsContent value="teams" className="mt-4">
+          <TeamsTab 
+            championshipId={championship.id} 
+            teams={teams} 
+            groups={groups} 
+            isLoading={isLoading} 
+            onDataChange={handleDataChange} 
+          />
+        </TabsContent>
+        <TabsContent value="groups" className="mt-4">
+          <GroupsTab 
+            championshipId={championship.id} 
+            teams={teams} 
+            groups={groups} 
+            isLoading={isLoading} 
+            onDataChange={handleDataChange} 
+          />
+        </TabsContent>
+        <TabsContent value="rounds" className="mt-4">
+          <RoundsTab 
+            championshipId={championship.id} 
+            teams={teams} 
+            groups={groups} 
+            rounds={rounds} 
+            isLoading={isLoading} 
+            onDataChange={handleDataChange} 
+          />
+        </TabsContent>
+        <TabsContent value="calendar" className="mt-4">
+          <CalendarTab 
+            championshipId={championship.id} 
+            matches={matches} 
+            groups={groups} 
+            rounds={rounds} 
+            isLoading={isLoading} 
+            onDataChange={handleDataChange} 
+          />
+        </TabsContent>
+        <TabsContent value="statistics" className="mt-4">
+          <StatisticsTab 
+            championshipId={championship.id} 
+            teams={teams} 
+            matches={matches} 
+            isLoading={isLoading} 
+            onDataChange={handleDataChange} 
+          />
+        </TabsContent>
+        <TabsContent value="sponsors" className="mt-4">
+          <SponsorsTab 
+            championshipId={championship.id} 
+            onDataChange={handleDataChange} 
+          />
+        </TabsContent>
+        <TabsContent value="settings" className="mt-4">
+          <ChampionshipSettingsTab 
+            championshipId={championship.id} 
+            championship={championship} 
+            isLoading={isLoading} 
+            onDataChange={handleDataChange} 
+          />
+        </TabsContent>
       </Tabs>
       
       <SponsorDisplay championshipId={championship.id} />

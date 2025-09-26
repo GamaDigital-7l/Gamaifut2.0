@@ -26,9 +26,10 @@ export type Sponsor = {
 
 interface SponsorsTabProps {
   championshipId: string;
+  onDataChange: () => void; // Callback to notify parent of data changes
 }
 
-export function SponsorsTab({ championshipId }: SponsorsTabProps) {
+export function SponsorsTab({ championshipId, onDataChange }: SponsorsTabProps) {
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,6 +53,11 @@ export function SponsorsTab({ championshipId }: SponsorsTabProps) {
     fetchSponsors();
   }, [fetchSponsors]);
 
+  const handleSponsorChange = () => {
+    fetchSponsors(); // Refresh local sponsors list
+    onDataChange(); // Notify parent of change
+  };
+
   const levelVariant = (level: string) => {
     switch (level) {
       case 'ouro': return 'default';
@@ -72,7 +78,7 @@ export function SponsorsTab({ championshipId }: SponsorsTabProps) {
           <CreateSponsorDialog 
             championshipId={championshipId} 
             existingSponsors={sponsors}
-            onSponsorCreated={fetchSponsors} 
+            onSponsorCreated={handleSponsorChange} 
           />
         </div>
       </CardHeader>
@@ -120,10 +126,10 @@ export function SponsorsTab({ championshipId }: SponsorsTabProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <EditSponsorDialog sponsor={sponsor} existingSponsors={sponsors} onSponsorUpdated={fetchSponsors}>
+                        <EditSponsorDialog sponsor={sponsor} existingSponsors={sponsors} onSponsorUpdated={handleSponsorChange}>
                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
                         </EditSponsorDialog>
-                        <DeleteSponsorDialog sponsor={sponsor} onSponsorDeleted={fetchSponsors}>
+                        <DeleteSponsorDialog sponsor={sponsor} onSponsorDeleted={handleSponsorChange}>
                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem>
                         </DeleteSponsorDialog>
                       </DropdownMenuContent>

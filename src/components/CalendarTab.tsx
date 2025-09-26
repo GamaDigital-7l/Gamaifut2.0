@@ -12,11 +12,11 @@ interface CalendarTabProps {
   matches: Match[]; // Pass matches directly to avoid re-fetching
   groups: Group[]; // Pass groups for MatchCard
   rounds: Round[]; // Pass rounds for MatchCard
-  onMatchUpdated: () => void;
-  onMatchDeleted: () => void;
+  isLoading: boolean;
+  onDataChange: () => void; // Callback to notify parent of data changes
 }
 
-export function CalendarTab({ championshipId, matches, groups, rounds, onMatchUpdated, onMatchDeleted }: CalendarTabProps) {
+export function CalendarTab({ championshipId, matches, groups, rounds, isLoading, onDataChange }: CalendarTabProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [matchesOnSelectedDate, setMatchesOnSelectedDate] = useState<Match[]>([]);
 
@@ -65,7 +65,11 @@ export function CalendarTab({ championshipId, matches, groups, rounds, onMatchUp
           <h3 className="text-lg font-semibold mb-4">
             Partidas em {selectedDate ? format(selectedDate, "dd 'de' MMMM, yyyy", { locale: ptBR }) : 'Nenhuma data selecionada'}
           </h3>
-          {matchesOnSelectedDate.length === 0 ? (
+          {isLoading ? (
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
+            </div>
+          ) : matchesOnSelectedDate.length === 0 ? (
             <div className="text-center py-10 border-2 border-dashed rounded-lg">
               <p className="text-gray-500">Nenhuma partida agendada para esta data.</p>
             </div>
@@ -75,8 +79,8 @@ export function CalendarTab({ championshipId, matches, groups, rounds, onMatchUp
                 <MatchCard
                   key={match.id}
                   match={match}
-                  onMatchUpdated={onMatchUpdated}
-                  onMatchDeleted={onMatchDeleted}
+                  onMatchUpdated={onDataChange}
+                  onMatchDeleted={onDataChange}
                   isEven={index % 2 === 0}
                   groups={groups}
                   rounds={rounds}
@@ -85,7 +89,7 @@ export function CalendarTab({ championshipId, matches, groups, rounds, onMatchUp
             </div>
           )}
         </div>
-      </CardContent> {/* Fechamento da tag CardContent adicionado aqui */}
+      </CardContent>
     </Card>
   );
 }

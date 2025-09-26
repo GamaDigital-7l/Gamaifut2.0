@@ -16,44 +16,27 @@ import {
 import { Label } from '@/components/ui/label';
 import { Team, Group, Round, Match } from '@/types';
 
-const fetchData = async (championshipId: string) => {
-  const [teamsRes, groupsRes, roundsRes, matchesRes] = await Promise.all([
-    supabase.from('teams').select('*').eq('championship_id', championshipId),
-    supabase.from('groups').select('*').eq('championship_id', championshipId),
-    supabase.from('rounds').select('*').eq('championship_id', championshipId).order('order_index', { ascending: true }),
-    supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(*), team2:teams!matches_team2_id_fkey(*), groups(name), rounds(name)`).eq('championship_id', championshipId).order('match_date', { ascending: true })
-  ]);
-  if (teamsRes.error || groupsRes.error || roundsRes.error || matchesRes.error) {
-    console.error(teamsRes.error, groupsRes.error, roundsRes.error, matchesRes.error);
-    throw new Error('Failed to fetch data for matches tab');
-  }
-  return {
-    teams: teamsRes.data as Team[],
-    groups: groupsRes.data as Group[],
-    rounds: roundsRes.data as Round[],
-    matches: matchesRes.data as Match[],
-  };
-};
-
 interface MatchesTabProps {
   championshipId: string;
+  teams: Team[];
+  groups: Group[];
+  rounds: Round[];
+  matches: Match[];
+  isLoading: boolean;
+  onDataChange: () => void; // Callback to notify parent of data changes
 }
 
-export function MatchesTab({ championshipId }: MatchesTabProps) {
-  const queryClient = useQueryClient();
+export function MatchesTab({ championshipId, teams, groups, rounds, matches, isLoading, onDataChange }: MatchesTabProps) {
+  // No longer fetching data internally, relying on props
+  // const queryClient = useQueryClient();
+  // const { data, isLoading } = useQuery({
+  //   queryKey: ['matchesTab', championshipId],
+  //   queryFn: () => fetchData(championshipId),
+  // });
+
+  // const { teams = [], groups = [], rounds = [], matches = [] } = data || {};
+
   const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all');
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['matchesTab', championshipId],
-    queryFn: () => fetchData(championshipId),
-  });
-
-  const { teams = [], groups = [], rounds = [], matches = [] } = data || {};
-
-  const invalidateAndRefetch = () => {
-    queryClient.invalidateQueries({ queryKey: ['matchesTab', championshipId] });
-    queryClient.invalidateQueries({ queryKey: ['leaderboard', championshipId] });
-  };
 
   const filteredMatches = selectedRoundFilter === 'all'
     ? matches
@@ -68,8 +51,8 @@ export function MatchesTab({ championshipId }: MatchesTabProps) {
             <CardDescription>Agende e atualize os resultados.</CardDescription>
           </div>
           <div className="flex gap-2">
-            <GenerateMatchesDialog championshipId={championshipId} teams={teams} groups={groups} rounds={rounds} onMatchesGenerated={invalidateAndRefetch} />
-            <CreateMatchDialog championshipId={championshipId} teams={teams} groups={groups} rounds={rounds} onMatchCreated={invalidateAndRefetch} />
+            <GenerateMatchesDialog championshipId={championshipId} teams={teams} groups={groups} rounds={rounds} onMatchesGenerated={onDataChange} />
+            <CreateMatchDialog championshipId={championshipId} teams={teams} groups={groups} rounds={rounds} onMatchCreated={onDataChange} />
           </div>
         </div>
         {rounds.length > 0 && (
@@ -93,7 +76,7 @@ export function MatchesTab({ championshipId }: MatchesTabProps) {
         ) : filteredMatches.length === 0 ? (
           <div className="text-center py-10 border-2 border-dashed rounded-lg"><p className="text-gray-500">Nenhuma partida agendada.</p></div>
         ) : (
-          <div className="space-y-2">{filteredMatches.map((match: Match, index: number) => (<MatchCard key={match.id} match={match} onMatchUpdated={invalidateAndRefetch} onMatchDeleted={invalidateAndRefetch} isEven={index % 2 === 0} groups={groups} rounds={rounds} isPublicView={false} />))}</div>
+          <div className="space-y-2">{filteredMatches.map((match: Match, index: number) => (<MatchCard key={match.id} match={match} onMatchUpdated={onDataChange} onMatchDeleted={onDataChange} isEven={index % 2 === 0} groups={groups} rounds={rounds} isPublicView={false} />))}</div>
         )}
       </CardContent>
     </Card>

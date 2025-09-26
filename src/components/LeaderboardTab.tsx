@@ -5,38 +5,23 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Leaderboard } from '@/components/Leaderboard';
 import { Team, Group, Match, Championship } from '@/types'; // Import types from centralized types
 
-const fetchData = async (championshipId: string) => {
-  const [teamsRes, groupsRes, matchesRes, championshipRes] = await Promise.all([
-    supabase.from('teams').select('*, groups(name)').eq('championship_id', championshipId), // Fetch groups(name) for Team type
-    supabase.from('groups').select('*').eq('championship_id', championshipId),
-    supabase.from('matches').select(`*, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name)`).eq('championship_id', championshipId), // Fetch all nested fields for Match type
-    supabase.from('championships').select('points_for_win').eq('id', championshipId).single(),
-  ]);
-
-  if (teamsRes.error || groupsRes.error || matchesRes.error || championshipRes.error) {
-    console.error(teamsRes.error, groupsRes.error, matchesRes.error, championshipRes.error);
-    throw new Error('Failed to fetch data for leaderboard');
-  }
-
-  return {
-    teams: teamsRes.data as Team[],
-    groups: groupsRes.data as Group[],
-    matches: matchesRes.data as Match[],
-    championship: championshipRes.data as Championship,
-  };
-};
-
 interface LeaderboardTabProps {
   championshipId: string;
+  teams: Team[];
+  groups: Group[];
+  matches: Match[];
+  championship: Championship;
+  isLoading: boolean;
 }
 
-export function LeaderboardTab({ championshipId }: LeaderboardTabProps) {
-  const { data, isLoading } = useQuery({
-    queryKey: ['leaderboard', championshipId],
-    queryFn: () => fetchData(championshipId),
-  });
+export function LeaderboardTab({ championshipId, teams, groups, matches, championship, isLoading }: LeaderboardTabProps) {
+  // No longer fetching data internally, relying on props
+  // const { data, isLoading } = useQuery({
+  //   queryKey: ['leaderboard', championshipId],
+  //   queryFn: () => fetchData(championshipId),
+  // });
 
-  const { teams = [], groups = [], matches = [], championship } = data || {};
+  // const { teams = [], groups = [], matches = [], championship } = data || {};
 
   if (isLoading) {
     return (

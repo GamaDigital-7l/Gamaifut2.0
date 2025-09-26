@@ -19,7 +19,7 @@ const Login = () => {
           supabaseClient={supabase}
           appearance={{ theme: ThemeSupa }}
           providers={[]}
-          view="sign_in"
+          view="sign_in" // Only show sign-in view
           theme="dark"
         />
       </div>

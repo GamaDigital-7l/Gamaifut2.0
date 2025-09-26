@@ -32,35 +32,38 @@ interface RoundsTabProps {
   championshipId: string;
   teams: Team[]; // Pass teams to AddMatchesToRoundDialog
   groups: Group[]; // Pass groups to AddMatchesToRoundDialog
-  onMatchesAdded: () => void; // Callback for when matches are added
+  rounds: Round[]; // Rounds passed as prop
+  isLoading: boolean;
+  onDataChange: () => void; // Callback for when data is changed
 }
 
-export function RoundsTab({ championshipId, teams, groups, onMatchesAdded }: RoundsTabProps) {
-  const [rounds, setRounds] = useState<Round[]>([]);
-  const [loading, setLoading] = useState(true);
+export function RoundsTab({ championshipId, teams, groups, rounds, isLoading, onDataChange }: RoundsTabProps) {
+  // No longer fetching rounds internally, relying on props
+  // const [rounds, setRounds] = useState<Round[]>([]);
+  // const [loading, setLoading] = useState(true); // Use isLoading from props
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchRounds = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('rounds')
-      .select('*')
-      .eq('championship_id', championshipId)
-      .order('order_index', { ascending: true })
-      .order('name', { ascending: true });
+  // const fetchRounds = useCallback(async () => {
+  //   setLoading(true);
+  //   const { data, error } = await supabase
+  //     .from('rounds')
+  //     .select('*')
+  //     .eq('championship_id', championshipId)
+  //     .order('order_index', { ascending: true })
+  //     .order('name', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching rounds:', error);
-      showError('Erro ao carregar rodadas: ' + error.message);
-    } else {
-      setRounds(data as Round[]);
-    }
-    setLoading(false);
-  }, [championshipId]);
+  //   if (error) {
+  //     console.error('Error fetching rounds:', error);
+  //     showError('Erro ao carregar rodadas: ' + error.message);
+  //   } else {
+  //     setRounds(data as Round[]);
+  //   }
+  //   setLoading(false);
+  // }, [championshipId]);
 
-  useEffect(() => {
-    fetchRounds();
-  }, [fetchRounds]);
+  // useEffect(() => {
+  //   fetchRounds();
+  // }, [fetchRounds]);
 
   const handleDeleteRound = async (roundId: string, roundName: string) => {
     setIsDeleting(true);
@@ -75,8 +78,7 @@ export function RoundsTab({ championshipId, teams, groups, onMatchesAdded }: Rou
       showError(`Erro ao excluir rodada "${roundName}": ${error.message}`);
     } else {
       showSuccess(`Rodada "${roundName}" excluída com sucesso!`);
-      fetchRounds();
-      onMatchesAdded(); // Also trigger a refresh of matches in ChampionshipDetail
+      onDataChange(); // Notify parent to refetch all championship data
     }
   };
 
@@ -110,11 +112,11 @@ export function RoundsTab({ championshipId, teams, groups, onMatchesAdded }: Rou
             <CardTitle>Rodadas e Fases</CardTitle>
             <CardDescription>Organize as rodadas e fases do campeonato (ex: Fase de Grupos, Quartas de Final).</CardDescription>
           </div>
-          <CreateRoundDialog championshipId={championshipId} onRoundCreated={fetchRounds} />
+          <CreateRoundDialog championshipId={championshipId} onRoundCreated={onDataChange} />
         </div>
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {isLoading ? (
           <div className="space-y-2">
             {[...Array(3)].map((_, index) => (
               <Card key={index}>
@@ -156,13 +158,13 @@ export function RoundsTab({ championshipId, teams, groups, onMatchesAdded }: Rou
                         roundName={round.name}
                         teams={teams}
                         groups={groups}
-                        onMatchesAdded={onMatchesAdded}
+                        onMatchesAdded={onDataChange}
                       >
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                           <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Partidas
                         </DropdownMenuItem>
                       </AddMatchesToRoundDialog>
-                      <EditRoundDialog round={round} onRoundUpdated={fetchRounds}>
+                      <EditRoundDialog round={round} onRoundUpdated={onDataChange}>
                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                             <Edit className="mr-2 h-4 w-4" /> Editar
                          </DropdownMenuItem>

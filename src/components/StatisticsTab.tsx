@@ -1,29 +1,18 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-
-interface Team {
-  id: string;
-  name: string;
-  logo_url: string | null;
-}
-
-interface Match {
-  id: string;
-  team1_id: string;
-  team2_id: string;
-  team1_score: number | null;
-  team2_score: number | null;
-  match_date: string | null;
-}
+import { Team, Match } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface StatisticsTabProps {
   championshipId: string;
   teams: Team[];
   matches: Match[];
+  isLoading: boolean;
+  onDataChange: () => void; // Callback to notify parent of data changes (though not used directly here, good practice)
 }
 
-export function StatisticsTab({ championshipId, teams, matches }: StatisticsTabProps) {
+export function StatisticsTab({ championshipId, teams, matches, isLoading, onDataChange }: StatisticsTabProps) {
   const playedMatches = matches.filter(m => m.team1_score !== null && m.team2_score !== null);
 
   const totalMatches = matches.length;
@@ -69,6 +58,22 @@ export function StatisticsTab({ championshipId, teams, matches }: StatisticsTabP
   const sortedScores = Array.from(scoreCounts.entries()).sort((a, b) => b[1] - a[1]);
   const top3Scores = sortedScores.slice(0, 3);
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </CardHeader>
+        <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-40 w-full md:col-span-2 lg:col-span-3" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

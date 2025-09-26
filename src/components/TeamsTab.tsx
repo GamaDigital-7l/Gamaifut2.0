@@ -16,48 +16,28 @@ import {
 import { Link } from 'react-router-dom';
 import { Team, Group } from '@/types';
 
-const fetchTeams = async (championshipId: string) => {
-  const { data, error } = await supabase
-    .from('teams')
-    .select('*')
-    .eq('championship_id', championshipId)
-    .order('name', { ascending: true });
-  if (error) throw new Error(error.message);
-  return data as Team[];
-};
-
-const fetchGroups = async (championshipId: string) => {
-  const { data, error } = await supabase
-    .from('groups')
-    .select('*')
-    .eq('championship_id', championshipId);
-  if (error) throw new Error(error.message);
-  return data as Group[];
-};
-
 interface TeamsTabProps {
   championshipId: string;
+  teams: Team[];
+  groups: Group[];
+  isLoading: boolean;
+  onDataChange: () => void; // Callback to notify parent of data changes
 }
 
-export function TeamsTab({ championshipId }: TeamsTabProps) {
-  const queryClient = useQueryClient();
+export function TeamsTab({ championshipId, teams, groups, isLoading, onDataChange }: TeamsTabProps) {
+  // No longer fetching data internally, relying on props
+  // const queryClient = useQueryClient();
+  // const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
+  //   queryKey: ['teams', championshipId],
+  //   queryFn: () => fetchTeams(championshipId),
+  // });
 
-  const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
-    queryKey: ['teams', championshipId],
-    queryFn: () => fetchTeams(championshipId),
-  });
+  // const { data: groups = [], isLoading: isLoadingGroups } = useQuery({
+  //   queryKey: ['groups', championshipId],
+  //   queryFn: () => fetchGroups(championshipId),
+  // });
 
-  const { data: groups = [], isLoading: isLoadingGroups } = useQuery({
-    queryKey: ['groups', championshipId],
-    queryFn: () => fetchGroups(championshipId),
-  });
-
-  const invalidateAndRefetch = () => {
-    queryClient.invalidateQueries({ queryKey: ['teams', championshipId] });
-    queryClient.invalidateQueries({ queryKey: ['leaderboard', championshipId] }); // Invalidate leaderboard as well
-  };
-
-  const isLoading = isLoadingTeams || isLoadingGroups;
+  // const isLoading = isLoadingTeams || isLoadingGroups; // Use isLoading from props
 
   return (
     <Card>
@@ -67,7 +47,7 @@ export function TeamsTab({ championshipId }: TeamsTabProps) {
             <CardTitle>Times</CardTitle>
             <CardDescription>Gerencie os times participantes.</CardDescription>
           </div>
-          <CreateTeamDialog championshipId={championshipId} onTeamCreated={invalidateAndRefetch} groups={groups} />
+          <CreateTeamDialog championshipId={championshipId} onTeamCreated={onDataChange} groups={groups} />
         </div>
       </CardHeader>
       <CardContent>
@@ -100,10 +80,10 @@ export function TeamsTab({ championshipId }: TeamsTabProps) {
                       <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <EditTeamDialog team={team} onTeamUpdated={invalidateAndRefetch} groups={groups}>
+                      <EditTeamDialog team={team} onTeamUpdated={onDataChange} groups={groups}>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
                       </EditTeamDialog>
-                      <DeleteTeamDialog team={team} onTeamDeleted={invalidateAndRefetch}>
+                      <DeleteTeamDialog team={team} onTeamDeleted={onDataChange}>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir</DropdownMenuItem>
                       </DeleteTeamDialog>
                     </DropdownMenuContent>

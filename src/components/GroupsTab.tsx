@@ -29,34 +29,37 @@ import { Badge } from '@/components/ui/badge'; // Importar Badge para os times
 interface GroupsTabProps {
   championshipId: string;
   teams: Team[]; // New prop: all teams in the championship
-  onTeamUpdated: () => void; // Callback to refresh teams if needed (e.g., after assigning)
+  groups: Group[]; // Groups passed as prop
+  isLoading: boolean;
+  onDataChange: () => void; // Callback to notify parent of data changes
 }
 
-export function GroupsTab({ championshipId, teams, onTeamUpdated }: GroupsTabProps) {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
+export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChange }: GroupsTabProps) {
+  // No longer fetching groups internally, relying on props
+  // const [groups, setGroups] = useState<Group[]>([]);
+  // const [loading, setLoading] = useState(true); // Use isLoading from props
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchGroups = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('groups')
-      .select('*')
-      .eq('championship_id', championshipId)
-      .order('name', { ascending: true });
+  // const fetchGroups = useCallback(async () => {
+  //   setLoading(true);
+  //   const { data, error } = await supabase
+  //     .from('groups')
+  //     .select('*')
+  //     .eq('championship_id', championshipId)
+  //     .order('name', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching groups:', error);
-      showError('Erro ao carregar grupos: ' + error.message);
-    } else {
-      setGroups(data as Group[]);
-    }
-    setLoading(false);
-  }, [championshipId]);
+  //   if (error) {
+  //     console.error('Error fetching groups:', error);
+  //     showError('Erro ao carregar grupos: ' + error.message);
+  //   } else {
+  //     setGroups(data as Group[]);
+  //   }
+  //   setLoading(false);
+  // }, [championshipId]);
 
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+  // useEffect(() => {
+  //   fetchGroups();
+  // }, [fetchGroups]);
 
   const handleDeleteGroup = async (groupId: string, groupName: string) => {
     setIsDeleting(true);
@@ -84,8 +87,7 @@ export function GroupsTab({ championshipId, teams, onTeamUpdated }: GroupsTabPro
       showError(`Erro ao excluir grupo "${groupName}": ${error.message}`);
     } else {
       showSuccess(`Grupo "${groupName}" excluído com sucesso!`);
-      fetchGroups();
-      onTeamUpdated(); // Trigger a refresh of teams in ChampionshipDetail
+      onDataChange(); // Notify parent to refetch all championship data
     }
   };
 
@@ -97,11 +99,11 @@ export function GroupsTab({ championshipId, teams, onTeamUpdated }: GroupsTabPro
             <CardTitle>Grupos</CardTitle>
             <CardDescription>Organize os times em grupos para as fases do campeonato.</CardDescription>
           </div>
-          <CreateGroupDialog championshipId={championshipId} onGroupCreated={fetchGroups} />
+          <CreateGroupDialog championshipId={championshipId} onGroupCreated={onDataChange} />
         </div>
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {isLoading ? (
           <div className="space-y-4">
             {[...Array(2)].map((_, index) => ( // Render 2 skeleton cards
               <Card key={index}>

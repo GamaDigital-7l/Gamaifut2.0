@@ -12,9 +12,13 @@ import {
 } from "@/components/ui/select";
 import { showSuccess, showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Championship } from '@/types'; // Import Championship type
 
 interface ChampionshipSettingsTabProps {
   championshipId: string;
+  championship: Championship; // Pass championship data as prop
+  isLoading: boolean;
+  onDataChange: () => void; // Callback to notify parent of data changes
 }
 
 interface ChampionshipSettings {
@@ -24,30 +28,20 @@ interface ChampionshipSettings {
   age_category: string;
 }
 
-export function ChampionshipSettingsTab({ championshipId }: ChampionshipSettingsTabProps) {
+export function ChampionshipSettingsTab({ championshipId, championship, isLoading, onDataChange }: ChampionshipSettingsTabProps) {
   const [settings, setSettings] = useState<ChampionshipSettings | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchSettings = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('championships')
-      .select('points_for_win, sport_type, gender, age_category')
-      .eq('id', championshipId)
-      .single();
-
-    if (error) {
-      showError('Erro ao carregar configurações: ' + error.message);
-    } else {
-      setSettings(data);
-    }
-    setLoading(false);
-  }, [championshipId]);
-
   useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
+    if (championship) {
+      setSettings({
+        points_for_win: championship.points_for_win,
+        sport_type: championship.sport_type,
+        gender: championship.gender,
+        age_category: championship.age_category,
+      });
+    }
+  }, [championship]);
 
   const handleSettingChange = (field: keyof ChampionshipSettings, value: string | number) => {
     if (settings) {
@@ -71,10 +65,11 @@ export function ChampionshipSettingsTab({ championshipId }: ChampionshipSettings
       showError('Erro ao salvar configurações: ' + error.message);
     } else {
       showSuccess('Configurações salvas com sucesso!');
+      onDataChange(); // Notify parent of change
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
