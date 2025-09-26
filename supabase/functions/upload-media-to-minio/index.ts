@@ -1,10 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { S3Client } from "https://deno.land/x/s3@0.5.0/mod.ts"; // Using Deno's S3 client
+import { S3Bucket } from "https://deno.land/x/s3@0.5.0/mod.ts"; // CORRIGIDO: Importar S3Bucket em vez de S3Client
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS', // Adicionado para CORS
 };
 
 serve(async (req) => {
@@ -14,13 +15,13 @@ serve(async (req) => {
 
   if (req.method === 'OPTIONS') {
     console.log('Handling OPTIONS request for CORS preflight.');
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders, status: 200 }); // CORRIGIDO: Retornar 'ok' com status 200
   }
 
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '', // Use service role key for RLS bypass if needed, or auth.getUser for user context
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       {
         auth: {
           autoRefreshToken: false,
@@ -133,22 +134,24 @@ serve(async (req) => {
       });
     }
 
-    const s3 = new S3Client({
+    // CORRIGIDO: Inicializar S3Bucket em vez de S3Client
+    const s3 = new S3Bucket({
       endPoint: MINIO_ENDPOINT,
       accessKey: MINIO_ACCESS_KEY,
       secretKey: MINIO_SECRET_KEY,
+      bucket: MINIO_BUCKET_NAME, // O bucket é passado aqui
       region: "us-east-1", // MinIO often uses a default region, adjust if yours is different
-      bucket: MINIO_BUCKET_NAME,
       // For self-signed certs or HTTP, you might need to disable TLS verification
       // ssl: false, // Use this if your MinIO is on HTTP
     });
-    console.log('MinIO S3 client created.');
+    console.log('MinIO S3 client (S3Bucket) created.');
 
     const fileExt = file.name.split('.').pop();
     const objectKey = `${championshipId}/${crypto.randomUUID()}.${fileExt}`; // Path in MinIO bucket
 
     console.log(`Attempting to upload file to MinIO: bucket=${MINIO_BUCKET_NAME}, key=${objectKey}`);
-    const uploadResult = await s3.putObject(MINIO_BUCKET_NAME, objectKey, file.stream(), {
+    // CORRIGIDO: Usar putObject diretamente no S3Bucket
+    const uploadResult = await s3.putObject(objectKey, file.stream(), {
       headers: {
         'Content-Type': file.type,
       },
