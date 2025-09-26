@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Navigate } from 'react-router-dom';
 import { useSession } from '@/components/SessionProvider';
 import { MadeWithDyad } from '@/components/made-with-dyad'; // Importar o componente da logo
-import { ptBR } from '@supabase/auth-ui-shared'; // Importar a localização em português do pacote correto
+import { ptBR } from '@supabase/ui-locales'; // Importar a localização em português do pacote correto
 
 const Login = () => {
   const { session } = useSession();
@@ -26,36 +26,8 @@ const Login = () => {
           providers={[]}
           view="sign_in"
           theme="dark"
-          localization={{
-            variables: {
-              sign_in: {
-                email_label: 'Seu e-mail',
-                password_label: 'Sua senha',
-                email_input_placeholder: 'Digite seu e-mail',
-                password_input_placeholder: 'Digite sua senha',
-                button_label: 'Entrar',
-                social_provider_text: 'Entrar com {{provider}}',
-                link_text: 'Já tem uma conta? Faça login',
-              },
-              forgotten_password: {
-                link_text: 'Esqueceu sua senha?',
-                email_label: 'Seu e-mail',
-                email_input_placeholder: 'Digite seu e-mail',
-                button_label: 'Enviar instruções de redefinição',
-                // A propriedade 'back_to_sign_in_text' não é reconhecida aqui e foi removida.
-              },
-              update_password: {
-                password_label: 'Nova senha',
-                password_input_placeholder: 'Digite sua nova senha',
-                button_label: 'Atualizar senha',
-              },
-              magic_link: {
-                email_input_placeholder: 'Digite seu e-mail',
-                button_label: 'Enviar link mágico',
-                link_text: 'Enviar um link mágico por e-mail',
-              },
-            },
-          }}
+          showLinks={false}
+          localization={ptBR} // Usar o objeto de localização ptBR completo
         />
       </div>
       <div className="mt-8">
