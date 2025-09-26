@@ -18,7 +18,7 @@ import { Group, Round, Team, Match } from '@/types'; // Import types from centra
 interface MatchCardProps {
   match: Match;
   onMatchUpdated: () => void;
-  onMatchDeleted: () => void; // Corrigido o tipo aqui
+  onMatchDeleted: () => void;
   isEven: boolean;
   groups: Group[];
   rounds: Round[];
@@ -68,20 +68,20 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-1 sm:gap-3">
+        <div className="flex items-center justify-between gap-0.5 sm:gap-3"> {/* Reduced gap-1 to gap-0.5 */}
           {/* Team 1 */}
           <div className="flex items-center gap-0.5 justify-end flex-1 min-w-0">
-            <span className="font-medium text-[0.65rem] sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span>
+            <span className="font-medium text-[0.6rem] sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span> {/* Changed text-[0.65rem] to text-[0.6rem] */}
             {match.team1.logo_url && (
               <img src={match.team1.logo_url} alt={match.team1.name} className="h-6 w-6 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" />
             )}
           </div>
 
           {/* Scores / Separator */}
-          <div className="flex items-center gap-1 sm:gap-3 text-base sm:text-2xl font-bold flex-shrink-0">
+          <div className="flex items-center gap-0.5 sm:gap-3 text-sm sm:text-2xl font-bold flex-shrink-0"> {/* Changed text-base to text-sm */}
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
-            <div className="p-0.5 rounded-full bg-primary text-primary-foreground">
-              <X className="h-3 w-3 sm:h-4 sm:w-4" />
+            <div className="p-0 rounded-full bg-primary text-primary-foreground"> {/* Reduced p-0.5 to p-0 */}
+              <X className="h-2.5 w-2.5 sm:h-4 sm:w-4" /> {/* Reduced h-3 w-3 to h-2.5 w-2.5 */}
             </div>
             <span>{isPlayed ? (match.team2_score ?? '-') : ''}</span>
           </div>
@@ -91,7 +91,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             {match.team2.logo_url && (
               <img src={match.team2.logo_url} alt={match.team2.name} className="h-6 w-6 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" />
             )}
-            <span className="font-medium text-[0.65rem] sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span>
+            <span className="font-medium text-[0.6rem] sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span> {/* Changed text-[0.65rem] to text-[0.6rem] */}
           </div>
         </div>
 
@@ -156,9 +156,9 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             publicRoundId={publicRoundId}
             publicRoundToken={publicRoundToken}
           >
-            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-[0.65rem] sm:text-sm">
+            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-[0.6rem] sm:text-sm"> {/* Changed text-[0.65rem] to text-[0.6rem] */}
               <Goal className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="text-[0.65rem]">Placar Rápido</span>
+              <span className="text-[0.6rem]">Placar Rápido</span> {/* Changed text-[0.65rem] to text-[0.6rem] */}
             </Button>
           </QuickScoreUpdateDrawer>
 
