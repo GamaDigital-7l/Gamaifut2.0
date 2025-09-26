@@ -12,7 +12,8 @@ import {
   BarChart2,
   HeartHandshake,
   Settings,
-  UserPlus // Import UserPlus icon
+  UserPlus,
+  Camera // NEW: Import Camera icon for Portfolio
 } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,7 +35,9 @@ import { CalendarTab } from '@/components/CalendarTab';
 import { StatisticsTab } from '@/components/StatisticsTab';
 import { SponsorsTab } from '@/components/SponsorsTab';
 import { ChampionshipSettingsTab } from '@/components/ChampionshipSettingsTab';
-import { ManageChampionshipAccessDialog } from '@/components/ManageChampionshipAccessDialog'; // Import new dialog
+import { ManageChampionshipAccessDialog } from '@/components/ManageChampionshipAccessDialog';
+import { UploadMediaDialog } from '@/components/UploadMediaDialog'; // NEW: Import UploadMediaDialog
+import { MediaGallery } from '@/components/MediaGallery'; // NEW: Import MediaGallery
 
 // Combined fetch function for all championship data
 const fetchChampionshipData = async (id: string) => {
@@ -84,6 +87,7 @@ const ChampionshipDetail = () => {
   // Callback to invalidate and refetch all championship data
   const handleDataChange = () => {
     queryClient.invalidateQueries({ queryKey: ['championshipData', id] });
+    queryClient.invalidateQueries({ queryKey: ['championshipMedia', id] }); // NEW: Invalidate media query
   };
 
   const handleCopyPublicLink = () => {
@@ -97,6 +101,7 @@ const ChampionshipDetail = () => {
 
   // Check if the current user is the owner of this championship
   const isChampionshipOwner = userProfile?.id === championship?.user_id;
+  const canUploadMedia = isChampionshipOwner || userProfile?.role === 'admin' || userProfile?.role === 'official';
 
   if (isLoading) {
     return (
@@ -160,7 +165,7 @@ const ChampionshipDetail = () => {
 
       <Tabs defaultValue="leaderboard" className="w-full">
         <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-10"> {/* Adjusted grid-cols to 10 */}
             <TabsTrigger value="leaderboard" className="md:col-span-1"><BarChart2 className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Classificação</span></TabsTrigger>
             <TabsTrigger value="matches" className="md:col-span-1"><CalendarIconLucide className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Jogos</span></TabsTrigger>
             <TabsTrigger value="teams" className="md:col-span-1"><Users className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Times</span></TabsTrigger>
@@ -169,6 +174,7 @@ const ChampionshipDetail = () => {
             <TabsTrigger value="calendar" className="md:col-span-1"><CalendarIconLucide className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Calendário</span></TabsTrigger>
             <TabsTrigger value="statistics" className="md:col-span-1"><BarChart2 className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Estatísticas</span></TabsTrigger>
             <TabsTrigger value="sponsors" className="md:col-span-1"><HeartHandshake className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Patrocínios</span></TabsTrigger>
+            <TabsTrigger value="portfolio" className="md:col-span-1"><Camera className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Portfólio</span></TabsTrigger> {/* NEW TAB */}
             <TabsTrigger value="settings" className="md:col-span-1"><Settings className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Ajustes</span></TabsTrigger>
           </TabsList>
         </div>
@@ -246,6 +252,25 @@ const ChampionshipDetail = () => {
           <SponsorsTab 
             championshipId={championship.id} 
             onDataChange={handleDataChange} 
+          />
+        </TabsContent>
+        <TabsContent value="portfolio" className="mt-4"> {/* NEW PORTFOLIO TAB CONTENT */}
+          <div className="flex justify-end mb-4">
+            {canUploadMedia && (
+              <UploadMediaDialog
+                championshipId={championship.id}
+                matches={matches}
+                teams={teams}
+                rounds={rounds}
+                onMediaUploaded={handleDataChange}
+              />
+            )}
+          </div>
+          <MediaGallery
+            championshipId={championship.id}
+            matches={matches}
+            teams={teams}
+            rounds={rounds}
           />
         </TabsContent>
         <TabsContent value="settings" className="mt-4">

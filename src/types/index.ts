@@ -99,3 +99,27 @@ export interface Profile {
   role: 'user' | 'official' | 'admin';
   email?: string;
 }
+
+export interface Media { // NEW: Interface for media items
+  id: string;
+  championship_id: string;
+  user_id: string;
+  type: 'image' | 'video';
+  url: string;
+  thumbnail_url: string | null;
+  description: string | null;
+  tags: string[] | null;
+  is_highlight: boolean;
+  match_id: string | null;
+  team_id: string | null;
+  round_id: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  approved_by: string | null;
+  approved_at: string | null;
+  created_at: string;
+  // Nested data for display
+  matches?: { team1: { name: string }, team2: { name: string } } | null;
+  teams?: { name: string } | null;
+  rounds?: { name: string } | null;
+  profiles?: { first_name: string, last_name: string } | null;
+}
