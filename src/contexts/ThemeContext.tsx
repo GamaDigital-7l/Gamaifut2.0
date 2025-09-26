@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useParams } from 'react-router-dom';
+// import { useParams } from 'react-router-dom'; // Temporariamente removido
 
 interface ThemeContextType {
   championshipLogoUrl: string | null;
@@ -14,7 +14,10 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [championshipLogoUrl, setChampionshipLogoUrl] = useState<string | null>(null);
   const [globalThemeMode, setGlobalThemeMode] = useState<'light' | 'dark'>('dark');
-  const { id: championshipIdFromParams } = useParams<{ id: string }>();
+  // const { id: championshipIdFromParams } = useParams<{ id: string }>(); // Temporariamente removido
+
+  // Usar um valor padrão ou null para championshipIdFromParams enquanto o hook está removido
+  const championshipIdFromParams = undefined; 
 
   const applyGlobalThemeToDocument = useCallback((mode: 'light' | 'dark') => {
     const root = document.documentElement;
