@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EditMatchDialog } from "./EditMatchDialog";
 import { DeleteMatchDialog } from "./DeleteMatchDialog";
-import { OfficialMatchUpdateDialog } from "./OfficialMatchUpdateDialog";
 import { QuickScoreUpdateDrawer } from "./QuickScoreUpdateDrawer"; // Import the new drawer
 import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle, Goal } from "lucide-react";
 import { format } from "date-fns";
@@ -24,11 +23,10 @@ interface MatchCardProps {
   groups: Group[];
   rounds: Round[];
   teams: Team[]; // Added teams prop
-  isOfficialView?: boolean;
   isPublicView?: boolean;
 }
 
-export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isOfficialView = false, isPublicView = false }: MatchCardProps) {
+export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false }: MatchCardProps) {
   const matchDate = match.match_date ? new Date(match.match_date) : null;
   const isPlayed = match.team1_score !== null && match.team2_score !== null;
 
@@ -122,35 +120,29 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
 
         <div className="flex justify-end items-center mt-2 gap-2">
           {isPublicView ? null : (
-            isOfficialView ? (
-              <OfficialMatchUpdateDialog match={match} onMatchUpdated={onMatchUpdated}>
-                <Button variant="outline" size="sm">Atualizar Partida</Button>
-              </OfficialMatchUpdateDialog>
-            ) : (
-              <>
-                <QuickScoreUpdateDrawer match={match} onMatchUpdated={onMatchUpdated}>
-                  <Button variant="outline" size="sm" className="flex items-center gap-1">
-                    <Goal className="h-4 w-4" />
-                    <span className="hidden sm:inline">Placar Rápido</span>
+            <>
+              <QuickScoreUpdateDrawer match={match} onMatchUpdated={onMatchUpdated}>
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <Goal className="h-4 w-4" />
+                  <span className="hidden sm:inline">Placar Rápido</span>
+                </Button>
+              </QuickScoreUpdateDrawer>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <MoreHorizontal className="h-4 w-4" />
                   </Button>
-                </QuickScoreUpdateDrawer>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <EditMatchDialog match={match} groups={groups} rounds={rounds} teams={teams} onMatchUpdated={onMatchUpdated}>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Detalhes</DropdownMenuItem>
-                    </EditMatchDialog>
-                    <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
-                    </DeleteMatchDialog>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            )
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <EditMatchDialog match={match} groups={groups} rounds={rounds} teams={teams} onMatchUpdated={onMatchUpdated}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Detalhes</DropdownMenuItem>
+                  </EditMatchDialog>
+                  <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
+                  </DeleteMatchDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           )}
         </div>
       </CardContent>

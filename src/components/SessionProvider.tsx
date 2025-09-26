@@ -12,7 +12,6 @@ const ChampionshipDetail = lazy(() => import("@/pages/ChampionshipDetail"));
 const ChampionshipTheme = lazy(() => import("@/pages/ChampionshipTheme"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
-const OfficialDashboard = lazy(() => import("@/pages/OfficialDashboard"));
 const AdminTeamDetail = lazy(() => import("@/pages/AdminTeamDetail"));
 const PublicChampionshipView = lazy(() => import("@/pages/PublicChampionshipView"));
 const PublicTeamDetail = lazy(() => import("@/pages/PublicTeamDetail"));
@@ -161,7 +160,6 @@ export const AppRoutes = () => {
             <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/users" element={<UserManagement />} />
-            <Route path="/official-dashboard" element={<OfficialDashboard />} />
             <Route path="/team/:teamId" element={<AdminTeamDetail />} />
           </Route>
 

@@ -56,7 +56,6 @@ export interface Match {
   location: string | null;
   group_id: string | null;
   round_id: string | null;
-  assigned_official_id: string | null;
   team1_yellow_cards: number | null;
   team2_yellow_cards: number | null;
   team1_red_cards: number | null;

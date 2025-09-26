@@ -28,10 +28,6 @@ import { useSession } from '@/components/SessionProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import { Team, Group, Round, Profile } from '@/types';
 
-interface Official extends Profile {
-  role: 'official';
-}
-
 interface CreateMatchDialogProps {
   championshipId: string;
   teams: Team[];
@@ -49,36 +45,8 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
   const [location, setLocation] = useState('');
   const [groupId, setGroupId] = useState<string | undefined>(undefined);
   const [roundId, setRoundId] = useState<string | undefined>(undefined);
-  const [assignedOfficialId, setAssignedOfficialId] = useState<string | undefined>(undefined);
-  const [officials, setOfficials] = useState<Profile[]>([]); // Changed to Profile[] to include admins/users
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { session, userProfile } = useSession();
-
-  // Fetch officials and set default assigned official
-  useEffect(() => {
-    const fetchAndSetOfficials = async () => {
-      const { data: officialProfiles, error: officialError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, role')
-        .eq('role', 'official')
-        .order('first_name', { ascending: true });
-
-      if (officialError) {
-        console.error('Error fetching officials:', officialError);
-        setOfficials([]);
-      } else {
-        setOfficials(officialProfiles as Profile[]);
-        // Set default official if available
-        if (officialProfiles.length > 0) {
-          setAssignedOfficialId(officialProfiles[0].id);
-        } else if (userProfile) {
-          // Fallback: assign to the current user if no officials are registered
-          setAssignedOfficialId(userProfile.id);
-        }
-      }
-    };
-    fetchAndSetOfficials();
-  }, [userProfile]); // Re-run if userProfile changes (e.g., after login)
+  const { session } = useSession();
 
   // Auto-assign group if both teams are from the same group
   useEffect(() => {
@@ -116,7 +84,6 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
       finalMatchDate = setMinutes(finalMatchDate, minutes);
     }
 
-    console.log('CreateMatchDialog: Submitting match with assigned_official_id:', assignedOfficialId); // DIAGNOSTIC LOG
     const { error } = await supabase
       .from('matches')
       .insert([{ 
@@ -128,7 +95,6 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
         location: location.trim() === '' ? null : location.trim(),
         group_id: groupId || null,
         round_id: roundId || null,
-        assigned_official_id: assignedOfficialId || null,
       }]);
 
     setIsSubmitting(false);
@@ -144,7 +110,6 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
       setLocation('');
       setGroupId(undefined);
       setRoundId(undefined);
-      // Keep assignedOfficialId as default or current user, don't reset
       setOpen(false);
       onMatchCreated();
     }
@@ -162,7 +127,7 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
         <DialogHeader>
           <DialogTitle>Agendar Nova Partida</DialogTitle>
           <DialogDescription>
-            Selecione os dois times que irão se enfrentar e defina a data, local, grupo, rodada e mesário.
+            Selecione os dois times que irão se enfrentar e defina a data, local, grupo e rodada.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -277,23 +242,6 @@ export function CreateMatchDialog({ championshipId, teams, groups, rounds, onMat
                 className="col-span-3"
                 placeholder="Estádio Municipal"
               />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="official" className="text-right">
-                Mesário
-              </Label>
-              <Select value={assignedOfficialId} onValueChange={setAssignedOfficialId}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Atribuir mesário (opcional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {officials.map(official => (
-                    <SelectItem key={official.id} value={official.id}>
-                      {official.first_name} {official.last_name} {official.id === userProfile?.id ? '(Você)' : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
           <DialogFooter>

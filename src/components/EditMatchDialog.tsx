@@ -28,10 +28,6 @@ import { showSuccess, showError } from '@/utils/toast';
 import { Group, Round, Team, Match, Profile } from '@/types'; // Import Group and Round from centralized types
 import { useSession } from '@/components/SessionProvider'; // Import useSession
 
-interface Official extends Profile {
-  role: 'official';
-}
-
 interface EditMatchDialogProps {
   match: Match;
   groups: Group[]; // Pass groups
@@ -56,12 +52,9 @@ export function EditMatchDialog({ match, groups, rounds, teams, onMatchUpdated, 
   const [location, setLocation] = useState(match.location || '');
   const [groupId, setGroupId] = useState<string | undefined>(match.group_id || undefined); // New state for group
   const [roundId, setRoundId] = useState<string | undefined>(match.round_id || undefined); // New state for round
-  const [assignedOfficialId, setAssignedOfficialId] = useState<string | undefined>(match.assigned_official_id || undefined); // New state for assigned official
-  const [officials, setOfficials] = useState<Profile[]>([]); // State for officials list
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { userProfile } = useSession(); // Get current user profile
 
-  // Effect to initialize form fields and fetch officials when dialog opens or match changes
+  // Effect to initialize form fields when dialog opens or match changes
   useEffect(() => {
     if (open) {
       setTeam1Score(match.team1_score?.toString() ?? '');
@@ -75,35 +68,8 @@ export function EditMatchDialog({ match, groups, rounds, teams, onMatchUpdated, 
       } else {
         setMatchTime('');
       }
-
-      // Fetch officials and set default assigned official
-      const fetchAndSetOfficials = async () => {
-        const { data: officialProfiles, error: officialError } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, role')
-          .eq('role', 'official')
-          .order('first_name', { ascending: true });
-
-        if (officialError) {
-          console.error('Error fetching officials:', officialError);
-          setOfficials([]);
-        } else {
-          setOfficials(officialProfiles as Profile[]);
-          // If no official is assigned to the match, try to assign a default
-          if (!match.assigned_official_id) {
-            if (officialProfiles.length > 0) {
-              setAssignedOfficialId(officialProfiles[0].id);
-            } else if (userProfile) {
-              setAssignedOfficialId(userProfile.id); // Fallback to current user
-            }
-          } else {
-            setAssignedOfficialId(match.assigned_official_id); // Keep existing official
-          }
-        }
-      };
-      fetchAndSetOfficials();
     }
-  }, [match, open, userProfile]); // Re-run if match or dialog open state changes
+  }, [match, open]); // Re-run if match or dialog open state changes
 
   // Auto-assign group if both teams are from the same group
   useEffect(() => {
@@ -137,7 +103,6 @@ export function EditMatchDialog({ match, groups, rounds, teams, onMatchUpdated, 
       finalMatchDate = setMinutes(finalMatchDate, minutes);
     }
 
-    console.log('EditMatchDialog: Submitting match with assigned_official_id:', assignedOfficialId); // DIAGNOSTIC LOG
     const { error } = await supabase
       .from('matches')
       .update({ 
@@ -147,7 +112,6 @@ export function EditMatchDialog({ match, groups, rounds, teams, onMatchUpdated, 
         location: location.trim() === '' ? null : location.trim(),
         group_id: groupId || null,
         round_id: roundId || null,
-        assigned_official_id: assignedOfficialId || null, // Include assigned_official_id
       })
       .eq('id', match.id);
 
@@ -169,7 +133,7 @@ export function EditMatchDialog({ match, groups, rounds, teams, onMatchUpdated, 
         <DialogHeader>
           <DialogTitle>Editar Partida</DialogTitle>
           <DialogDescription>
-            {`Atualize o placar, data, local, grupo, rodada e mesário da partida entre ${match.team1.name} e ${match.team2.name}.`}
+            {`Atualize o placar, data, local, grupo e rodada da partida entre ${match.team1.name} e ${match.team2.name}.`}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -280,23 +244,6 @@ export function EditMatchDialog({ match, groups, rounds, teams, onMatchUpdated, 
                 className="col-span-3"
                 placeholder="Estádio Municipal"
               />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="official" className="text-right">
-                Mesário
-              </Label>
-              <Select value={assignedOfficialId} onValueChange={setAssignedOfficialId}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Atribuir mesário (opcional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {officials.map(official => (
-                    <SelectItem key={official.id} value={official.id}>
-                      {official.first_name} {official.last_name} {official.id === userProfile?.id ? '(Você)' : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
           <DialogFooter>
