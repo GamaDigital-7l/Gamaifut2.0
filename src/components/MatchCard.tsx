@@ -64,9 +64,9 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           )}
         </div>
 
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-2 sm:gap-x-3">
+        <div className="flex items-center justify-between gap-2 sm:gap-3"> {/* Changed to flex for better control */}
           {/* Team 1 */}
-          <div className="flex items-center gap-2 justify-end min-w-0">
+          <div className="flex items-center gap-2 justify-end flex-1 min-w-0"> {/* flex-1 and min-w-0 */}
             <span className="font-medium text-sm sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span>
             {match.team1.logo_url && (
               <img src={match.team1.logo_url} alt={match.team1.name} className="h-8 w-8 object-contain flex-shrink-0" />
@@ -74,7 +74,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           </div>
 
           {/* Scores / Separator */}
-          <div className="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-bold">
+          <div className="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-bold flex-shrink-0"> {/* flex-shrink-0 to keep scores centered */}
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
             <div className="p-1 rounded-full bg-primary text-primary-foreground">
               <X className="h-4 w-4" /> 
@@ -83,7 +83,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           </div>
 
           {/* Team 2 */}
-          <div className="flex items-center gap-2 justify-start min-w-0">
+          <div className="flex items-center gap-2 justify-start flex-1 min-w-0"> {/* flex-1 and min-w-0 */}
             {match.team2.logo_url && (
               <img src={match.team2.logo_url} alt={match.team2.name} className="h-8 w-8 object-contain flex-shrink-0" />
             )}

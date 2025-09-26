@@ -17,7 +17,6 @@ serve(async (req) => {
   }
 
   try {
-    // Log all request headers for debugging
     console.log('Request Headers:', Object.fromEntries(req.headers.entries()));
 
     const supabaseClient = createClient(
@@ -76,7 +75,7 @@ serve(async (req) => {
     let parsedBody;
     try {
       parsedBody = JSON.parse(requestBodyText);
-      console.log('Successfully parsed request body.');
+      console.log('Successfully parsed request body. Parsed data:', parsedBody); // Added parsed data log
     } catch (jsonParseError: any) {
       console.error('JSON parsing error: The request body is not valid JSON.', jsonParseError.message);
       return new Response(JSON.stringify({ error: 'Invalid JSON in request body: ' + jsonParseError.message }), {
@@ -86,7 +85,7 @@ serve(async (req) => {
     }
 
     const { email, password, first_name, last_name, role } = parsedBody;
-    console.log('Parsed payload details:', { email, first_name, last_name, role });
+    console.log('Parsed payload details:', { email, password: '***', first_name, last_name, role }); // Mask password in logs
 
     if (!email || !password || !first_name || !last_name || !role) {
       console.log('Validation Failed: Missing required fields in parsed payload.');

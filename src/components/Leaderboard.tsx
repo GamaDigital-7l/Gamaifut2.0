@@ -160,44 +160,44 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
 
   return (
     <div>
-      <div className="rounded-md border overflow-x-auto">
-        <Table>
+      <div className="rounded-md border overflow-x-auto"> {/* Ensure horizontal scroll */}
+        <Table className="min-w-full"> {/* Ensure table takes full width */}
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40px] text-center px-2 py-2">Pos.</TableHead>
-              <TableHead className="min-w-[150px] px-2 py-2">Time</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2">P</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2">J</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2">V</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2">E</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2">D</TableHead>
-              <TableHead className="w-[50px] text-center px-2 py-2">GP</TableHead>
-              <TableHead className="w-[50px] text-center px-2 py-2">GC</TableHead>
-              <TableHead className="w-[50px] text-center px-2 py-2">SG</TableHead>
-              <TableHead className="w-[60px] text-center px-2 py-2">%</TableHead>
-              <TableHead className="w-[100px] text-center px-2 py-2">Recentes</TableHead>
+              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">Pos.</TableHead>
+              <TableHead className="min-w-[150px] px-2 py-2 whitespace-nowrap">Time</TableHead>
+              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">P</TableHead>
+              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">J</TableHead>
+              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">V</TableHead>
+              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">E</TableHead>
+              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">D</TableHead>
+              <TableHead className="w-[50px] text-center px-2 py-2 whitespace-nowrap">GP</TableHead>
+              <TableHead className="w-[50px] text-center px-2 py-2 whitespace-nowrap">GC</TableHead>
+              <TableHead className="w-[50px] text-center px-2 py-2 whitespace-nowrap">SG</TableHead>
+              <TableHead className="w-[60px] text-center px-2 py-2 whitespace-nowrap">%</TableHead>
+              <TableHead className="w-[100px] text-center px-2 py-2 whitespace-nowrap">Recentes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedStandings.map((standing, index) => (
               <TableRow key={standing.teamId}>
-                <TableCell className="font-medium text-center px-2 py-2">{index + 1}</TableCell>
-                <TableCell className="flex items-center gap-2 px-2 py-2">
-                  {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-6 w-6 object-contain" />}
-                  <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline">
+                <TableCell className="font-medium text-center px-2 py-2 whitespace-nowrap">{index + 1}</TableCell>
+                <TableCell className="flex items-center gap-2 px-2 py-2 whitespace-nowrap">
+                  {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-6 w-6 object-contain flex-shrink-0" />}
+                  <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline truncate"> {/* Added truncate */}
                     {standing.teamName}
                   </Link>
                 </TableCell>
-                <TableCell className="text-center font-bold px-2 py-2">{standing.points}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.played}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.wins}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.draws}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.losses}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.goalsFor}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.goalsAgainst}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.goalDifference}</TableCell>
-                <TableCell className="text-center px-2 py-2">{standing.percentage.toFixed(1)}%</TableCell>
-                <TableCell className="text-center px-2 py-2">
+                <TableCell className="text-center font-bold px-2 py-2 whitespace-nowrap">{standing.points}</TableCell>
+                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.played}</TableCell>
+                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.wins}</TableCell>
+                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.draws}</TableCell>
+                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.losses}</TableCell>
+                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.goalsFor}</TableCell>
+                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.goalsAgainst}</TableCell>
+                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.goalDifference}</TableCell>
+                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.percentage.toFixed(1)}%</TableCell>
+                <TableCell className="text-center px-2 py-2 whitespace-nowrap">
                   <div className="flex justify-center gap-1">
                     {standing.recentForm.map((form, i) => (
                       <span
