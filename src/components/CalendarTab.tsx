@@ -1,45 +1,42 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Importar useMemo
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { MatchCard } from './MatchCard'; // Re-use MatchCard for displaying details
+import { MatchCard } from './MatchCard';
 import { Match, Group, Round, Team } from '@/types';
-import { Skeleton } from '@/components/ui/skeleton'; // Importar Skeleton
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface CalendarTabProps {
   championshipId: string;
-  matches: Match[]; // Pass matches directly to avoid re-fetching
-  groups: Group[]; // Pass groups for MatchCard
-  rounds: Round[]; // Pass rounds for MatchCard
-  teams: Team[]; // Adicionado: Passar todos os times para MatchCard
-  isLoading: boolean; // Adicionado
-  onDataChange: () => void; // Adicionado
+  matches: Match[];
+  groups: Group[];
+  rounds: Round[];
+  teams: Team[];
+  isLoading: boolean;
+  onDataChange: () => void;
 }
 
 export function CalendarTab({ championshipId, matches, groups, rounds, teams, isLoading, onDataChange }: CalendarTabProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [matchesOnSelectedDate, setMatchesOnSelectedDate] = useState<Match[]>([]);
 
-  useEffect(() => {
-    if (selectedDate) {
-      const filteredMatches = matches.filter(match => 
-        match.match_date && isSameDay(new Date(match.match_date), selectedDate)
-      ).sort((a, b) => {
-        const dateA = a.match_date ? new Date(a.match_date).getTime() : 0;
-        const dateB = b.match_date ? new Date(b.match_date).getTime() : 0;
-        return dateA - dateB;
-      });
-      setMatchesOnSelectedDate(filteredMatches);
-    } else {
-      setMatchesOnSelectedDate([]);
+  const matchesOnSelectedDate = useMemo(() => {
+    if (!selectedDate) {
+      return [];
     }
-  }, [selectedDate, matches]);
+    return matches.filter(match => 
+      match.match_date && isSameDay(new Date(match.match_date), selectedDate)
+    ).sort((a, b) => {
+      const dateA = a.match_date ? new Date(a.match_date).getTime() : 0;
+      const dateB = b.match_date ? new Date(b.match_date).getTime() : 0;
+      return dateA - dateB;
+    });
+  }, [selectedDate, matches]); // Recalculate only when selectedDate or matches change
 
-  const modifiers = {
+  const modifiers = useMemo(() => ({
     hasMatches: matches.map(match => match.match_date ? new Date(match.match_date) : null).filter(Boolean) as Date[],
-  };
+  }), [matches]); // Recalculate only when matches change
 
   const modifiersClassNames = {
     hasMatches: "bg-primary text-primary-foreground rounded-full",

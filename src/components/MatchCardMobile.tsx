@@ -1,3 +1,4 @@
+import React, { useEffect, memo } from 'react'; // Importar memo
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -14,7 +15,6 @@ import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
 import { Group, Round, Team, Match } from '@/types';
-import { useEffect } from 'react'; // Import useEffect
 
 interface MatchCardMobileProps {
   match: Match;
@@ -29,7 +29,7 @@ interface MatchCardMobileProps {
   publicRoundToken?: string;
 }
 
-export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false, publicRoundId, publicRoundToken }: MatchCardMobileProps) {
+export const MatchCardMobile = memo(function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false, publicRoundId, publicRoundToken }: MatchCardMobileProps) {
   const matchDate = match.match_date ? new Date(match.match_date) : null;
   const isPlayed = match.team1_score !== null && match.team2_score !== null;
 
@@ -45,8 +45,7 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
       "w-full",
       isEven ? "bg-card" : "bg-muted/50 dark:bg-muted/20"
     )}>
-      <CardContent className="p-3"> {/* Reduced padding for mobile */}
-        {/* Top Info: Location, Group, Round, Date/Time */}
+      <CardContent className="p-3">
         <div className="flex flex-wrap justify-between items-center text-xs text-muted-foreground mb-2 gap-y-1">
           <div className="flex items-center gap-1">
             {match.location && (
@@ -74,9 +73,7 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
           )}
         </div>
 
-        {/* Main Match Info: Teams and Scores */}
         <div className="grid grid-cols-3 items-center text-center gap-1">
-          {/* Team 1 */}
           <div className="flex flex-col items-center justify-center gap-0.5">
             {match.team1.logo_url && (
               <img src={match.team1.logo_url} alt={match.team1.name} className="h-8 w-8 object-contain" loading="lazy" />
@@ -84,7 +81,6 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
             <span className="font-medium text-[0.65rem] leading-tight truncate w-full" title={match.team1.name}>{match.team1.name}</span>
           </div>
 
-          {/* Scores */}
           <div className="flex flex-col items-center justify-center text-sm font-bold">
             <div className="flex items-center gap-1">
               <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
@@ -95,7 +91,6 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
             </div>
           </div>
 
-          {/* Team 2 */}
           <div className="flex flex-col items-center justify-center gap-0.5">
             {match.team2.logo_url && (
               <img src={match.team2.logo_url} alt={match.team2.name} className="h-8 w-8 object-contain" loading="lazy" />
@@ -104,7 +99,6 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
           </div>
         </div>
 
-        {/* Goal Scorers Display */}
         {(team1Goals.length > 0 || team2Goals.length > 0) && (
           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mt-3 border-t pt-2">
             <div className="flex flex-col items-end pr-2 border-r">
@@ -128,9 +122,7 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
           </div>
         )}
 
-        {/* Action Buttons */}
         <div className="flex justify-end items-center mt-3 gap-2 border-t pt-2">
-          {/* Quick Score Update Drawer: Visible ONLY if it's a public view WITH a token */}
           {isPublicView && publicRoundToken ? (
             <QuickScoreUpdateDrawer
               match={match}
@@ -146,7 +138,6 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
             </QuickScoreUpdateDrawer>
           ) : null}
 
-          {/* Dropdown Menu for Edit/Delete: Visible ONLY if it's NOT a public view (i.e., authenticated user) */}
           {!isPublicView ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -172,4 +163,4 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
       </CardContent>
     </Card>
   );
-}
+});

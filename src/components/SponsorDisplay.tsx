@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Importar useMemo
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils'; // Import cn for conditional classes
+import { cn } from '@/lib/utils';
 
 export type Sponsor = {
   id: string;
@@ -19,23 +19,23 @@ interface SponsorDisplayProps {
 }
 
 export function SponsorDisplay({ championshipId }: SponsorDisplayProps) {
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [rawSponsors, setRawSponsors] = useState<Sponsor[]>([]); // Store raw data
   const [loading, setLoading] = useState(true);
 
   const fetchActiveSponsors = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('sponsors')
-      .select('id, name, level, logo_url, target_url, is_active') // Optimized select
+      .select('id, name, level, logo_url, target_url, is_active')
       .eq('championship_id', championshipId)
       .eq('is_active', true)
-      .order('level', { ascending: false }) // Ouro, Prata, Bronze
+      .order('level', { ascending: false })
       .order('name', { ascending: true });
 
     if (error) {
       console.error('Error fetching active sponsors:', error);
     } else {
-      setSponsors(data as Sponsor[]);
+      setRawSponsors(data as Sponsor[]);
     }
     setLoading(false);
   }, [championshipId]);
@@ -43,6 +43,8 @@ export function SponsorDisplay({ championshipId }: SponsorDisplayProps) {
   useEffect(() => {
     fetchActiveSponsors();
   }, [fetchActiveSponsors]);
+
+  const sponsors = useMemo(() => rawSponsors, [rawSponsors]); // Memoize the list
 
   const hasSponsors = sponsors.length > 0;
 
@@ -70,7 +72,7 @@ export function SponsorDisplay({ championshipId }: SponsorDisplayProps) {
                 rel="noopener noreferrer" 
                 className="block p-2 border rounded-lg hover:shadow-md transition-all duration-200 ease-in-out flex flex-col items-center justify-center text-center"
               >
-                <AspectRatio ratio={16 / 9} className="w-full max-w-[120px]"> {/* Tamanho uniforme para todos */}
+                <AspectRatio ratio={16 / 9} className="w-full max-w-[120px]">
                   {sponsor.logo_url ? (
                     <img src={sponsor.logo_url} alt={sponsor.name} className="object-contain w-full h-full" loading="lazy" />
                   ) : (

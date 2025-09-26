@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent, useCallback } from 'react';
+import React, { useState, useEffect, FormEvent, useCallback, useMemo } from 'react'; // Importar useMemo
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,38 +22,47 @@ type ChampionshipResult = {
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [championships, setChampionships] = useState<ChampionshipResult[]>([]);
+  const [rawChampionships, setRawChampionships] = useState<ChampionshipResult[]>([]); // Store raw data
   const [loading, setLoading] = useState(true);
 
-  const fetchChampionships = useCallback(async (term = '') => {
+  const fetchChampionships = useCallback(async () => {
     setLoading(true);
     let query = supabase
       .from('championships')
-      .select('id, name, description, city, state, logo_url') // Optimized select
+      .select('id, name, description, city, state, logo_url')
       .order('created_at', { ascending: false });
-
-    if (term.trim()) {
-      query = query.or(`name.ilike.%${term}%,city.ilike.%${term}%,state.ilike.%${term}%`);
-    }
 
     const { data, error } = await query;
 
     if (error) {
       showError('Erro ao buscar campeonatos: ' + error.message);
-      setChampionships([]);
+      setRawChampionships([]);
     } else {
-      setChampionships(data as ChampionshipResult[]);
+      setRawChampionships(data as ChampionshipResult[]);
     }
     setLoading(false);
-  }, []); // Empty dependency array as term is passed as argument
+  }, []);
 
   useEffect(() => {
-    fetchChampionships(); // Fetch all on initial load
-  }, [fetchChampionships]); // Dependency on useCallback
+    fetchChampionships();
+  }, [fetchChampionships]);
+
+  const championships = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return rawChampionships;
+    }
+    const lowerCaseSearchTerm = searchTerm.trim().toLowerCase();
+    return rawChampionships.filter(champ =>
+      champ.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+      (champ.city?.toLowerCase().includes(lowerCaseSearchTerm)) ||
+      (champ.state?.toLowerCase().includes(lowerCaseSearchTerm))
+    );
+  }, [rawChampionships, searchTerm]); // Recalculate only when raw data or search term changes
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
-    fetchChampionships(searchTerm);
+    // The filtering is now handled by useMemo, so just trigger a re-render if needed,
+    // but typically changing searchTerm state is enough.
   };
 
   return (

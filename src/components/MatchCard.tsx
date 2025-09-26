@@ -1,3 +1,4 @@
+import React, { useEffect, memo } from 'react'; // Importar memo
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -8,15 +9,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EditMatchDialog } from "./EditMatchDialog";
 import { DeleteMatchDialog } from "./DeleteMatchDialog";
-import { QuickScoreUpdateDrawer } from "./QuickScoreUpdateDrawer"; // Import the new drawer
-import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle, Goal, Shirt, Edit, Trash2 } from "lucide-react"; // Added Shirt icon
+import { QuickScoreUpdateDrawer } from "./QuickScoreUpdateDrawer";
+import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle, Goal, Shirt, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
-import { Group, Round, Team, Match } from '@/types'; // Import types from centralized types
-import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile hook
-import { MatchCardMobile } from './MatchCardMobile'; // Import the new mobile component
-import { useEffect } from 'react'; // Import useEffect
+import { Group, Round, Team, Match } from '@/types';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MatchCardMobile } from './MatchCardMobile';
+import { useMemo } from 'react'; // Importar useMemo
 
 interface MatchCardProps {
   match: Match;
@@ -25,20 +26,19 @@ interface MatchCardProps {
   isEven: boolean;
   groups: Group[];
   rounds: Round[];
-  teams: Team[]; // Added teams prop
+  teams: Team[];
   isPublicView?: boolean;
-  publicRoundId?: string; // New prop for public editing
-  publicRoundToken?: string; // New prop for public editing
+  publicRoundId?: string;
+  publicRoundToken?: string;
 }
 
-export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false, publicRoundId, publicRoundToken }: MatchCardProps) {
+export const MatchCard = memo(function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false, publicRoundId, publicRoundToken }: MatchCardProps) {
   const isMobile = useIsMobile();
 
   useEffect(() => {
     console.log(`MatchCard for match ${match.id}: isPublicView = ${isPublicView}`);
   }, [match.id, isPublicView]);
 
-  // If on mobile, render the dedicated mobile component
   if (isMobile) {
     return (
       <MatchCardMobile
@@ -56,12 +56,10 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
     );
   }
 
-  // Existing desktop/tablet layout
-  const matchDate = match.match_date ? new Date(match.match_date) : null;
-  const isPlayed = match.team1_score !== null && match.team2_score !== null;
-
-  const team1Goals = match.goals.filter(g => g.team_id === match.team1_id);
-  const team2Goals = match.goals.filter(g => g.team_id === match.team2_id);
+  const matchDate = useMemo(() => (match.match_date ? new Date(match.match_date) : null), [match.match_date]);
+  const isPlayed = useMemo(() => match.team1_score !== null && match.team2_score !== null, [match.team1_score, match.team2_score]);
+  const team1Goals = useMemo(() => match.goals.filter(g => g.team_id === match.team1_id), [match.goals, match.team1_id]);
+  const team2Goals = useMemo(() => match.goals.filter(g => g.team_id === match.team2_id), [match.goals, match.team2_id]);
 
   return (
     <Card className={cn(
@@ -97,7 +95,6 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
         </div>
 
         <div className="flex items-center justify-between gap-1 sm:gap-3">
-          {/* Team 1 */}
           <div className="flex items-center gap-0.5 justify-end flex-1 min-w-0">
             <span className="font-medium text-[0.65rem] sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span>
             {match.team1.logo_url && (
@@ -105,7 +102,6 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             )}
           </div>
 
-          {/* Scores / Separator */}
           <div className="flex items-center gap-0.5 sm:gap-3 text-sm sm:text-2xl font-bold flex-shrink-0">
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
             <div className="p-0 rounded-full bg-primary text-primary-foreground">
@@ -114,7 +110,6 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             <span>{isPlayed ? (match.team2_score ?? '-') : ''}</span>
           </div>
 
-          {/* Team 2 */}
           <div className="flex items-center gap-0.5 justify-start flex-1 min-w-0">
             {match.team2.logo_url && (
               <img src={match.team2.logo_url} alt={match.team2.name} className="h-6 w-6 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" />
@@ -123,7 +118,6 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           </div>
         </div>
 
-        {/* Goal Scorers Display */}
         {(team1Goals.length > 0 || team2Goals.length > 0) && (
           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mt-3 border-t pt-2">
             <div className="flex flex-col items-end pr-2 border-r">
@@ -176,7 +170,6 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
         )}
 
         <div className="flex justify-end items-center mt-2 gap-2">
-          {/* Quick Score Update Drawer: Visible ONLY if it's a public view WITH a token */}
           {isPublicView && publicRoundToken ? (
             <QuickScoreUpdateDrawer
               match={match}
@@ -192,7 +185,6 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             </QuickScoreUpdateDrawer>
           ) : null}
 
-          {/* Dropdown Menu for Edit/Delete: Visible ONLY if it's NOT a public view (i.e., authenticated user) */}
           {!isPublicView ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -218,4 +210,4 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
       </CardContent>
     </Card>
   );
-}
+});

@@ -1,18 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Importar useMemo
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, Camera } from 'lucide-react'; // Importar Camera icon
+import { Trophy, Camera } from 'lucide-react';
 import { MatchCard } from '@/components/MatchCard';
 import { Leaderboard } from '@/components/Leaderboard';
 import { PublicHeader } from '@/components/PublicHeader';
 import { useChampionshipTheme } from '@/contexts/ThemeContext';
 import { Team, Match, Group, Round } from '@/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Importar Tabs
-import { MediaGallery } from '@/components/MediaGallery'; // Importar MediaGallery
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaGallery } from '@/components/MediaGallery';
 
 const PublicTeamDetail = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -44,7 +44,6 @@ const PublicTeamDetail = () => {
     setTeam(teamData as Team);
     fetchChampionshipLogo(teamData.championship_id);
 
-    // Fetch all teams, groups, and rounds for MatchCard and MediaGallery
     const [teamsRes, groupsRes, roundsRes, matchesRes] = await Promise.all([
       supabase.from('teams').select('id, name, logo_url, championship_id, user_id, group_id, groups(name)').eq('championship_id', teamData.championship_id),
       supabase.from('groups').select('id, name, championship_id, created_at').eq('championship_id', teamData.championship_id),
@@ -74,6 +73,8 @@ const PublicTeamDetail = () => {
     fetchTeamDetails();
   }, [fetchTeamDetails]);
 
+  const singleTeamArray = useMemo(() => (team ? [team] : []), [team]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen w-full flex-col">
@@ -97,8 +98,6 @@ const PublicTeamDetail = () => {
     );
   }
 
-  const singleTeamArray = [team];
-
   return (
     <div className="flex min-h-screen w-full flex-col">
       <PublicHeader />
@@ -119,7 +118,7 @@ const PublicTeamDetail = () => {
 
           <Tabs defaultValue="stats" className="w-full">
             <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <TabsList className="grid w-full grid-cols-3"> {/* Ajustado para 3 abas */}
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="stats">Estatísticas</TabsTrigger>
                 <TabsTrigger value="matches">Partidas</TabsTrigger>
                 <TabsTrigger value="portfolio">
@@ -171,7 +170,7 @@ const PublicTeamDetail = () => {
                 matches={matches}
                 teams={allTeams}
                 rounds={allRounds}
-                teamId={team.id} // Pass the current teamId to filter the gallery
+                teamId={team.id}
               />
             </TabsContent>
           </Tabs>

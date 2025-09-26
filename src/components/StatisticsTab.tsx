@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react'; // Importar useMemo
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -8,55 +9,78 @@ interface StatisticsTabProps {
   championshipId: string;
   teams: Team[];
   matches: Match[];
-  isLoading: boolean; // Adicionado
-  onDataChange: () => void; // Adicionado
+  isLoading: boolean;
+  onDataChange: () => void;
 }
 
 export function StatisticsTab({ championshipId, teams, matches, isLoading, onDataChange }: StatisticsTabProps) {
-  const playedMatches = matches.filter(m => m.team1_score !== null && m.team2_score !== null);
+  const {
+    playedMatches,
+    totalMatches,
+    totalPlayedMatches,
+    totalGoals,
+    avgGoalsPerMatch,
+    totalWins,
+    totalDraws,
+    totalLosses,
+    top3Scores,
+  } = useMemo(() => {
+    const playedMatches = matches.filter(m => m.team1_score !== null && m.team2_score !== null);
 
-  const totalMatches = matches.length;
-  const totalPlayedMatches = playedMatches.length;
-  const totalGoals = playedMatches.reduce((sum, match) => sum + (match.team1_score || 0) + (match.team2_score || 0), 0);
-  const avgGoalsPerMatch = totalPlayedMatches > 0 ? (totalGoals / totalPlayedMatches).toFixed(2) : '0.00';
+    const totalMatches = matches.length;
+    const totalPlayedMatches = playedMatches.length;
+    const totalGoals = playedMatches.reduce((sum, match) => sum + (match.team1_score || 0) + (match.team2_score || 0), 0);
+    const avgGoalsPerMatch = totalPlayedMatches > 0 ? (totalGoals / totalPlayedMatches).toFixed(2) : '0.00';
 
-  const teamStats = new Map<string, { wins: number; draws: number; losses: number }>();
-  teams.forEach(team => teamStats.set(team.id, { wins: 0, draws: 0, losses: 0 }));
+    const teamStats = new Map<string, { wins: number; draws: number; losses: number }>();
+    teams.forEach(team => teamStats.set(team.id, { wins: 0, draws: 0, losses: 0 }));
 
-  playedMatches.forEach(match => {
-    if (match.team1_score !== null && match.team2_score !== null) {
-      const team1Stats = teamStats.get(match.team1_id);
-      const team2Stats = teamStats.get(match.team2_id);
+    playedMatches.forEach(match => {
+      if (match.team1_score !== null && match.team2_score !== null) {
+        const team1Stats = teamStats.get(match.team1_id);
+        const team2Stats = teamStats.get(match.team2_id);
 
-      if (team1Stats && team2Stats) {
-        if (match.team1_score > match.team2_score) {
-          team1Stats.wins++;
-          team2Stats.losses++;
-        } else if (match.team1_score < match.team2_score) {
-          team2Stats.wins++;
-          team1Stats.losses++;
-        } else {
-          team1Stats.draws++;
-          team2Stats.draws++;
+        if (team1Stats && team2Stats) {
+          if (match.team1_score > match.team2_score) {
+            team1Stats.wins++;
+            team2Stats.losses++;
+          } else if (match.team1_score < match.team2_score) {
+            team2Stats.wins++;
+            team1Stats.losses++;
+          } else {
+            team1Stats.draws++;
+            team2Stats.draws++;
+          }
         }
       }
-    }
-  });
+    });
 
-  const totalWins = Array.from(teamStats.values()).reduce((sum, stats) => sum + stats.wins, 0) / 2; // Each win counted twice
-  const totalDraws = Array.from(teamStats.values()).reduce((sum, stats) => sum + stats.draws, 0) / 2; // Each draw counted twice
-  const totalLosses = Array.from(teamStats.values()).reduce((sum, stats) => sum + stats.losses, 0) / 2; // Each loss counted twice
+    const totalWins = Array.from(teamStats.values()).reduce((sum, stats) => sum + stats.wins, 0) / 2;
+    const totalDraws = Array.from(teamStats.values()).reduce((sum, stats) => sum + stats.draws, 0) / 2;
+    const totalLosses = Array.from(teamStats.values()).reduce((sum, stats) => sum + stats.losses, 0) / 2;
 
-  // Most common scores
-  const scoreCounts = new Map<string, number>();
-  playedMatches.forEach(match => {
-    if (match.team1_score !== null && match.team2_score !== null) {
-      const score = `${match.team1_score}-${match.team2_score}`;
-      scoreCounts.set(score, (scoreCounts.get(score) || 0) + 1);
-    }
-  });
-  const sortedScores = Array.from(scoreCounts.entries()).sort((a, b) => b[1] - a[1]);
-  const top3Scores = sortedScores.slice(0, 3);
+    const scoreCounts = new Map<string, number>();
+    playedMatches.forEach(match => {
+      if (match.team1_score !== null && match.team2_score !== null) {
+        const score = `${match.team1_score}-${match.team2_score}`;
+        scoreCounts.set(score, (scoreCounts.get(score) || 0) + 1);
+      }
+    });
+    const sortedScores = Array.from(scoreCounts.entries()).sort((a, b) => b[1] - a[1]);
+    const top3Scores = sortedScores.slice(0, 3);
+
+    return {
+      playedMatches,
+      totalMatches,
+      totalPlayedMatches,
+      totalGoals,
+      avgGoalsPerMatch,
+      totalWins,
+      totalDraws,
+      totalLosses,
+      top3Scores,
+    };
+  }, [matches, teams]); // Recalculate only when matches or teams change
 
   if (isLoading) {
     return (

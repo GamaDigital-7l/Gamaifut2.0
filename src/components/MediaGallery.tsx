@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Importar useMemo
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -41,7 +41,7 @@ interface MediaGalleryProps {
 }
 
 export function MediaGallery({ championshipId, matches, teams, rounds, teamId }: MediaGalleryProps) {
-  const [mediaItems, setMediaItems] = useState<Media[]>([]);
+  const [rawMediaItems, setRawMediaItems] = useState<any[]>([]); // Store raw data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,19 +88,12 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
     if (fetchError) {
       console.error('Error fetching media:', fetchError);
       setError('Erro ao carregar mídias: ' + fetchError.message);
-      setMediaItems([]);
+      setRawMediaItems([]);
     } else {
-      const mappedData: Media[] = data.map(item => ({
-        ...item,
-        matches: matches.find(m => m.id === item.match_id) ? { team1: { name: matches.find(m => m.id === item.match_id)?.team1.name || '' }, team2: { name: matches.find(m => m.id === item.match_id)?.team2.name || '' } } : null,
-        teams: teams.find(t => t.id === item.team_id) ? { name: teams.find(t => t.id === item.team_id)?.name || '' } : null,
-        rounds: rounds.find(r => r.id === item.round_id) ? { name: rounds.find(r => r.id === item.round_id)?.name || '' } : null,
-        profiles: null, 
-      }));
-      setMediaItems(mappedData);
+      setRawMediaItems(data);
     }
     setLoading(false);
-  }, [championshipId, filterType, filterTeam, filterRound, filterHighlight, searchTerm, matches, teams, rounds]);
+  }, [championshipId, filterType, filterTeam, filterRound, filterHighlight, searchTerm]);
 
   useEffect(() => {
     fetchMedia();
@@ -109,6 +102,16 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
   useEffect(() => {
     setFilterTeam(teamId || 'all');
   }, [teamId]);
+
+  const mediaItems = useMemo(() => {
+    return rawMediaItems.map(item => ({
+      ...item,
+      matches: matches.find(m => m.id === item.match_id) ? { team1: { name: matches.find(m => m.id === item.match_id)?.team1.name || '' }, team2: { name: matches.find(m => m.id === item.match_id)?.team2.name || '' } } : null,
+      teams: teams.find(t => t.id === item.team_id) ? { name: teams.find(t => t.id === item.team_id)?.name || '' } : null,
+      rounds: rounds.find(r => r.id === item.round_id) ? { name: rounds.find(r => r.id === item.round_id)?.name || '' } : null,
+      profiles: null, 
+    }));
+  }, [rawMediaItems, matches, teams, rounds]); // Recalculate only when raw data or related entities change
 
   const getAssociatedText = (item: Media | null) => {
     if (!item) return '';
@@ -143,7 +146,7 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
     if (!userProfile || !session) return false;
     if (userProfile.role === 'admin') return true;
     if (userProfile.id === mediaItem.user_id) return true;
-    if (userProfile.role === 'official') return true; // Simplificação: oficiais podem gerenciar
+    if (userProfile.role === 'official') return true;
     return false;
   };
 

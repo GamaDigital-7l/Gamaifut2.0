@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react'; // Importar useMemo
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,15 +8,15 @@ import { Leaderboard } from '@/components/Leaderboard';
 import { SponsorDisplay } from '@/components/SponsorDisplay';
 import { MatchCard } from '@/components/MatchCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useChampionshipTheme } from '@/contexts/ThemeContext'; // Keep for logo
+import { useChampionshipTheme } from '@/contexts/ThemeContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublicHeader } from '@/components/PublicHeader';
-import { PublicGroupsTab } from '@/components/PublicGroupsTab'; // Import new public groups tab
-import { PublicRoundsTab } from '@/components/PublicRoundsTab'; // Import new public rounds tab
-import { CalendarTab } from '@/components/CalendarTab'; // Re-use CalendarTab
-import { StatisticsTab } from '@/components/StatisticsTab'; // Re-use StatisticsTab
-import { TopScorersList } from '@/components/TopScorersList'; // NEW: Import TopScorersList
-import { MediaGallery } from '@/components/MediaGallery'; // Import MediaGallery
+import { PublicGroupsTab } from '@/components/PublicGroupsTab';
+import { PublicRoundsTab } from '@/components/PublicRoundsTab';
+import { CalendarTab } from '@/components/CalendarTab';
+import { StatisticsTab } from '@/components/StatisticsTab';
+import { TopScorersList } from '@/components/TopScorersList';
+import { MediaGallery } from '@/components/MediaGallery';
 import {
   Select,
   SelectContent,
@@ -25,15 +25,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils'; // Import cn for conditional classes
-import { Badge } from '@/components/ui/badge'; // Import Badge
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import { 
   Users, 
   LayoutGrid, 
   Milestone, 
   Calendar as CalendarIconLucide, 
   BarChart2,
-  Goal // NEW: Import Goal icon
+  Goal 
 } from 'lucide-react';
 import { Championship, Team, Match, Group, Round, Sponsor } from '@/types';
 
@@ -44,25 +44,24 @@ const PublicChampionshipView = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
-  const [masterSponsor, setMasterSponsor] = useState<Sponsor | null>(null); // New state for master sponsor
+  const [masterSponsor, setMasterSponsor] = useState<Sponsor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all');
-  const { fetchChampionshipLogo } = useChampionshipTheme(); // Keep for logo
+  const { fetchChampionshipLogo } = useChampionshipTheme();
 
   const fetchData = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     setError(null);
 
-    // Fetch all data in parallel
     const [champRes, teamsRes, groupsRes, roundsRes, matchesRes, sponsorsRes] = await Promise.all([
-      supabase.from('championships').select('id, name, description, city, state, logo_url, points_for_win, sport_type, gender, age_category, tie_breaker_order').eq('id', id).single(), // Optimized select
-      supabase.from('teams').select('id, name, logo_url, championship_id, user_id, group_id, groups(name)').eq('championship_id', id).order('name', { ascending: true }), // Optimized select
-      supabase.from('groups').select('id, name, championship_id, created_at').eq('championship_id', id).order('name', { ascending: true }), // Optimized select
-      supabase.from('rounds').select('id, name, order_index, type, championship_id, created_at, public_edit_token').eq('championship_id', id).order('order_index', { ascending: true }), // Optimized select
-      supabase.from('matches').select(`id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(id, match_id, team_id, player_name, jersey_number)`).eq('championship_id', id).order('match_date', { ascending: true }), // Optimized select for matches and goals
-      supabase.from('sponsors').select('id, name, level, logo_url, target_url, is_active').eq('championship_id', id).eq('is_active', true).eq('level', 'ouro').order('created_at', { ascending: true }).limit(1) // Optimized select
+      supabase.from('championships').select('id, name, description, city, state, logo_url, points_for_win, sport_type, gender, age_category, tie_breaker_order').eq('id', id).single(),
+      supabase.from('teams').select('id, name, logo_url, championship_id, user_id, group_id, groups(name)').eq('championship_id', id).order('name', { ascending: true }),
+      supabase.from('groups').select('id, name, championship_id, created_at').eq('championship_id', id).order('name', { ascending: true }),
+      supabase.from('rounds').select('id, name, order_index, type, championship_id, created_at, public_edit_token').eq('championship_id', id).order('order_index', { ascending: true }),
+      supabase.from('matches').select(`id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(id, match_id, team_id, player_name, jersey_number)`).eq('championship_id', id).order('match_date', { ascending: true }),
+      supabase.from('sponsors').select('id, name, level, logo_url, target_url, is_active').eq('championship_id', id).eq('is_active', true).eq('level', 'ouro').order('created_at', { ascending: true }).limit(1)
     ]);
 
     if (champRes.error) {
@@ -70,7 +69,7 @@ const PublicChampionshipView = () => {
       setError('Campeonato não encontrado ou erro ao carregar.');
     } else {
       setChampionship(champRes.data as Championship);
-      fetchChampionshipLogo(id); // Fetch and update logo in context
+      fetchChampionshipLogo(id);
     }
 
     if (teamsRes.error) console.error('Error fetching teams:', teamsRes.error);
@@ -96,13 +95,15 @@ const PublicChampionshipView = () => {
     fetchData();
   }, [fetchData]);
 
-  const filteredMatches = selectedRoundFilter === 'all'
-    ? matches
-    : matches.filter(match => match.round_id === selectedRoundFilter);
+  const filteredMatches = useMemo(() => {
+    return selectedRoundFilter === 'all'
+      ? matches
+      : matches.filter(match => match.round_id === selectedRoundFilter);
+  }, [matches, selectedRoundFilter]);
 
-  const formatRuleText = (text: string) => {
+  const formatRuleText = useCallback((text: string) => {
     return text.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -133,18 +134,18 @@ const PublicChampionshipView = () => {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <PublicHeader />
-      <main className="flex-1 p-4 md:gap-8 md:p-10"> {/* Adjusted padding */}
-        <div className="grid w-full gap-6"> {/* Removed max-w-6xl and mx-auto */}
-          <div className="flex flex-col items-center text-center gap-4 mb-6"> {/* Centralized content */}
+      <main className="flex-1 p-4 md:gap-8 md:p-10">
+        <div className="grid w-full gap-6">
+          <div className="flex flex-col items-center text-center gap-4 mb-6">
             {championship.logo_url && (
-              <div className="w-32 h-32 relative flex-shrink-0"> {/* Increased size */}
+              <div className="w-32 h-32 relative flex-shrink-0">
                 <AspectRatio ratio={1 / 1}>
                   <img src={championship.logo_url} alt={championship.name} className="rounded-md object-contain" loading="lazy" />
                 </AspectRatio>
               </div>
             )}
             <div>
-              <h1 className="text-3xl font-bold">{championship.name}</h1> {/* Larger title */}
+              <h1 className="text-3xl font-bold">{championship.name}</h1>
               <p className="text-muted-foreground mt-1">{championship.description || 'Sem descrição.'}</p>
               <div className="flex flex-wrap justify-center gap-2 mt-2">
                 <Badge variant="secondary">{formatRuleText(championship.sport_type)}</Badge>
@@ -159,7 +160,7 @@ const PublicChampionshipView = () => {
                 rel="noopener noreferrer" 
                 className={cn(
                   "flex items-center gap-2 p-2 border rounded-lg hover:shadow-md transition-shadow max-w-[150px] sm:max-w-[200px]",
-                  "mx-auto sm:ml-auto sm:mr-0" // Centralize on mobile, push right on larger screens
+                  "mx-auto sm:ml-auto sm:mr-0"
                 )}
               >
                 <span className="text-xs text-muted-foreground hidden sm:inline">Patrocínio Master:</span>
@@ -169,7 +170,6 @@ const PublicChampionshipView = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Leaderboards por Grupo */}
             {groups.length > 0 ? (
               <div className="space-y-4">
                 {groups.map(group => (
@@ -214,7 +214,6 @@ const PublicChampionshipView = () => {
                     <CardDescription>Partidas agendadas e resultados.</CardDescription>
                   </div>
                 </div>
-                {/* Round Filter */}
                 {rounds.length > 0 && (
                   <div className="flex items-center gap-2">
                     <Label htmlFor="round-filter" className="text-right sr-only">Filtrar por Rodada</Label>
@@ -243,12 +242,12 @@ const PublicChampionshipView = () => {
                       <MatchCard
                         key={match.id}
                         match={match}
-                        onMatchUpdated={() => {}} // No update action for public view
-                        onMatchDeleted={() => {}} // No delete action for public view
+                        onMatchUpdated={() => {}}
+                        onMatchDeleted={() => {}}
                         isEven={index % 2 === 0}
                         groups={groups}
                         rounds={rounds}
-                        teams={teams} // Pass teams
+                        teams={teams}
                         isPublicView={true}
                       />
                     ))}
@@ -258,7 +257,6 @@ const PublicChampionshipView = () => {
             </Card>
           </div>
 
-          {/* NOVO: Seção de Mídias do Campeonato */}
           <div className="mt-6">
             <MediaGallery
               championshipId={championship.id}
@@ -270,7 +268,7 @@ const PublicChampionshipView = () => {
 
           <Tabs defaultValue="teams" className="w-full mt-4">
             <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <TabsList className="grid w-full grid-cols-5"> {/* Ajustado grid-cols para 5 (removendo Portfólio) */}
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="teams">
                   <Users className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Times</span>
@@ -291,7 +289,6 @@ const PublicChampionshipView = () => {
                   <BarChart2 className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Estatísticas</span>
                 </TabsTrigger>
-                {/* Removido TabsTrigger para "top-scorers" para simplificar, se necessário pode ser adicionado novamente */}
               </TabsList>
             </div>
             
@@ -341,9 +338,9 @@ const PublicChampionshipView = () => {
                 matches={matches} 
                 groups={groups}
                 rounds={rounds}
-                teams={teams} // Adicionado: Passar todos os times para MatchCard
-                isLoading={loading} // Passando isLoading
-                onDataChange={() => {}} // Passando onDataChange (vazio para public view)
+                teams={teams}
+                isLoading={loading}
+                onDataChange={() => {}}
               />
             </TabsContent>
 
@@ -352,15 +349,12 @@ const PublicChampionshipView = () => {
                 championshipId={championship.id} 
                 teams={teams} 
                 matches={matches} 
-                isLoading={loading} // Passando isLoading
-                onDataChange={() => {}} // Passando onDataChange (vazio para public view)
+                isLoading={loading}
+                onDataChange={() => {}}
               />
             </TabsContent>
-
-            {/* Removido TabsContent para "top-scorers" */}
           </Tabs>
           
-          {/* Sponsors are displayed outside the tabs, as per the admin page layout */}
           <SponsorDisplay championshipId={championship.id} />
         </div>
       </main>

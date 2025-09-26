@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Importar useMemo
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,17 +12,17 @@ import { Championship } from '@/types';
 
 const OfficialDashboard = () => {
   const { userProfile } = useSession();
-  const [championships, setChampionships] = useState<Championship[]>([]);
+  const [rawChampionships, setRawChampionships] = useState<Championship[]>([]); // Store raw data
   const [loading, setLoading] = useState(true);
 
   const fetchChampionships = useCallback(async () => {
     setLoading(true);
     let query = supabase
       .from('championships')
-      .select('id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order'); // Optimized select
+      .select('id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order');
 
     if (userProfile?.role === 'user') {
-      setChampionships([]);
+      setRawChampionships([]);
       setLoading(false);
       return;
     } else if (userProfile?.role === 'official') {
@@ -39,7 +39,7 @@ const OfficialDashboard = () => {
 
     if (error) {
       showError('Erro ao buscar campeonatos: ' + error.message);
-      setChampionships([]);
+      setRawChampionships([]);
     } else {
       if (userProfile?.role === 'official') {
         const uniqueChampionships = Array.from(new Map(
@@ -58,9 +58,9 @@ const OfficialDashboard = () => {
             tie_breaker_order: item.tie_breaker_order,
           }])
         ).values());
-        setChampionships(uniqueChampionships as Championship[]);
+        setRawChampionships(uniqueChampionships as Championship[]);
       } else {
-        setChampionships(data as Championship[]);
+        setRawChampionships(data as Championship[]);
       }
     }
     setLoading(false);
@@ -71,6 +71,8 @@ const OfficialDashboard = () => {
       fetchChampionships();
     }
   }, [userProfile, fetchChampionships]);
+
+  const championships = useMemo(() => rawChampionships, [rawChampionships]); // Memoize the list
 
   if (userProfile?.role === 'user') {
     return (

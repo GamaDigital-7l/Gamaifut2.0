@@ -1,3 +1,4 @@
+import React from 'react'; // Importar React
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -19,7 +20,7 @@ import { Championship } from '@/types';
 const fetchChampionships = async () => {
   const { data, error } = await supabase
     .from('championships')
-    .select('id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order') // Optimized select
+    .select('id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order')
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return data;
@@ -35,6 +36,8 @@ const Dashboard = () => {
   const handleChampionshipChange = () => {
     queryClient.invalidateQueries({ queryKey: ['championships'] });
   };
+
+  // No need for useMemo here as the data is already memoized by react-query and not filtered/transformed further in this component.
 
   return (
     <>

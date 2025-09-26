@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Importar useMemo
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,15 +23,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { showSuccess, showError } from '@/utils/toast';
 import { Team, Group } from '@/types';
-import { Skeleton } from '@/components/ui/skeleton'; // Importar Skeleton
-import { Badge } from '@/components/ui/badge'; // Importar Badge para os times
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 interface GroupsTabProps {
   championshipId: string;
-  teams: Team[]; // New prop: all teams in the championship
-  groups: Group[]; // Groups passed as prop
+  teams: Team[];
+  groups: Group[];
   isLoading: boolean;
-  onDataChange: () => void; // Callback to notify parent of data changes
+  onDataChange: () => void;
 }
 
 export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChange }: GroupsTabProps) {
@@ -40,7 +40,6 @@ export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChan
   const handleDeleteGroup = async (groupId: string, groupName: string) => {
     setIsDeleting(true);
     
-    // First, set group_id to null for all teams in this group
     const { error: updateError } = await supabase
       .from('teams')
       .update({ group_id: null })
@@ -63,9 +62,18 @@ export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChan
       showError(`Erro ao excluir grupo "${groupName}": ${error.message}`);
     } else {
       showSuccess(`Grupo "${groupName}" excluído com sucesso!`);
-      onDataChange(); // Notify parent to refetch all championship data
+      onDataChange();
     }
   };
+
+  // Memoize the filtered teams for each group
+  const teamsByGroup = useMemo(() => {
+    const map = new Map<string, Team[]>();
+    groups.forEach(group => {
+      map.set(group.id, teams.filter(team => team.group_id === group.id));
+    });
+    return map;
+  }, [teams, groups]);
 
   return (
     <Card>
@@ -81,7 +89,7 @@ export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChan
       <CardContent>
         {isLoading ? (
           <div className="space-y-4">
-            {[...Array(2)].map((_, index) => ( // Render 2 skeleton cards
+            {[...Array(2)].map((_, index) => (
               <Card key={index}>
                 <CardHeader className="flex flex-row items-center justify-between p-4">
                   <Skeleton className="h-6 w-24" />
@@ -116,7 +124,6 @@ export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChan
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      {/* Edit Group Dialog (to be implemented later) */}
                       <DropdownMenuItem disabled>
                         <Edit className="mr-2 h-4 w-4" /> Editar
                       </DropdownMenuItem>
@@ -146,11 +153,11 @@ export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChan
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                   <h4 className="text-sm font-semibold mb-2">Times no Grupo:</h4>
-                  {teams.filter(team => team.group_id === group.id).length === 0 ? (
+                  {teamsByGroup.get(group.id)?.length === 0 ? (
                     <p className="text-sm text-muted-foreground">Nenhum time neste grupo.</p>
                   ) : (
                     <div className="flex flex-wrap gap-2">
-                      {teams.filter(team => team.group_id === group.id).map(team => (
+                      {teamsByGroup.get(group.id)?.map(team => (
                         <Badge key={team.id} variant="secondary" className="flex items-center gap-1">
                           {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-4 w-4 object-contain" loading="lazy" />}
                           {team.name}

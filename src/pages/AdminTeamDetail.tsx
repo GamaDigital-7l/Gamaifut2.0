@@ -1,18 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Importar useMemo
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Trophy, Camera } from 'lucide-react'; // Importar Camera icon
+import { Frown, Trophy, Camera } from 'lucide-react';
 import { MatchCard } from '@/components/MatchCard';
 import { Leaderboard } from '@/components/Leaderboard';
 import { Team, Match, Group, Round } from '@/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Importar Tabs
-import { MediaGallery } from '@/components/MediaGallery'; // Importar MediaGallery
-import { UploadMediaDialog } from '@/components/UploadMediaDialog'; // Importar UploadMediaDialog
-import { useSession } from '@/components/SessionProvider'; // Import useSession
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaGallery } from '@/components/MediaGallery';
+import { UploadMediaDialog } from '@/components/UploadMediaDialog';
+import { useSession } from '@/components/SessionProvider';
 
 const AdminTeamDetail = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -23,14 +23,13 @@ const AdminTeamDetail = () => {
   const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [allRounds, setAllRounds] = useState<Round[]>([]);
   const [allTeams, setAllTeams] = useState<Team[]>([]);
-  const { userProfile } = useSession(); // Get current user profile
+  const { userProfile } = useSession();
 
   const fetchTeamDetails = useCallback(async () => {
     if (!teamId) return;
     setLoading(true);
     setError(null);
 
-    // Fetch team details
     const { data: teamData, error: teamError } = await supabase
       .from('teams')
       .select(`
@@ -48,7 +47,6 @@ const AdminTeamDetail = () => {
     }
     setTeam(teamData as Team);
 
-    // Fetch all groups, rounds, and teams for MatchCard and MediaGallery
     const [groupsRes, roundsRes, teamsRes, matchesRes] = await Promise.all([
       supabase.from('groups').select('id, name, championship_id, created_at').eq('championship_id', teamData.championship_id),
       supabase.from('rounds').select('id, name, order_index, type, championship_id, created_at, public_edit_token').eq('championship_id', teamData.championship_id),
@@ -86,8 +84,10 @@ const AdminTeamDetail = () => {
     fetchTeamDetails();
   }, [fetchTeamDetails]);
 
-  // Check if the current user can upload media for this championship
   const canUploadMedia = userProfile?.role === 'admin' || userProfile?.role === 'official';
+
+  const singleTeamArray = useMemo(() => (team ? [team] : []), [team]);
+  const teamMatchesForStats = useMemo(() => matches.filter(m => m.team1_score !== null && m.team2_score !== null), [matches]);
 
   if (loading) {
     return (
@@ -128,9 +128,6 @@ const AdminTeamDetail = () => {
     );
   }
 
-  const singleTeamArray = [team];
-  const teamMatchesForStats = matches.filter(m => m.team1_score !== null && m.team2_score !== null);
-
   return (
     <div className="space-y-6 p-4 lg:p-6">
       <div className="flex items-center gap-4">
@@ -153,7 +150,7 @@ const AdminTeamDetail = () => {
 
       <Tabs defaultValue="stats" className="w-full">
         <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <TabsList className="grid w-full grid-cols-3"> {/* Ajustado para 3 abas */}
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="stats">Estatísticas</TabsTrigger>
             <TabsTrigger value="matches">Partidas</TabsTrigger>
             <TabsTrigger value="portfolio">
@@ -213,9 +210,9 @@ const AdminTeamDetail = () => {
               <UploadMediaDialog
                 championshipId={team.championship_id}
                 matches={matches}
-                teams={allTeams} // Pass all teams for the dialog
-                rounds={allRounds} // Pass all rounds for the dialog
-                onMediaUploaded={fetchTeamDetails} // Refresh team details to update media list
+                teams={allTeams}
+                rounds={allRounds}
+                onMediaUploaded={fetchTeamDetails}
               />
             )}
           </div>
@@ -224,7 +221,7 @@ const AdminTeamDetail = () => {
             matches={matches}
             teams={allTeams}
             rounds={allRounds}
-            teamId={team.id} // Pass the current teamId to filter the gallery
+            teamId={team.id}
           />
         </TabsContent>
       </Tabs>

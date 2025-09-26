@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react'; // Importar useMemo
 import {
   Table,
   TableBody,
@@ -7,30 +8,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Team, Match } from '@/types';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link } from 'react-router-dom';
 
 interface LeaderboardProps {
   teams: Team[];
   matches: Match[];
-  isPublicView?: boolean; // New prop to determine link path
-  pointsForWin?: number; // New prop for points rule
-}
-
-interface Standing {
-  teamId: string;
-  teamName: string;
-  logo_url: string | null; // Added logo_url
-  points: number;
-  played: number;
-  wins: number;
-  draws: number;
-  losses: number;
-  goalsFor: number;
-  goalsAgainst: number;
-  goalDifference: number;
-  percentage: number;
-  recentForm: ('W' | 'D' | 'L' | '-')[]; // Last 5 games, '-' for unplayed
-  // Removed positionChange as it's a placeholder and adds complexity
+  isPublicView?: boolean;
+  pointsForWin?: number;
 }
 
 export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin = 3 }: LeaderboardProps) {
@@ -42,114 +26,131 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
     );
   }
 
-  const standings: Standing[] = teams.map(team => ({
-    teamId: team.id,
-    teamName: team.name,
-    logo_url: team.logo_url, // Assign logo_url
-    points: 0,
-    played: 0,
-    wins: 0,
-    draws: 0,
-    losses: 0,
-    goalsFor: 0,
-    goalsAgainst: 0,
-    goalDifference: 0,
-    percentage: 0,
-    recentForm: [],
-  }));
-
-  const standingsMap = new Map<string, Standing>(standings.map(s => [s.teamId, s]));
-
-  const playedMatches = matches.filter(m => m.team1_score !== null && m.team2_score !== null);
-
-  // Group matches by team for recent form calculation
-  const teamMatches = new Map<string, Match[]>();
-  teams.forEach(team => teamMatches.set(team.id, []));
-  matches.forEach(match => {
-    if (match.team1_id) teamMatches.get(match.team1_id)?.push(match);
-    if (match.team2_id) teamMatches.get(match.team2_id)?.push(match);
-  });
-
-  playedMatches.forEach(match => {
-    if (match.team1_score === null || match.team2_score === null) {
-      return;
+  const { sortedStandings, playedMatches } = useMemo(() => {
+    interface Standing {
+      teamId: string;
+      teamName: string;
+      logo_url: string | null;
+      points: number;
+      played: number;
+      wins: number;
+      draws: number;
+      losses: number;
+      goalsFor: number;
+      goalsAgainst: number;
+      goalDifference: number;
+      percentage: number;
+      recentForm: ('W' | 'D' | 'L' | '-')[];
     }
 
-    const team1Standing = standingsMap.get(match.team1_id);
-    const team2Standing = standingsMap.get(match.team2_id);
+    const standings: Standing[] = teams.map(team => ({
+      teamId: team.id,
+      teamName: team.name,
+      logo_url: team.logo_url,
+      points: 0,
+      played: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      goalDifference: 0,
+      percentage: 0,
+      recentForm: [],
+    }));
 
-    if (!team1Standing || !team2Standing) {
-      return;
-    }
+    const standingsMap = new Map<string, Standing>(standings.map(s => [s.teamId, s]));
 
-    team1Standing.played += 1;
-    team2Standing.played += 1;
+    const playedMatches = matches.filter(m => m.team1_score !== null && m.team2_score !== null);
 
-    team1Standing.goalsFor += match.team1_score;
-    team1Standing.goalsAgainst += match.team2_score;
-    team2Standing.goalsFor += match.team2_score;
-    team2Standing.goalsAgainst += match.team1_score;
+    const teamMatches = new Map<string, Match[]>();
+    teams.forEach(team => teamMatches.set(team.id, []));
+    matches.forEach(match => {
+      if (match.team1_id) teamMatches.get(match.team1_id)?.push(match);
+      if (match.team2_id) teamMatches.get(match.team2_id)?.push(match);
+    });
 
-    team1Standing.goalDifference = team1Standing.goalsFor - team1Standing.goalsAgainst;
-    team2Standing.goalDifference = team2Standing.goalsFor - team2Standing.goalsAgainst;
-
-    if (match.team1_score > match.team2_score) {
-      team1Standing.wins += 1;
-      team1Standing.points += pointsForWin;
-      team2Standing.losses += 1;
-    } else if (match.team1_score < match.team2_score) {
-      team2Standing.wins += 1;
-      team2Standing.points += pointsForWin;
-      team1Standing.losses += 1;
-    } else {
-      team1Standing.draws += 1;
-      team1Standing.points += 1;
-      team2Standing.draws += 1;
-      team2Standing.points += 1;
-    }
-  });
-
-  // Calculate percentage and recent form
-  standingsMap.forEach(standing => {
-    if (standing.played > 0) {
-      standing.percentage = (standing.points / (standing.played * pointsForWin)) * 100;
-    } else {
-      standing.percentage = 0;
-    }
-
-    const teamRecentMatches = teamMatches.get(standing.teamId)
-      ?.filter(m => m.team1_score !== null && m.team2_score !== null) // Only played matches
-      .sort((a, b) => new Date(b.match_date || 0).getTime() - new Date(a.match_date || 0).getTime()) // Most recent first
-      .slice(0, 5); // Last 5 matches
-
-    standing.recentForm = teamRecentMatches?.map(match => {
-      if (match.team1_id === standing.teamId) {
-        return match.team1_score! > match.team2_score! ? 'W' : match.team1_score! < match.team2_score! ? 'L' : 'D';
-      } else { // match.team2_id === standing.teamId
-        return match.team2_score! > match.team1_score! ? 'W' : match.team2_score! < match.team1_score! ? 'L' : 'D';
+    playedMatches.forEach(match => {
+      if (match.team1_score === null || match.team2_score === null) {
+        return;
       }
-    }) || [];
-    
-    // Fill remaining slots with '-' if less than 5 played matches
-    while (standing.recentForm.length < 5) {
-      standing.recentForm.push('-');
-    }
-  });
 
-  const sortedStandings = Array.from(standingsMap.values()).sort((a, b) => {
-    if (b.points !== a.points) {
-      return b.points - a.points;
-    }
-    if (b.goalDifference !== a.goalDifference) {
-      return b.goalDifference - a.goalDifference;
-    }
-    return b.goalsFor - a.goalsFor;
-  });
+      const team1Standing = standingsMap.get(match.team1_id);
+      const team2Standing = standingsMap.get(match.team2_id);
+
+      if (!team1Standing || !team2Standing) {
+        return;
+      }
+
+      team1Standing.played += 1;
+      team2Standing.played += 1;
+
+      team1Standing.goalsFor += match.team1_score;
+      team1Standing.goalsAgainst += match.team2_score;
+      team2Standing.goalsFor += match.team2_score;
+      team2Standing.goalsAgainst += match.team1_score;
+
+      team1Standing.goalDifference = team1Standing.goalsFor - team1Standing.goalsAgainst;
+      team2Standing.goalDifference = team2Standing.goalsFor - team2Standing.goalsAgainst;
+
+      if (match.team1_score > match.team2_score) {
+        team1Standing.wins += 1;
+        team1Standing.points += pointsForWin;
+        team2Standing.losses += 1;
+      } else if (match.team1_score < match.team2_score) {
+        team2Standing.wins += 1;
+        team2Standing.points += pointsForWin;
+        team1Standing.losses += 1;
+      } else {
+        team1Standing.draws += 1;
+        team1Standing.points += 1;
+        team2Standing.draws += 1;
+        team2Standing.points += 1;
+      }
+    });
+
+    standingsMap.forEach(standing => {
+      if (standing.played > 0) {
+        standing.percentage = (standing.points / (standing.played * pointsForWin)) * 100;
+      } else {
+        standing.percentage = 0;
+      }
+
+      const teamRecentMatches = teamMatches.get(standing.teamId)
+        ?.filter(m => m.team1_score !== null && m.team2_score !== null)
+        .sort((a, b) => new Date(b.match_date || 0).getTime() - new Date(a.match_date || 0).getTime())
+        .slice(0, 5);
+
+      standing.recentForm = teamRecentMatches?.map(match => {
+        if (match.team1_id === standing.teamId) {
+          return match.team1_score! > match.team2_score! ? 'W' : match.team1_score! < match.team2_score! ? 'L' : 'D';
+        } else {
+          return match.team2_score! > match.team1_score! ? 'W' : match.team2_score! < match.team1_score! ? 'L' : 'D';
+        }
+      }) || [];
+      
+      while (standing.recentForm.length < 5) {
+        standing.recentForm.push('-');
+      }
+    });
+
+    const sortedStandings = Array.from(standingsMap.values()).sort((a, b) => {
+      if (b.points !== a.points) {
+        return b.points - a.points;
+      }
+      if (b.goalDifference !== a.goalDifference) {
+        return b.goalDifference - a.goalDifference;
+      }
+      return b.goalsFor - a.goalsFor;
+    });
+
+    return { sortedStandings, playedMatches };
+  }, [teams, matches, pointsForWin]);
 
   return (
     <div>
-      <div className="rounded-md border overflow-x-auto"> {/* Ensure horizontal scroll as fallback */}
-        <Table className="min-w-full table-fixed"> {/* Use table-fixed for consistent column widths */}
+      <div className="rounded-md border overflow-x-auto">
+        <Table className="min-w-full table-fixed">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[20px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">Pos.</TableHead><TableHead className="w-[120px] px-1 py-1 text-xs">Time</TableHead><TableHead className="w-[18px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">P</TableHead><TableHead className="w-[18px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">J</TableHead><TableHead className="w-[18px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">V</TableHead><TableHead className="w-[18px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">E</TableHead><TableHead className="w-[18px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">D</TableHead><TableHead className="w-[22px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">GP</TableHead><TableHead className="w-[22px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">GC</TableHead><TableHead className="w-[22px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">SG</TableHead><TableHead className="w-[30px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">%</TableHead><TableHead className="w-[45px] text-center px-0.5 py-1 text-[0.6rem] whitespace-nowrap">Recentes</TableHead>
@@ -186,7 +187,6 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
                             'bg-gray-200'
                           }`}
                       >
-                        {/* Removed text content to make circles smaller */}
                       </span>
                     ))}
                   </div>

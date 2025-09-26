@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Importar useMemo
 import { supabase } from '@/integrations/supabase/client';
 import {
   Table,
@@ -25,17 +25,16 @@ interface TopScorer {
 }
 
 interface TopScorersListProps {
-  championshipId?: string; // Optional: filter by championship
-  isPublicView?: boolean; // Optional: adjust links for public view
+  championshipId?: string;
+  isPublicView?: boolean;
 }
 
 export function TopScorersList({ championshipId, isPublicView = false }: TopScorersListProps) {
-  const [topScorers, setTopScorers] = useState<TopScorer[]>([]);
+  const [allGoalsData, setAllGoalsData] = useState<any[]>([]); // Store raw goals data
   const [loading, setLoading] = useState(true);
 
-  const fetchTopScorers = useCallback(async () => {
+  const fetchAllGoals = useCallback(async () => {
     setLoading(true);
-    // Fetch all goals with nested team and championship data
     let query = supabase
       .from('match_goals')
       .select(`
@@ -58,40 +57,43 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
     if (error) {
       showError('Erro ao carregar artilheiros: ' + error.message);
       console.error('Error fetching top scorers:', error);
-      setTopScorers([]);
+      setAllGoalsData([]);
     } else {
-      const aggregatedGoals = new Map<string, TopScorer>();
-
-      data.forEach((goal: any) => {
-        const team = goal.teams;
-        const championship = team?.championships;
-
-        if (team && championship) {
-          const key = `${goal.player_name}-${team.id}-${championship.id}`;
-          if (!aggregatedGoals.has(key)) {
-            aggregatedGoals.set(key, {
-              player_name: goal.player_name,
-              total_goals: 0,
-              team_id: team.id,
-              team_name: team.name,
-              team_logo_url: team.logo_url,
-              championship_id: championship.id,
-              championship_name: championship.name,
-            });
-          }
-          aggregatedGoals.get(key)!.total_goals++;
-        }
-      });
-
-      const sortedScorers = Array.from(aggregatedGoals.values()).sort((a, b) => b.total_goals - a.total_goals);
-      setTopScorers(sortedScorers);
+      setAllGoalsData(data);
     }
     setLoading(false);
   }, [championshipId]);
 
   useEffect(() => {
-    fetchTopScorers();
-  }, [fetchTopScorers]);
+    fetchAllGoals();
+  }, [fetchAllGoals]);
+
+  const topScorers = useMemo(() => {
+    const aggregatedGoals = new Map<string, TopScorer>();
+
+    allGoalsData.forEach((goal: any) => {
+      const team = goal.teams;
+      const championship = team?.championships;
+
+      if (team && championship) {
+        const key = `${goal.player_name}-${team.id}-${championship.id}`;
+        if (!aggregatedGoals.has(key)) {
+          aggregatedGoals.set(key, {
+            player_name: goal.player_name,
+            total_goals: 0,
+            team_id: team.id,
+            team_name: team.name,
+            team_logo_url: team.logo_url,
+            championship_id: championship.id,
+            championship_name: championship.name,
+          });
+        }
+        aggregatedGoals.get(key)!.total_goals++;
+      }
+    });
+
+    return Array.from(aggregatedGoals.values()).sort((a, b) => b.total_goals - a.total_goals);
+  }, [allGoalsData]); // Recalculate only when allGoalsData changes
 
   if (loading) {
     return (

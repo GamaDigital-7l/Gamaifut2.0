@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Importar useMemo
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { CreateSponsorDialog } from './CreateSponsorDialog';
 import { EditSponsorDialog } from './EditSponsorDialog';
 import { DeleteSponsorDialog } from './DeleteSponsorDialog';
-import { Skeleton } from '@/components/ui/skeleton'; // Importar Skeleton
+import { Skeleton } from '@/components/ui/skeleton';
 
 export type Sponsor = {
   id: string;
@@ -26,25 +26,25 @@ export type Sponsor = {
 
 interface SponsorsTabProps {
   championshipId: string;
-  onDataChange: () => void; // Callback to notify parent of data changes
+  onDataChange: () => void;
 }
 
 export function SponsorsTab({ championshipId, onDataChange }: SponsorsTabProps) {
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [rawSponsors, setRawSponsors] = useState<Sponsor[]>([]); // Store raw data
   const [loading, setLoading] = useState(true);
 
   const fetchSponsors = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('sponsors')
-      .select('id, name, level, logo_url, target_url, is_active') // Optimized select
+      .select('id, name, level, logo_url, target_url, is_active')
       .eq('championship_id', championshipId)
       .order('created_at', { ascending: true });
 
     if (error) {
       console.error('Error fetching sponsors:', error);
     } else {
-      setSponsors(data as Sponsor[]);
+      setRawSponsors(data as Sponsor[]);
     }
     setLoading(false);
   }, [championshipId]);
@@ -53,19 +53,21 @@ export function SponsorsTab({ championshipId, onDataChange }: SponsorsTabProps) 
     fetchSponsors();
   }, [fetchSponsors]);
 
+  const sponsors = useMemo(() => rawSponsors, [rawSponsors]); // Memoize the list
+
   const handleSponsorChange = () => {
-    fetchSponsors(); // Refresh local sponsors list
-    onDataChange(); // Notify parent of change
+    fetchSponsors();
+    onDataChange();
   };
 
-  const levelVariant = (level: string) => {
+  const levelVariant = useCallback((level: string) => {
     switch (level) {
       case 'ouro': return 'default';
       case 'prata': return 'secondary';
       case 'bronze': return 'outline';
       default: return 'outline';
     }
-  };
+  }, []);
 
   return (
     <Card>
@@ -85,7 +87,7 @@ export function SponsorsTab({ championshipId, onDataChange }: SponsorsTabProps) 
       <CardContent>
         {loading ? (
           <div className="space-y-2">
-            {[...Array(3)].map((_, index) => ( // Render 3 skeleton cards
+            {[...Array(3)].map((_, index) => (
               <Card key={index}>
                 <CardHeader className="flex flex-row items-center justify-between p-4">
                   <div className="flex items-center gap-4">
