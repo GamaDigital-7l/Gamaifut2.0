@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'; // Importar useMemo
+import React, { useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -18,14 +18,7 @@ interface LeaderboardProps {
 }
 
 export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin = 3 }: LeaderboardProps) {
-  if (teams.length === 0) {
-    return (
-      <div className="text-center py-10 border-2 border-dashed rounded-lg">
-        <p className="text-gray-500">Adicione times a este grupo para ver a classificação.</p>
-      </div>
-    );
-  }
-
+  // Mover useMemo para antes do return condicional
   const { sortedStandings, playedMatches } = useMemo(() => {
     interface Standing {
       teamId: string;
@@ -146,6 +139,14 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
 
     return { sortedStandings, playedMatches };
   }, [teams, matches, pointsForWin]);
+
+  if (teams.length === 0) {
+    return (
+      <div className="text-center py-10 border-2 border-dashed rounded-lg">
+        <p className="text-gray-500">Adicione times a este grupo para ver a classificação.</p>
+      </div>
+    );
+  }
 
   return (
     <div>

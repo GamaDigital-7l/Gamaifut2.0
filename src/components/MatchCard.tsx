@@ -1,4 +1,4 @@
-import React, { useEffect, memo } from 'react'; // Importar memo
+import React, { useEffect, memo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { Group, Round, Team, Match } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MatchCardMobile } from './MatchCardMobile';
-import { useMemo } from 'react'; // Importar useMemo
+import { useMemo } from 'react';
 
 interface MatchCardProps {
   match: Match;
@@ -34,6 +34,12 @@ interface MatchCardProps {
 
 export const MatchCard = memo(function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false, publicRoundId, publicRoundToken }: MatchCardProps) {
   const isMobile = useIsMobile();
+
+  // Mover useMemo para antes do return condicional
+  const matchDate = useMemo(() => (match.match_date ? new Date(match.match_date) : null), [match.match_date]);
+  const isPlayed = useMemo(() => match.team1_score !== null && match.team2_score !== null, [match.team1_score, match.team2_score]);
+  const team1Goals = useMemo(() => match.goals.filter(g => g.team_id === match.team1_id), [match.goals, match.team1_id]);
+  const team2Goals = useMemo(() => match.goals.filter(g => g.team_id === match.team2_id), [match.goals, match.team2_id]);
 
   useEffect(() => {
     console.log(`MatchCard for match ${match.id}: isPublicView = ${isPublicView}`);
@@ -55,11 +61,6 @@ export const MatchCard = memo(function MatchCard({ match, onMatchUpdated, onMatc
       />
     );
   }
-
-  const matchDate = useMemo(() => (match.match_date ? new Date(match.match_date) : null), [match.match_date]);
-  const isPlayed = useMemo(() => match.team1_score !== null && match.team2_score !== null, [match.team1_score, match.team2_score]);
-  const team1Goals = useMemo(() => match.goals.filter(g => g.team_id === match.team1_id), [match.goals, match.team1_id]);
-  const team2Goals = useMemo(() => match.goals.filter(g => g.team_id === match.team2_id), [match.goals, match.team2_id]);
 
   return (
     <Card className={cn(
