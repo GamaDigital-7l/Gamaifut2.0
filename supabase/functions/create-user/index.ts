@@ -14,6 +14,9 @@ serve(async (req) => {
   }
 
   try {
+    // Log all request headers for debugging
+    console.log('Request Headers:', Object.fromEntries(req.headers.entries()));
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
