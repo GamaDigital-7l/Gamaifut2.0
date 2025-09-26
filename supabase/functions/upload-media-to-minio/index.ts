@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.614.0"; // CORRIGIDO: Usar @aws-sdk/client-s3
+// CORRIGIDO: Adicionar node: { fs: true } para shims de compatibilidade com fs
+import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.614.0?target=es2022&deno-std=0.190.0&node_builtin&node_modules_es_modules&node:fs"; 
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -128,29 +129,28 @@ serve(async (req) => {
       });
     }
 
-    // CORRIGIDO: Inicializar S3Client do @aws-sdk/client-s3
     const s3Client = new S3Client({
       endpoint: MINIO_ENDPOINT,
-      region: "us-east-1", // MinIO often uses a default region, adjust if yours is different
+      region: "us-east-1",
       credentials: {
         accessKeyId: MINIO_ACCESS_KEY,
         secretAccessKey: MINIO_SECRET_KEY,
       },
-      forcePathStyle: true, // Importante para MinIO
-      // sslEnabled: false, // Use this if your MinIO is on HTTP
+      forcePathStyle: true,
+      // NOVO: Desabilitar o provedor de credenciais padrão baseado em arquivo
+      credentialDefaultProvider: () => async () => null, 
     });
-    console.log('MinIO S3 client (@aws-sdk/client-s3) created.');
+    console.log('MinIO S3 client (@aws-sdk/client-s3) created with explicit credentials.');
 
     const fileExt = file.name.split('.').pop();
     const objectKey = `${championshipId}/${crypto.randomUUID()}.${fileExt}`;
 
     const fileBuffer = await file.arrayBuffer();
-    const fileUint8Array = new Uint8Array(fileBuffer); // Convert to Uint8Array
+    const fileUint8Array = new Uint8Array(fileBuffer);
 
     console.log(`Pre-upload check: fileBuffer size=${fileBuffer.byteLength}, fileUint8Array length=${fileUint8Array.length}, file type=${file.type}`);
     console.log(`Attempting to upload file to MinIO: bucket=${MINIO_BUCKET_NAME}, key=${objectKey}`);
 
-    // CORRIGIDO: Usar PutObjectCommand
     const command = new PutObjectCommand({
       Bucket: MINIO_BUCKET_NAME,
       Key: objectKey,
