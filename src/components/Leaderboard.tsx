@@ -202,14 +202,14 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
                     {standing.recentForm.map((form, i) => (
                       <span
                         key={i}
-                        className={`w-4 h-4 flex items-center justify-center text-xs font-bold rounded-sm
-                          ${form === 'W' ? 'bg-green-500 text-white' :
-                            form === 'D' ? 'bg-gray-400 text-white' :
-                            form === 'L' ? 'bg-red-500 text-white' :
-                            'bg-gray-200 text-gray-500'
+                        className={`w-4 h-4 flex items-center justify-center text-xs font-bold rounded-full
+                          ${form === 'W' ? 'bg-green-500' :
+                            form === 'D' ? 'bg-gray-400' :
+                            form === 'L' ? 'bg-red-500' :
+                            'bg-gray-200'
                           }`}
                       >
-                        {form}
+                        {/* Removed text content */}
                       </span>
                     ))}
                   </div>
