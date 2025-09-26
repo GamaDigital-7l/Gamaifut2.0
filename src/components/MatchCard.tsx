@@ -68,30 +68,30 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-2 sm:gap-3"> {/* Changed to flex for better control */}
+        <div className="flex items-center justify-between gap-1 sm:gap-3"> {/* Reduced gap-2 to gap-1 */}
           {/* Team 1 */}
-          <div className="flex items-center gap-2 justify-end flex-1 min-w-0"> {/* flex-1 and min-w-0 */}
-            <span className="font-medium text-sm sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span>
+          <div className="flex items-center gap-1 justify-end flex-1 min-w-0"> {/* Reduced gap-2 to gap-1 */}
+            <span className="font-medium text-xs sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span> {/* Reduced text-sm to text-xs */}
             {match.team1.logo_url && (
-              <img src={match.team1.logo_url} alt={match.team1.name} className="h-8 w-8 object-contain flex-shrink-0" loading="lazy" />
+              <img src={match.team1.logo_url} alt={match.team1.name} className="h-7 w-7 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" /> {/* Reduced h-8 w-8 to h-7 w-7 on mobile */}
             )}
           </div>
 
           {/* Scores / Separator */}
-          <div className="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-bold flex-shrink-0"> {/* flex-shrink-0 to keep scores centered */}
+          <div className="flex items-center gap-1 sm:gap-3 text-lg sm:text-2xl font-bold flex-shrink-0"> {/* Reduced text-xl to text-lg */}
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
             <div className="p-1 rounded-full bg-primary text-primary-foreground">
-              <X className="h-4 w-4" /> 
+              <X className="h-3 w-3 sm:h-4 sm:w-4" /> {/* Reduced h-4 w-4 to h-3 w-3 on mobile */}
             </div>
             <span>{isPlayed ? (match.team2_score ?? '-') : ''}</span>
           </div>
 
           {/* Team 2 */}
-          <div className="flex items-center gap-2 justify-start flex-1 min-w-0"> {/* flex-1 and min-w-0 */}
+          <div className="flex items-center gap-1 justify-start flex-1 min-w-0"> {/* Reduced gap-2 to gap-1 */}
             {match.team2.logo_url && (
-              <img src={match.team2.logo_url} alt={match.team2.name} className="h-8 w-8 object-contain flex-shrink-0" loading="lazy" />
+              <img src={match.team2.logo_url} alt={match.team2.name} className="h-7 w-7 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" /> {/* Reduced h-8 w-8 to h-7 w-7 on mobile */}
             )}
-            <span className="font-medium text-sm sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span>
+            <span className="font-medium text-xs sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span> {/* Reduced text-sm to text-xs */}
           </div>
         </div>
 
@@ -156,9 +156,9 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             publicRoundId={publicRoundId}
             publicRoundToken={publicRoundToken}
           >
-            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto">
-              <Goal className="h-4 w-4" />
-              <span className="text-xs">Placar Rápido</span> {/* Always visible, smaller text */}
+            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-xs sm:text-sm"> {/* Always visible, smaller text */}
+              <Goal className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-xs">Placar Rápido</span>
             </Button>
           </QuickScoreUpdateDrawer>
 
