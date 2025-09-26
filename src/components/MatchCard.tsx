@@ -204,8 +204,8 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
                 </EditMatchDialog>
                 <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
-                </DeleteMatchContent>
-              </DropdownMenu>
+                </DeleteMatchDialog>
+              </DropdownMenuContent>
             </DropdownMenu>
           )}
         </div>
