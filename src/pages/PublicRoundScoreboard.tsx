@@ -97,7 +97,7 @@ const PublicRoundScoreboard = () => {
       setTeams(teamsRes.data as Team[]);
       setGroups(groupsRes.data as Group[]);
       setMatches(matchesRes.data as Match[]);
-      console.log('PublicRoundScoreboard: Teams, Groups, Matches fetched.');
+      console.log('PublicRoundScoreboard: Teams, Groups, Matches fetched. Number of matches:', matchesRes.data?.length); // NEW LOG
 
     } catch (err: any) {
       console.error('PublicRoundScoreboard: Caught an error in fetchRoundData:', err.message);

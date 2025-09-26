@@ -37,7 +37,7 @@ serve(async (req) => {
       .from('rounds')
       .select('id, public_edit_token')
       .eq('id', roundId)
-      .eq('public_edit_edit_token', roundToken) // Corrigido o nome da coluna aqui
+      .eq('public_edit_token', roundToken) // CORRIGIDO: Era 'public_edit_edit_token'
       .single();
 
     if (roundError || !roundData) {
