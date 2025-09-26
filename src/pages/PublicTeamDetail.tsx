@@ -10,7 +10,7 @@ import { MatchCard } from '@/components/MatchCard';
 import { Leaderboard } from '@/components/Leaderboard';
 import { PublicHeader } from '@/components/PublicHeader';
 import { useChampionshipTheme } from '@/contexts/ThemeContext'; // Keep for logo
-import { Team, Match } from '@/types';
+import { Team, Match, Group, Round } from '@/types'; // Import Group and Round for MatchCard
 
 const PublicTeamDetail = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -19,6 +19,9 @@ const PublicTeamDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { fetchChampionshipLogo } = useChampionshipTheme(); // Keep for logo
+  const [allTeams, setAllTeams] = useState<Team[]>([]); // To pass to MatchCard
+  const [allGroups, setAllGroups] = useState<Group[]>([]); // To pass to MatchCard
+  const [allRounds, setAllRounds] = useState<Round[]>([]); // To pass to MatchCard
 
   const fetchTeamDetails = useCallback(async () => {
     if (!teamId) return;
@@ -38,6 +41,29 @@ const PublicTeamDetail = () => {
     }
     setTeam(teamData as Team);
     fetchChampionshipLogo(teamData.championship_id); // Fetch and update logo in context
+
+    // Fetch all teams, groups, and rounds for MatchCard
+    const { data: teamsData, error: teamsError } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('championship_id', teamData.championship_id);
+    if (teamsError) console.error('Error fetching all teams for public team detail:', teamsError);
+    else setAllTeams(teamsData as Team[]);
+
+    const { data: groupsData, error: groupsError } = await supabase
+      .from('groups')
+      .select('*')
+      .eq('championship_id', teamData.championship_id);
+    if (groupsError) console.error('Error fetching groups for public team detail:', groupsError);
+    else setAllGroups(groupsData as Group[]);
+
+    const { data: roundsData, error: roundsError } = await supabase
+      .from('rounds')
+      .select('*')
+      .eq('championship_id', teamData.championship_id);
+    if (roundsError) console.error('Error fetching rounds for public team detail:', roundsError);
+    else setAllRounds(roundsData as Round[]);
+
 
     const { data: matchesData, error: matchesError } = await supabase
       .from('matches')
@@ -114,7 +140,17 @@ const PublicTeamDetail = () => {
               ) : (
                 <div className="space-y-2">
                   {matches.map((match, index) => (
-                    <MatchCard key={match.id} match={match} onMatchUpdated={() => {}} onMatchDeleted={() => {}} isEven={index % 2 === 0} groups={[]} rounds={[]} isPublicView={true} />
+                    <MatchCard 
+                      key={match.id} 
+                      match={match} 
+                      onMatchUpdated={() => {}} 
+                      onMatchDeleted={() => {}} 
+                      isEven={index % 2 === 0} 
+                      groups={allGroups} 
+                      rounds={allRounds} 
+                      teams={allTeams} // Pass allTeams
+                      isPublicView={true} 
+                    />
                   ))}
                 </div>
               )}

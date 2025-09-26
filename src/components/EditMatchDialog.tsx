@@ -25,36 +25,23 @@ import { format, setHours, setMinutes, getHours, getMinutes } from "date-fns"; /
 import { CalendarIcon } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { Group, Round } from '@/types'; // Import Group and Round from centralized types
+import { Group, Round, Team, Match, Profile } from '@/types'; // Import Group and Round from centralized types
+import { useSession } from '@/components/SessionProvider'; // Import useSession
 
-interface Match {
-  id: string;
-  team1_score: number | null;
-  team2_score: number | null;
-  team1: { name: string };
-  team2: { name: string };
-  match_date: string | null;
-  location: string | null;
-  group_id: string | null; // Added group_id
-  round_id: string | null; // Added round_id
-  assigned_official_id: string | null; // Added assigned_official_id
-}
-
-interface Official {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
+interface Official extends Profile {
+  role: 'official';
 }
 
 interface EditMatchDialogProps {
   match: Match;
   groups: Group[]; // Pass groups
   rounds: Round[]; // Pass rounds
+  teams: Team[]; // Pass teams for group auto-assignment
   onMatchUpdated: () => void;
   children: React.ReactNode;
 }
 
-export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, children }: EditMatchDialogProps) {
+export function EditMatchDialog({ match, groups, rounds, teams, onMatchUpdated, children }: EditMatchDialogProps) {
   const [open, setOpen] = useState(false);
   const [team1Score, setTeam1Score] = useState(match.team1_score?.toString() ?? '');
   const [team2Score, setTeam2Score] = useState(match.team2_score?.toString() ?? '');
@@ -70,41 +57,65 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
   const [groupId, setGroupId] = useState<string | undefined>(match.group_id || undefined); // New state for group
   const [roundId, setRoundId] = useState<string | undefined>(match.round_id || undefined); // New state for round
   const [assignedOfficialId, setAssignedOfficialId] = useState<string | undefined>(match.assigned_official_id || undefined); // New state for assigned official
-  const [officials, setOfficials] = useState<Official[]>([]); // State for officials list
+  const [officials, setOfficials] = useState<Profile[]>([]); // State for officials list
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { userProfile } = useSession(); // Get current user profile
 
+  // Effect to initialize form fields and fetch officials when dialog opens or match changes
   useEffect(() => {
-    setTeam1Score(match.team1_score?.toString() ?? '');
-    setTeam2Score(match.team2_score?.toString() ?? '');
-    setMatchDate(match.match_date ? new Date(match.match_date) : undefined);
-    setLocation(match.location || '');
-    setGroupId(match.group_id || undefined);
-    setRoundId(match.round_id || undefined);
-    setAssignedOfficialId(match.assigned_official_id || undefined);
-    if (match.match_date) {
-      const date = new Date(match.match_date);
-      setMatchTime(format(date, 'HH:mm'));
-    } else {
-      setMatchTime('');
-    }
-  }, [match]);
-
-  useEffect(() => {
-    const fetchOfficials = async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name')
-        .eq('role', 'official')
-        .order('first_name', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching officials:', error);
+    if (open) {
+      setTeam1Score(match.team1_score?.toString() ?? '');
+      setTeam2Score(match.team2_score?.toString() ?? '');
+      setMatchDate(match.match_date ? new Date(match.match_date) : undefined);
+      setLocation(match.location || '');
+      setRoundId(match.round_id || undefined);
+      if (match.match_date) {
+        const date = new Date(match.match_date);
+        setMatchTime(format(date, 'HH:mm'));
       } else {
-        setOfficials(data as Official[]);
+        setMatchTime('');
       }
-    };
-    fetchOfficials();
-  }, []);
+
+      // Fetch officials and set default assigned official
+      const fetchAndSetOfficials = async () => {
+        const { data: officialProfiles, error: officialError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, role')
+          .eq('role', 'official')
+          .order('first_name', { ascending: true });
+
+        if (officialError) {
+          console.error('Error fetching officials:', officialError);
+          setOfficials([]);
+        } else {
+          setOfficials(officialProfiles as Profile[]);
+          // If no official is assigned to the match, try to assign a default
+          if (!match.assigned_official_id) {
+            if (officialProfiles.length > 0) {
+              setAssignedOfficialId(officialProfiles[0].id);
+            } else if (userProfile) {
+              setAssignedOfficialId(userProfile.id); // Fallback to current user
+            }
+          } else {
+            setAssignedOfficialId(match.assigned_official_id); // Keep existing official
+          }
+        }
+      };
+      fetchAndSetOfficials();
+    }
+  }, [match, open, userProfile]); // Re-run if match or dialog open state changes
+
+  // Auto-assign group if both teams are from the same group
+  useEffect(() => {
+    const team1 = teams.find(t => t.id === match.team1_id);
+    const team2 = teams.find(t => t.id === match.team2_id);
+
+    if (team1?.group_id && team1.group_id === team2?.group_id) {
+      setGroupId(team1.group_id);
+    } else {
+      setGroupId(undefined); // Clear group if teams are from different groups or one is not in a group
+    }
+  }, [match.team1_id, match.team2_id, teams]); // Re-run if match teams or all teams change
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,7 +291,7 @@ export function EditMatchDialog({ match, groups, rounds, onMatchUpdated, childre
                 <SelectContent>
                   {officials.map(official => (
                     <SelectItem key={official.id} value={official.id}>
-                      {official.first_name} {official.last_name}
+                      {official.first_name} {official.last_name} {official.id === userProfile?.id ? '(Você)' : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>

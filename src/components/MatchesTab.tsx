@@ -76,7 +76,7 @@ export function MatchesTab({ championshipId, teams, groups, rounds, matches, isL
         ) : filteredMatches.length === 0 ? (
           <div className="text-center py-10 border-2 border-dashed rounded-lg"><p className="text-gray-500">Nenhuma partida agendada.</p></div>
         ) : (
-          <div className="space-y-2">{filteredMatches.map((match: Match, index: number) => (<MatchCard key={match.id} match={match} onMatchUpdated={onDataChange} onMatchDeleted={onDataChange} isEven={index % 2 === 0} groups={groups} rounds={rounds} isPublicView={false} />))}</div>
+          <div className="space-y-2">{filteredMatches.map((match: Match, index: number) => (<MatchCard key={match.id} match={match} onMatchUpdated={onDataChange} onMatchDeleted={onDataChange} isEven={index % 2 === 0} groups={groups} rounds={rounds} teams={teams} isPublicView={false} />))}</div>
         )}
       </CardContent>
     </Card>

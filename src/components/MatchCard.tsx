@@ -23,11 +23,12 @@ interface MatchCardProps {
   isEven: boolean;
   groups: Group[];
   rounds: Round[];
+  teams: Team[]; // Added teams prop
   isOfficialView?: boolean;
   isPublicView?: boolean;
 }
 
-export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, isOfficialView = false, isPublicView = false }: MatchCardProps) {
+export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isOfficialView = false, isPublicView = false }: MatchCardProps) {
   const matchDate = match.match_date ? new Date(match.match_date) : null;
   const isPlayed = match.team1_score !== null && match.team2_score !== null;
 
@@ -140,7 +141,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <EditMatchDialog match={match} groups={groups} rounds={rounds} onMatchUpdated={onMatchUpdated}>
+                    <EditMatchDialog match={match} groups={groups} rounds={rounds} teams={teams} onMatchUpdated={onMatchUpdated}>
                       <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Detalhes</DropdownMenuItem>
                     </EditMatchDialog>
                     <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>

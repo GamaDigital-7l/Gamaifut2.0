@@ -245,6 +245,7 @@ const PublicChampionshipView = () => {
                         isEven={index % 2 === 0}
                         groups={groups}
                         rounds={rounds}
+                        teams={teams} // Pass teams
                         isPublicView={true}
                       />
                     ))}
