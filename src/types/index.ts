@@ -11,6 +11,7 @@ export interface Championship {
   sport_type: string;
   gender: string;
   age_category: string;
+  tie_breaker_order: string[]; // Added for tie-breaker rules
 }
 
 export interface Team {

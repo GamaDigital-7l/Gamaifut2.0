@@ -26,7 +26,17 @@ interface ChampionshipSettings {
   sport_type: string;
   gender: string;
   age_category: string;
+  tie_breaker_order: string[]; // Added for tie-breaker rules
 }
+
+const availableTieBreakers = [
+  { value: 'wins', label: 'Vitórias' },
+  { value: 'goal_difference', label: 'Saldo de Gols' },
+  { value: 'goals_for', label: 'Gols Pró' },
+  { value: 'head_to_head', label: 'Confronto Direto' }, // Note: Head-to-head is complex to implement fully in leaderboard, often requires specific match data.
+  { value: 'least_red_cards', label: 'Menos Cartões Vermelhos' },
+  { value: 'least_yellow_cards', label: 'Menos Cartões Amarelos' },
+];
 
 export function ChampionshipSettingsTab({ championshipId, championship, isLoading, onDataChange }: ChampionshipSettingsTabProps) {
   const [settings, setSettings] = useState<ChampionshipSettings | null>(null);
@@ -39,14 +49,33 @@ export function ChampionshipSettingsTab({ championshipId, championship, isLoadin
         sport_type: championship.sport_type,
         gender: championship.gender,
         age_category: championship.age_category,
+        tie_breaker_order: championship.tie_breaker_order || [], // Initialize with existing or empty array
       });
     }
   }, [championship]);
 
-  const handleSettingChange = (field: keyof ChampionshipSettings, value: string | number) => {
+  const handleSettingChange = (field: keyof ChampionshipSettings, value: string | number | string[]) => {
     if (settings) {
       setSettings({ ...settings, [field]: value });
     }
+  };
+
+  const handleTieBreakerChange = (index: number, value: string) => {
+    if (settings) {
+      const newOrder = [...settings.tie_breaker_order];
+      newOrder[index] = value;
+      // Fill any gaps if a middle item is selected
+      for (let i = 0; i < newOrder.length; i++) {
+        if (!newOrder[i]) newOrder[i] = ''; // Ensure no undefined values
+      }
+      handleSettingChange('tie_breaker_order', newOrder.filter(Boolean)); // Filter out empty strings
+    }
+  };
+
+  const getAvailableOptions = (currentIndex: number) => {
+    if (!settings) return availableTieBreakers;
+    const selectedValues = settings.tie_breaker_order.filter((_, i) => i !== currentIndex);
+    return availableTieBreakers.filter(option => !selectedValues.includes(option.value));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -56,7 +85,13 @@ export function ChampionshipSettingsTab({ championshipId, championship, isLoadin
     setIsSubmitting(true);
     const { error } = await supabase
       .from('championships')
-      .update(settings)
+      .update({
+        points_for_win: settings.points_for_win,
+        sport_type: settings.sport_type,
+        gender: settings.gender,
+        age_category: settings.age_category,
+        tie_breaker_order: settings.tie_breaker_order,
+      })
       .eq('id', championshipId);
 
     setIsSubmitting(false);
@@ -81,6 +116,10 @@ export function ChampionshipSettingsTab({ championshipId, championship, isLoadin
           <div className="space-y-2"><Skeleton className="h-5 w-24" /><Skeleton className="h-10 w-full" /></div>
           <div className="space-y-2"><Skeleton className="h-5 w-24" /><Skeleton className="h-10 w-full" /></div>
           <div className="space-y-2"><Skeleton className="h-5 w-24" /><Skeleton className="h-10 w-full" /></div>
+          <div className="space-y-2"><Skeleton className="h-5 w-48" /><Skeleton className="h-10 w-full" /></div>
+          <div className="space-y-2"><Skeleton className="h-5 w-48" /><Skeleton className="h-10 w-full" /></div>
+          <div className="space-y-2"><Skeleton className="h-5 w-48" /><Skeleton className="h-10 w-full" /></div>
+          <div className="space-y-2"><Skeleton className="h-5 w-48" /><Skeleton className="h-10 w-full" /></div>
           <Skeleton className="h-10 w-32" />
         </CardContent>
       </Card>
@@ -153,6 +192,37 @@ export function ChampionshipSettingsTab({ championshipId, championship, isLoadin
                   <SelectItem value="adulto">Adulto (Sênior)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-4 border-t pt-4 mt-6">
+              <h3 className="text-lg font-semibold">Critérios de Desempate (Ordem de Prioridade)</h3>
+              <p className="text-sm text-muted-foreground">
+                Defina a ordem dos critérios para desempatar times com a mesma pontuação.
+                Pontos é sempre o primeiro critério.
+              </p>
+              {[0, 1, 2, 3].map((index) => ( // Allow up to 4 tie-breakers
+                <div key={index} className="space-y-2">
+                  <Label htmlFor={`tie-breaker-${index}`}>
+                    {index + 1}º Critério
+                  </Label>
+                  <Select
+                    value={settings.tie_breaker_order[index] || ''}
+                    onValueChange={(value) => handleTieBreakerChange(index, value)}
+                  >
+                    <SelectTrigger id={`tie-breaker-${index}`}>
+                      <SelectValue placeholder={`Selecione o ${index + 1}º critério`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Nenhum</SelectItem> {/* Option to clear a selection */}
+                      {getAvailableOptions(index).map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
             </div>
 
             <div>
