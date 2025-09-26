@@ -69,13 +69,11 @@ serve(async (req) => {
     console.log('Invoker is an administrator. Proceeding with user creation.');
 
     // --- Request Body Parsing ---
-    const requestBodyText = await req.text();
-    console.log('Raw request body received (text):', requestBodyText);
-
+    // CORRECTED: Use req.json() to parse the JSON body directly
     let parsedBody;
     try {
-      parsedBody = JSON.parse(requestBodyText);
-      console.log('Successfully parsed request body. Parsed data:', parsedBody); // Added parsed data log
+      parsedBody = await req.json();
+      console.log('Successfully parsed request body. Parsed data:', parsedBody);
     } catch (jsonParseError: any) {
       console.error('JSON parsing error: The request body is not valid JSON.', jsonParseError.message);
       return new Response(JSON.stringify({ error: 'Invalid JSON in request body: ' + jsonParseError.message }), {
