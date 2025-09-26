@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Goal, Shirt, Trophy } from 'lucide-react';
+import { Goal, Trophy } from 'lucide-react';
 import { showError } from '@/utils/toast';
 import { Link } from 'react-router-dom';
 
@@ -35,20 +35,19 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
 
   const fetchTopScorers = useCallback(async () => {
     setLoading(true);
-    let query = supabase
+    // Fetch all goals with nested team and championship data
+    const { data, error } = await supabase
       .from('match_goals')
       .select(`
         player_name,
         team_id,
-        teams(name, logo_url, championship_id),
-        championships(name)
+        teams(
+          id, // Need team ID for filtering and linking
+          name,
+          logo_url,
+          championships(id, name) // Select championship ID and name through the teams relationship
+        )
       `);
-
-    if (championshipId) {
-      query = query.eq('championship_id', championshipId);
-    }
-
-    const { data, error } = await query;
 
     if (error) {
       showError('Erro ao carregar artilheiros: ' + error.message);
@@ -60,9 +59,15 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
 
       data.forEach((goal: any) => {
         const team = goal.teams;
-        const championship = goal.championships;
+        const championship = team?.championships; // Access championship from nested teams
 
+        // Only process if team and championship data are available
         if (team && championship) {
+          // Apply client-side filter if championshipId prop is provided
+          if (championshipId && championship.id !== championshipId) {
+            return; // Skip this goal if it doesn't match the filter
+          }
+
           const key = `${goal.player_name}-${team.id}-${championship.id}`;
           if (!aggregatedGoals.has(key)) {
             aggregatedGoals.set(key, {
@@ -71,8 +76,8 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
               team_id: team.id,
               team_name: team.name,
               team_logo_url: team.logo_url,
-              championship_id: championship.id,
-              championship_name: championship.name,
+              championship_id: championship.id, // Use championship.id
+              championship_name: championship.name, // Use championship.name
             });
           }
           aggregatedGoals.get(key)!.total_goals++;
@@ -83,7 +88,7 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
       setTopScorers(sortedScorers);
     }
     setLoading(false);
-  }, [championshipId]);
+  }, [championshipId]); // Re-run fetch when championshipId changes
 
   useEffect(() => {
     fetchTopScorers();
