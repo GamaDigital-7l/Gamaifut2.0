@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Navigate } from 'react-router-dom';
 import { useSession } from '@/components/SessionProvider';
 import { MadeWithDyad } from '@/components/made-with-dyad'; // Importar o componente da logo
-import { ptBR } from '@supabase/ui-locales'; // Importar a localização em português do pacote correto
+import { ptBR } from '@supabase/auth-ui-shared'; // Importar a localização em português do pacote correto
 
 const Login = () => {
   const { session } = useSession();
@@ -26,7 +26,6 @@ const Login = () => {
           providers={[]}
           view="sign_in"
           theme="dark"
-          showLinks={false}
           localization={{
             variables: {
               sign_in: {
@@ -43,7 +42,7 @@ const Login = () => {
                 email_label: 'Seu e-mail',
                 email_input_placeholder: 'Digite seu e-mail',
                 button_label: 'Enviar instruções de redefinição',
-                // 'back_to_sign_in_text' não é uma propriedade reconhecida aqui, o componente lida com isso.
+                // A propriedade 'back_to_sign_in_text' não é reconhecida aqui e foi removida.
               },
               update_password: {
                 password_label: 'Nova senha',
