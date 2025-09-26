@@ -162,18 +162,18 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
         <Table className="min-w-full table-fixed"> {/* Use table-fixed for consistent column widths */}
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[30px] text-center px-1 py-1 text-xs whitespace-nowrap">Pos.</TableHead>
-              <TableHead className="w-[120px] px-1 py-1 text-xs">Time</TableHead> {/* Fixed width for team name */}
-              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">P</TableHead>
-              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">J</TableHead>
-              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">V</TableHead>
-              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">E</TableHead>
-              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">D</TableHead>
-              <TableHead className="w-[35px] text-center px-1 py-1 text-xs whitespace-nowrap">GP</TableHead>
-              <TableHead className="w-[35px] text-center px-1 py-1 text-xs whitespace-nowrap">GC</TableHead>
-              <TableHead className="w-[35px] text-center px-1 py-1 text-xs whitespace-nowrap">SG</TableHead>
-              <TableHead className="w-[45px] text-center px-1 py-1 text-xs whitespace-nowrap">%</TableHead>
-              <TableHead className="w-[70px] text-center px-1 py-1 text-xs whitespace-nowrap">Recentes</TableHead>
+              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">Pos.</TableHead>
+              <TableHead className="w-[110px] px-1 py-1 text-xs">Time</TableHead> {/* Fixed width for team name */}
+              <TableHead className="w-[20px] text-center px-1 py-1 text-xs whitespace-nowrap">P</TableHead>
+              <TableHead className="w-[20px] text-center px-1 py-1 text-xs whitespace-nowrap">J</TableHead>
+              <TableHead className="w-[20px] text-center px-1 py-1 text-xs whitespace-nowrap">V</TableHead>
+              <TableHead className="w-[20px] text-center px-1 py-1 text-xs whitespace-nowrap">E</TableHead>
+              <TableHead className="w-[20px] text-center px-1 py-1 text-xs whitespace-nowrap">D</TableHead>
+              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">GP</TableHead>
+              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">GC</TableHead>
+              <TableHead className="w-[25px] text-center px-1 py-1 text-xs whitespace-nowrap">SG</TableHead>
+              <TableHead className="w-[35px] text-center px-1 py-1 text-xs whitespace-nowrap">%</TableHead>
+              <TableHead className="w-[50px] text-center px-1 py-1 text-xs whitespace-nowrap">Recentes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -182,7 +182,7 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
                 <TableCell className="font-medium text-center px-1 py-1 text-xs whitespace-nowrap">{index + 1}</TableCell>
                 <TableCell className="flex items-center gap-1 px-1 py-1">
                   {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-5 w-5 object-contain flex-shrink-0" />}
-                  <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline text-[0.65rem] leading-tight text-wrap"> {/* Smaller font, tighter line height, allow wrap */}
+                  <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline text-[0.65rem] leading-tight truncate"> {/* Smaller font, tighter line height, truncate */}
                     {standing.teamName}
                   </Link>
                 </TableCell>
