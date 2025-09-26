@@ -54,25 +54,33 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
         role,
       };
 
-      const stringifiedPayload = JSON.stringify(payload); // Explicitamente stringificar o payload
-      console.log('Client: Actual stringified payload being sent:', stringifiedPayload); // NOVO LOG
+      const stringifiedPayload = JSON.stringify(payload);
+      const edgeFunctionUrl = `https://rrwtsnecjuugqlwmpgzd.supabase.co/functions/v1/create-user`; // URL HARDCODADA DA SUA FUNÇÃO EDGE
+
+      console.log('Client: Attempting direct fetch to Edge Function.');
+      console.log('Client: Target URL:', edgeFunctionUrl);
       console.log('Client: Sending Authorization header:', `Bearer ${session?.access_token}`);
       console.log('Client: Sending Content-Type header: application/json');
+      console.log('Client: Actual stringified payload being sent:', stringifiedPayload);
 
-      const { data, error } = await supabase.functions.invoke('create-user', {
-        body: stringifiedPayload, // Usar o payload stringificado
+      const response = await fetch(edgeFunctionUrl, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json',
         },
+        body: stringifiedPayload,
       });
 
-      if (error) {
-        throw error;
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Client: Direct fetch failed with status:', response.status, 'and data:', data);
+        throw new Error(data.error || 'Erro desconhecido ao criar usuário via fetch direto.');
       }
 
-      // Check for application-level errors returned by the Edge Function
       if (data && data.error) {
+        console.error('Client: Edge Function returned application error:', data.error);
         throw new Error(data.error);
       }
 
