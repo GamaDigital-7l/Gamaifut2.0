@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { S3Bucket } from "https://deno.land/x/s3@0.5.0/mod.ts";
+import { S3Bucket } from "https://deno.land/x/s3@0.6.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -140,16 +140,21 @@ serve(async (req) => {
     const fileExt = file.name.split('.').pop();
     const objectKey = `${championshipId}/${crypto.randomUUID()}.${fileExt}`;
 
-    // NOVO: Converter o arquivo para ArrayBuffer antes de enviar
     const fileBuffer = await file.arrayBuffer();
-    console.log(`Attempting to upload file to MinIO: bucket=${MINIO_BUCKET_NAME}, key=${objectKey}, size=${fileBuffer.byteLength} bytes`);
+    const fileUint8Array = new Uint8Array(fileBuffer); // Convert to Uint8Array
 
-    const uploadResult = await s3.putObject(objectKey, fileBuffer, { // Passar o ArrayBuffer
-      headers: {
-        'Content-Type': file.type,
-      },
+    console.log(`Pre-upload check: fileBuffer size=${fileBuffer.byteLength}, fileUint8Array length=${fileUint8Array.length}, file type=${file.type}`);
+    console.log(`Attempting to upload file to MinIO: bucket=${MINIO_BUCKET_NAME}, key=${objectKey}`);
+
+    const uploadResult = await s3.putObject(objectKey, fileUint8Array, { // Pass Uint8Array
+      // Removendo Content-Type daqui para testar se a biblioteca infere corretamente
+      // headers: {
+      //   'Content-Type': file.type,
+      // },
     });
     console.log('MinIO upload result:', uploadResult);
+    console.log('Post-upload check: Upload operation completed.');
+
 
     const publicUrl = `${MINIO_ENDPOINT}/${MINIO_BUCKET_NAME}/${objectKey}`;
     console.log('Generated public URL:', publicUrl);
