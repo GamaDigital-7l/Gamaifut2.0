@@ -7,9 +7,10 @@ import { useSession } from '@/components/SessionProvider'; // Import useSession
 interface SidebarProps {
   isCollapsed: boolean;
   toggleCollapsed: () => void;
+  isMobileSheet?: boolean; // New prop to indicate if it's used in a mobile sheet
 }
 
-const Sidebar = ({ isCollapsed, toggleCollapsed }: SidebarProps) => {
+const Sidebar = ({ isCollapsed, toggleCollapsed, isMobileSheet }: SidebarProps) => {
   const location = useLocation();
   const { userProfile } = useSession(); // Get user profile from session
 
@@ -50,8 +51,13 @@ const Sidebar = ({ isCollapsed, toggleCollapsed }: SidebarProps) => {
   return (
     <div 
       className={cn(
-        "hidden border-r bg-sidebar-background text-sidebar-foreground md:flex h-full max-h-screen flex-col gap-2 transition-all duration-200 ease-out",
-        isCollapsed ? "w-[var(--sidebar-width-collapsed)]" : "w-[var(--sidebar-width-expanded)]"
+        // Only apply hidden/md:flex if NOT a mobile sheet
+        !isMobileSheet && "hidden md:flex", 
+        "border-r bg-sidebar-background text-sidebar-foreground h-full max-h-screen flex-col gap-2 transition-all duration-200 ease-out",
+        // Apply width based on isCollapsed only if NOT a mobile sheet
+        !isMobileSheet && (isCollapsed ? "w-[var(--sidebar-width-collapsed)]" : "w-[var(--sidebar-width-expanded)]"),
+        // For mobile sheet, ensure it takes full width of the sheet content
+        isMobileSheet && "w-full" 
       )}
     >
       <div className="flex h-14 items-center border-b border-sidebar-border px-4 lg:h-[60px] lg:px-6">
@@ -75,18 +81,18 @@ const Sidebar = ({ isCollapsed, toggleCollapsed }: SidebarProps) => {
                     : "text-sidebar-foreground hover:text-sidebar-primary"
                 )}
                 style={{
-                  justifyContent: isCollapsed ? 'center' : 'flex-start', // Center icon when collapsed
+                  justifyContent: isCollapsed && !isMobileSheet ? 'center' : 'flex-start', // Center icon when collapsed on desktop
                 }}
                 onClick={closeSheet}
               >
                 {link.icon}
-                {!isCollapsed && link.label}
+                {!(isCollapsed && !isMobileSheet) && link.label} {/* Hide label only if collapsed on desktop */}
               </Link>
             )
           ))}
         </nav>
       </div>
-      <div className="mt-auto p-2 border-t border-sidebar-border">
+      <div className={cn("mt-auto p-2 border-t border-sidebar-border", isMobileSheet && "hidden")}> {/* Hide toggle button on mobile sheet */}
         <Button 
           variant="ghost" 
           size="icon" 

@@ -38,7 +38,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
         </SheetTrigger>
         <SheetContent side="left" className="flex flex-col p-0 bg-sidebar-background border-sidebar-border">
           {/* Pass isCollapsed and toggleCollapsed to Sidebar within SheetContent for mobile */}
-          <Sidebar isCollapsed={false} toggleCollapsed={() => { /* No-op for mobile sheet */ }} /> 
+          <Sidebar isCollapsed={false} toggleCollapsed={() => { /* No-op for mobile sheet */ }} isMobileSheet={true} /> 
           <Button id="sheet-close-button" className="hidden" />
         </SheetContent>
       </Sheet>
