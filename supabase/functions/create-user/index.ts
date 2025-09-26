@@ -18,6 +18,7 @@ serve(async (req) => {
 
   try {
     console.log('Request Headers:', Object.fromEntries(req.headers.entries()));
+    console.log('Content-Type header received:', req.headers.get('content-type')); // Diagnostic log
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -69,10 +70,11 @@ serve(async (req) => {
     console.log('Invoker is an administrator. Proceeding with user creation.');
 
     // --- Request Body Parsing ---
-    // CORRECTED: Use req.json() to parse the JSON body directly
     let parsedBody;
     try {
-      parsedBody = await req.json();
+      const rawBody = await req.text(); // Read as raw text first
+      console.log('Raw request body received:', rawBody);
+      parsedBody = JSON.parse(rawBody); // Then parse the text
       console.log('Successfully parsed request body. Parsed data:', parsedBody);
     } catch (jsonParseError: any) {
       console.error('JSON parsing error: The request body is not valid JSON.', jsonParseError.message);
