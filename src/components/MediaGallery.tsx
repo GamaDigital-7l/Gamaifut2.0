@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Image, Video, Star, Users, CalendarIcon, LayoutGrid, Download, MoreHorizontal } from 'lucide-react'; // Importar Download e MoreHorizontal
+import { Image, Video, Star, Users, CalendarIcon, LayoutGrid, Download, MoreHorizontal } from 'lucide-react';
 import { Media, Match, Team, Round } from '@/types';
 import { cn } from '@/lib/utils';
 import {
@@ -20,22 +20,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog"; // Importar Dialog
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"; // Importar DropdownMenu
+} from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button'; // Import Button for dropdown trigger
 
 interface MediaGalleryProps {
   championshipId: string;
   matches: Match[];
   teams: Team[];
   rounds: Round[];
+  teamId?: string; // NOVO: Prop opcional para filtrar por time
 }
 
-export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGalleryProps) {
+export function MediaGallery({ championshipId, matches, teams, rounds, teamId }: MediaGalleryProps) {
   const [mediaItems, setMediaItems] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
 
   // Filter states
   const [filterType, setFilterType] = useState<'all' | 'image' | 'video'>('all');
-  const [filterTeam, setFilterTeam] = useState<string>('all');
+  const [filterTeam, setFilterTeam] = useState<string>(teamId || 'all'); // Inicializa com teamId se fornecido
   const [filterRound, setFilterRound] = useState<string>('all');
   const [filterHighlight, setFilterHighlight] = useState<'all' | 'true'>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -59,12 +61,13 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
       .from('media')
       .select(`id, championship_id, user_id, type, url, thumbnail_url, description, tags, is_highlight, match_id, team_id, round_id, status, approved_by, approved_at, created_at`)
       .eq('championship_id', championshipId)
-      .eq('status', 'approved') // Only show approved media
+      .eq('status', 'approved')
       .order('created_at', { ascending: false });
 
     if (filterType !== 'all') {
       query = query.eq('type', filterType);
     }
+    // NOVO: Aplicar filtro por teamId se estiver presente e não for 'all'
     if (filterTeam !== 'all') {
       query = query.eq('team_id', filterTeam);
     }
@@ -100,6 +103,11 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
   useEffect(() => {
     fetchMedia();
   }, [fetchMedia]);
+
+  // NOVO: Resetar o filtro de time se o teamId da prop mudar
+  useEffect(() => {
+    setFilterTeam(teamId || 'all');
+  }, [teamId]);
 
   const getAssociatedText = (item: Media) => {
     const parts = [];
@@ -150,7 +158,8 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
           </div>
           <div className="space-y-1">
             <Label htmlFor="filter-team">Time</Label>
-            <Select value={filterTeam} onValueChange={setFilterTeam}>
+            {/* Desabilitar o filtro de time se um teamId for passado via prop */}
+            <Select value={filterTeam} onValueChange={setFilterTeam} disabled={!!teamId}>
               <SelectTrigger id="filter-team"><SelectValue placeholder="Todos os Times" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os Times</SelectItem>

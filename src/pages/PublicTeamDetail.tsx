@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy } from 'lucide-react';
+import { Trophy, Camera } from 'lucide-react'; // Importar Camera icon
 import { MatchCard } from '@/components/MatchCard';
 import { Leaderboard } from '@/components/Leaderboard';
 import { PublicHeader } from '@/components/PublicHeader';
-import { useChampionshipTheme } from '@/contexts/ThemeContext'; // Keep for logo
-import { Team, Match, Group, Round } from '@/types'; // Import Group and Round for MatchCard
+import { useChampionshipTheme } from '@/contexts/ThemeContext';
+import { Team, Match, Group, Round } from '@/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Importar Tabs
+import { MediaGallery } from '@/components/MediaGallery'; // Importar MediaGallery
 
 const PublicTeamDetail = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -18,10 +20,10 @@ const PublicTeamDetail = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { fetchChampionshipLogo } = useChampionshipTheme(); // Keep for logo
-  const [allTeams, setAllTeams] = useState<Team[]>([]); // To pass to MatchCard
-  const [allGroups, setAllGroups] = useState<Group[]>([]); // To pass to MatchCard
-  const [allRounds, setAllRounds] = useState<Round[]>([]); // To pass to MatchCard
+  const { fetchChampionshipLogo } = useChampionshipTheme();
+  const [allTeams, setAllTeams] = useState<Team[]>([]);
+  const [allGroups, setAllGroups] = useState<Group[]>([]);
+  const [allRounds, setAllRounds] = useState<Round[]>([]);
 
   const fetchTeamDetails = useCallback(async () => {
     if (!teamId) return;
@@ -30,7 +32,7 @@ const PublicTeamDetail = () => {
 
     const { data: teamData, error: teamError } = await supabase
       .from('teams')
-      .select(`id, name, logo_url, championship_id, user_id, group_id, groups(name)`) // Optimized select
+      .select(`id, name, logo_url, championship_id, user_id, group_id, groups(name)`)
       .eq('id', teamId)
       .single();
 
@@ -40,41 +42,29 @@ const PublicTeamDetail = () => {
       return;
     }
     setTeam(teamData as Team);
-    fetchChampionshipLogo(teamData.championship_id); // Fetch and update logo in context
+    fetchChampionshipLogo(teamData.championship_id);
 
-    // Fetch all teams, groups, and rounds for MatchCard
-    const { data: teamsData, error: teamsError } = await supabase
-      .from('teams')
-      .select('id, name, logo_url, championship_id, user_id, group_id, groups(name)') // Optimized select
-      .eq('championship_id', teamData.championship_id);
-    if (teamsError) console.error('Error fetching all teams for public team detail:', teamsError);
-    else setAllTeams(teamsData as Team[]);
+    // Fetch all teams, groups, and rounds for MatchCard and MediaGallery
+    const [teamsRes, groupsRes, roundsRes, matchesRes] = await Promise.all([
+      supabase.from('teams').select('id, name, logo_url, championship_id, user_id, group_id, groups(name)').eq('championship_id', teamData.championship_id),
+      supabase.from('groups').select('id, name, championship_id, created_at').eq('championship_id', teamData.championship_id),
+      supabase.from('rounds').select('id, name, order_index, type, championship_id, created_at, public_edit_token').eq('championship_id', teamData.championship_id),
+      supabase.from('matches').select(`id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(id, match_id, team_id, player_name, jersey_number)`).eq('championship_id', teamData.championship_id).or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`).order('match_date', { ascending: true }),
+    ]);
 
-    const { data: groupsData, error: groupsError } = await supabase
-      .from('groups')
-      .select('id, name, championship_id, created_at') // Optimized select
-      .eq('championship_id', teamData.championship_id);
-    if (groupsError) console.error('Error fetching groups for public team detail:', groupsError);
-    else setAllGroups(groupsData as Group[]);
+    if (teamsRes.error) console.error('Error fetching all teams for public team detail:', teamsRes.error);
+    else setAllTeams(teamsRes.data as Team[]);
 
-    const { data: roundsData, error: roundsError } = await supabase
-      .from('rounds')
-      .select('id, name, order_index, type, championship_id, created_at, public_edit_token') // Optimized select
-      .eq('championship_id', teamData.championship_id);
-    if (roundsError) console.error('Error fetching rounds for public team detail:', roundsError);
-    else setAllRounds(roundsData as Round[]);
+    if (groupsRes.error) console.error('Error fetching groups for public team detail:', groupsRes.error);
+    else setAllGroups(groupsRes.data as Group[]);
 
+    if (roundsRes.error) console.error('Error fetching rounds for public team detail:', roundsRes.error);
+    else setAllRounds(roundsRes.data as Round[]);
 
-    const { data: matchesData, error: matchesError } = await supabase
-      .from('matches')
-      .select(`id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(id, match_id, team_id, player_name, jersey_number)`) // Optimized select for matches and goals
-      .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-      .order('match_date', { ascending: true });
-
-    if (matchesError) {
+    if (matchesRes.error) {
       setError('Erro ao carregar as partidas do time.');
     } else {
-      setMatches(matchesData as Match[]);
+      setMatches(matchesRes.data as Match[]);
     }
 
     setLoading(false);
@@ -107,55 +97,84 @@ const PublicTeamDetail = () => {
     );
   }
 
+  const singleTeamArray = [team];
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       <PublicHeader />
-      <main className="flex-1 p-4 md:gap-8 md:p-10"> {/* Adjusted padding */}
-        <div className="grid w-full gap-6"> {/* Removed max-w-6xl and mx-auto */}
+      <main className="flex-1 p-4 md:gap-8 md:p-10">
+        <div className="grid w-full gap-6">
           <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20"> {/* Increased size */}
+            <Avatar className="h-20 w-20">
               <AvatarImage src={team.logo_url || undefined} alt={team.name} loading="lazy" />
               <AvatarFallback><Trophy className="h-10 w-10 text-gray-500" /></AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold">{team.name}</h1> {/* Slightly smaller title */}
+              <h1 className="text-2xl font-bold">{team.name}</h1>
               <Button asChild variant="link" className="p-0 h-auto mt-1">
                 <Link to={`/public/championship/${team.championship_id}`}>Voltar para o Campeonato</Link>
               </Button>
             </div>
           </div>
 
-          <Card>
-            <CardHeader><CardTitle>Estatísticas do Time</CardTitle></CardHeader>
-            <CardContent>
-              <Leaderboard teams={[team]} matches={matches} />
-            </CardContent>
-          </Card>
+          <Tabs defaultValue="stats" className="w-full">
+            <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <TabsList className="grid w-full grid-cols-3"> {/* Ajustado para 3 abas */}
+                <TabsTrigger value="stats">Estatísticas</TabsTrigger>
+                <TabsTrigger value="matches">Partidas</TabsTrigger>
+                <TabsTrigger value="portfolio">
+                  <Camera className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Portfólio</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-          <Card>
-            <CardHeader><CardTitle>Partidas de {team.name}</CardTitle></CardHeader>
-            <CardContent>
-              {matches.length === 0 ? (
-                <div className="text-center py-10"><p className="text-gray-500">Nenhuma partida encontrada.</p></div>
-              ) : (
-                <div className="space-y-2">
-                  {matches.map((match, index) => (
-                    <MatchCard 
-                      key={match.id} 
-                      match={match} 
-                      onMatchUpdated={() => {}} 
-                      onMatchDeleted={() => {}} 
-                      isEven={index % 2 === 0} 
-                      groups={allGroups} 
-                      rounds={allRounds} 
-                      teams={allTeams} // Pass allTeams
-                      isPublicView={true} 
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            <TabsContent value="stats" className="mt-4">
+              <Card>
+                <CardHeader><CardTitle>Estatísticas do Time</CardTitle></CardHeader>
+                <CardContent>
+                  <Leaderboard teams={singleTeamArray} matches={matches} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="matches" className="mt-4">
+              <Card>
+                <CardHeader><CardTitle>Partidas de {team.name}</CardTitle></CardHeader>
+                <CardContent>
+                  {matches.length === 0 ? (
+                    <div className="text-center py-10"><p className="text-gray-500">Nenhuma partida encontrada.</p></div>
+                  ) : (
+                    <div className="space-y-2">
+                      {matches.map((match, index) => (
+                        <MatchCard 
+                          key={match.id} 
+                          match={match} 
+                          onMatchUpdated={() => {}} 
+                          onMatchDeleted={() => {}} 
+                          isEven={index % 2 === 0} 
+                          groups={allGroups} 
+                          rounds={allRounds} 
+                          teams={allTeams}
+                          isPublicView={true} 
+                        />
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="portfolio" className="mt-4">
+              <MediaGallery
+                championshipId={team.championship_id}
+                matches={matches}
+                teams={allTeams}
+                rounds={allRounds}
+                teamId={team.id} // Pass the current teamId to filter the gallery
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>

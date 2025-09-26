@@ -5,10 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Frown, Trophy } from 'lucide-react';
+import { Frown, Trophy, Camera } from 'lucide-react'; // Importar Camera icon
 import { MatchCard } from '@/components/MatchCard';
-import { Leaderboard } from '@/components/Leaderboard'; // Re-use Leaderboard logic for single team stats
+import { Leaderboard } from '@/components/Leaderboard';
 import { Team, Match, Group, Round } from '@/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Importar Tabs
+import { MediaGallery } from '@/components/MediaGallery'; // Importar MediaGallery
+import { UploadMediaDialog } from '@/components/UploadMediaDialog'; // Importar UploadMediaDialog
+import { useSession } from '@/components/SessionProvider'; // Import useSession
 
 const AdminTeamDetail = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -18,7 +22,8 @@ const AdminTeamDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [allRounds, setAllRounds] = useState<Round[]>([]);
-  const [allTeams, setAllTeams] = useState<Team[]>([]); // Adicionado: Para passar para MatchCard
+  const [allTeams, setAllTeams] = useState<Team[]>([]);
+  const { userProfile } = useSession(); // Get current user profile
 
   const fetchTeamDetails = useCallback(async () => {
     if (!teamId) return;
@@ -31,7 +36,7 @@ const AdminTeamDetail = () => {
       .select(`
         id, name, logo_url, championship_id, user_id, group_id,
         groups(name)
-      `) // Optimized select
+      `)
       .eq('id', teamId)
       .single();
 
@@ -43,11 +48,19 @@ const AdminTeamDetail = () => {
     }
     setTeam(teamData as Team);
 
-    // Fetch all groups, rounds, and teams for MatchCard
-    const [groupsRes, roundsRes, teamsRes] = await Promise.all([
-      supabase.from('groups').select('id, name, championship_id, created_at'), // Optimized select
-      supabase.from('rounds').select('id, name, order_index, type, championship_id, created_at, public_edit_token'), // Optimized select
-      supabase.from('teams').select('id, name, logo_url, championship_id, user_id, group_id, groups(name)'), // Optimized select
+    // Fetch all groups, rounds, and teams for MatchCard and MediaGallery
+    const [groupsRes, roundsRes, teamsRes, matchesRes] = await Promise.all([
+      supabase.from('groups').select('id, name, championship_id, created_at').eq('championship_id', teamData.championship_id),
+      supabase.from('rounds').select('id, name, order_index, type, championship_id, created_at, public_edit_token').eq('championship_id', teamData.championship_id),
+      supabase.from('teams').select('id, name, logo_url, championship_id, user_id, group_id, groups(name)').eq('championship_id', teamData.championship_id),
+      supabase.from('matches').select(`
+        id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes,
+        team1:teams!matches_team1_id_fkey(id, name, logo_url),
+        team2:teams!matches_team2_id_fkey(id, name, logo_url),
+        groups(name),
+        rounds(name),
+        goals:match_goals(id, match_id, team_id, player_name, jersey_number)
+      `).eq('championship_id', teamData.championship_id).or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`).order('match_date', { ascending: true }),
     ]);
 
     if (groupsRes.error) console.error('Error fetching groups for team detail:', groupsRes.error);
@@ -59,25 +72,11 @@ const AdminTeamDetail = () => {
     if (teamsRes.error) console.error('Error fetching all teams for team detail:', teamsRes.error);
     else setAllTeams(teamsRes.data as Team[]);
 
-    // Fetch matches involving this team
-    const { data: matchesData, error: matchesError } = await supabase
-      .from('matches')
-      .select(`
-        id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes,
-        team1:teams!matches_team1_id_fkey(id, name, logo_url),
-        team2:teams!matches_team2_id_fkey(id, name, logo_url),
-        groups(name),
-        rounds(name),
-        goals:match_goals(id, match_id, team_id, player_name, jersey_number)
-      `) // Optimized select for matches and goals
-      .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-      .order('match_date', { ascending: true });
-
-    if (matchesError) {
-      console.error('Error fetching matches for team:', matchesError);
+    if (matchesRes.error) {
+      console.error('Error fetching matches for team:', matchesRes.error);
       setError('Erro ao carregar as partidas do time.');
     } else {
-      setMatches(matchesData as Match[]);
+      setMatches(matchesRes.data as Match[]);
     }
 
     setLoading(false);
@@ -86,6 +85,9 @@ const AdminTeamDetail = () => {
   useEffect(() => {
     fetchTeamDetails();
   }, [fetchTeamDetails]);
+
+  // Check if the current user can upload media for this championship
+  const canUploadMedia = userProfile?.role === 'admin' || userProfile?.role === 'official';
 
   if (loading) {
     return (
@@ -126,7 +128,6 @@ const AdminTeamDetail = () => {
     );
   }
 
-  // Prepare data for Leaderboard component to calculate single team stats
   const singleTeamArray = [team];
   const teamMatchesForStats = matches.filter(m => m.team1_score !== null && m.team2_score !== null);
 
@@ -150,46 +151,83 @@ const AdminTeamDetail = () => {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Estatísticas do Time</CardTitle>
-          <CardDescription>Desempenho geral do {team.name} no campeonato.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Re-using Leaderboard component for single team stats */}
-          <Leaderboard teams={singleTeamArray} matches={teamMatchesForStats} />
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="stats" className="w-full">
+        <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <TabsList className="grid w-full grid-cols-3"> {/* Ajustado para 3 abas */}
+            <TabsTrigger value="stats">Estatísticas</TabsTrigger>
+            <TabsTrigger value="matches">Partidas</TabsTrigger>
+            <TabsTrigger value="portfolio">
+              <Camera className="h-5 w-5 sm:mr-2" />
+              <span className="hidden sm:inline">Portfólio</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Partidas de {team.name}</CardTitle>
-          <CardDescription>Todas as partidas em que {team.name} participou.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {matches.length === 0 ? (
-            <div className="text-center py-10 border-2 border-dashed rounded-lg">
-              <p className="text-gray-500">Nenhuma partida encontrada para este time.</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {matches.map((match, index) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  onMatchUpdated={fetchTeamDetails} // Refresh data if a match is updated
-                  onMatchDeleted={fetchTeamDetails} // Refresh data if a match is deleted
-                  isEven={index % 2 === 0}
-                  groups={allGroups}
-                  rounds={allRounds}
-                  teams={allTeams}
-                  isPublicView={false} // Explicitly set to false for admin view
-                />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        <TabsContent value="stats" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Estatísticas do Time</CardTitle>
+              <CardDescription>Desempenho geral do {team.name} no campeonato.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Leaderboard teams={singleTeamArray} matches={teamMatchesForStats} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="matches" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Partidas de {team.name}</CardTitle>
+              <CardDescription>Todas as partidas em que {team.name} participou.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {matches.length === 0 ? (
+                <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                  <p className="text-gray-500">Nenhuma partida encontrada para este time.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {matches.map((match, index) => (
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      onMatchUpdated={fetchTeamDetails}
+                      onMatchDeleted={fetchTeamDetails}
+                      isEven={index % 2 === 0}
+                      groups={allGroups}
+                      rounds={allRounds}
+                      teams={allTeams}
+                      isPublicView={false}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="portfolio" className="mt-4">
+          <div className="flex justify-end mb-4">
+            {canUploadMedia && (
+              <UploadMediaDialog
+                championshipId={team.championship_id}
+                matches={matches}
+                teams={allTeams} // Pass all teams for the dialog
+                rounds={allRounds} // Pass all rounds for the dialog
+                onMediaUploaded={fetchTeamDetails} // Refresh team details to update media list
+              />
+            )}
+          </div>
+          <MediaGallery
+            championshipId={team.championship_id}
+            matches={matches}
+            teams={allTeams}
+            rounds={allRounds}
+            teamId={team.id} // Pass the current teamId to filter the gallery
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
