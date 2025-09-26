@@ -14,21 +14,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { Plus, Trash2 } from 'lucide-react'; // Removed Minus, as score is direct input
+import { Plus, Trash2 } from 'lucide-react';
 import { Match, MatchGoal } from '@/types';
 
 interface QuickScoreUpdateDrawerProps {
   match: Match;
   onMatchUpdated: () => void;
   children: React.ReactNode;
-  isPublicView?: boolean; // New prop: true if used in public context
-  publicRoundId?: string; // Required if isPublicView is true
-  publicRoundToken?: string; // Required if isPublicView is true
+  isPublicView?: boolean;
+  publicRoundId?: string;
+  publicRoundToken?: string;
 }
 
 interface GoalInput {
-  tempId: string; // Temporary ID for UI management
-  id?: string; // Actual DB ID if existing goal
+  tempId: string;
+  id?: string;
   player_name: string;
   jersey_number: number | null;
 }
@@ -48,7 +48,6 @@ export function QuickScoreUpdateDrawer({
   const [team2Goals, setTeam2Goals] = useState<GoalInput[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Effect to initialize scores and goals when match changes or drawer is opened
   useEffect(() => {
     if (open) {
       setTeam1Score(match.team1_score ?? 0);
@@ -115,7 +114,7 @@ export function QuickScoreUpdateDrawer({
             matchId: match.id,
             team1Score,
             team2Score,
-            goals: goalsToSave, // Pass goals data
+            goals: goalsToSave,
             roundId: publicRoundId,
             roundToken: publicRoundToken,
           }),
@@ -138,7 +137,6 @@ export function QuickScoreUpdateDrawer({
       }
 
     } else {
-      // Existing logic for authenticated users
       const { error: matchUpdateError } = await supabase
         .from('matches')
         .update({
@@ -153,7 +151,6 @@ export function QuickScoreUpdateDrawer({
         return;
       }
 
-      // Delete existing goals for this match
       const { error: deleteGoalsError } = await supabase
         .from('match_goals')
         .delete()
@@ -165,7 +162,6 @@ export function QuickScoreUpdateDrawer({
         return;
       }
 
-      // Insert new goals
       if (goalsToSave.length > 0) {
         const { error: insertGoalsError } = await supabase
           .from('match_goals')
@@ -200,13 +196,13 @@ export function QuickScoreUpdateDrawer({
             <div className="flex items-center justify-center space-x-2">
               {/* Team 1 Score */}
               <div className="flex-1 text-center space-y-2">
-                <Label htmlFor="team1-score" className="truncate text-sm">{match.team1.name}</Label> {/* Added text-sm */}
+                <Label htmlFor="team1-score" className="truncate text-sm">{match.team1.name}</Label>
                 <div className="flex items-center justify-center space-x-2">
                   <Input
                     id="team1-score"
                     type="number"
                     value={team1Score}
-                    onChange={(e) => setTeam1Score(parseInt(e.target.value, 10) || 0)} {/* Made editable */}
+                    onChange={(e) => setTeam1Score(parseInt(e.target.value, 10) || 0)}
                     className="w-16 h-16 text-center text-2xl"
                   />
                 </div>
@@ -214,13 +210,13 @@ export function QuickScoreUpdateDrawer({
               <span className="text-2xl font-bold">X</span>
               {/* Team 2 Score */}
               <div className="flex-1 text-center space-y-2">
-                <Label htmlFor="team2-score" className="truncate text-sm">{match.team2.name}</Label> {/* Added text-sm */}
+                <Label htmlFor="team2-score" className="truncate text-sm">{match.team2.name}</Label>
                 <div className="flex items-center justify-center space-x-2">
                   <Input
                     id="team2-score"
                     type="number"
                     value={team2Score}
-                    onChange={(e) => setTeam2Score(parseInt(e.target.value, 10) || 0)} {/* Made editable */}
+                    onChange={(e) => setTeam2Score(parseInt(e.target.value, 10) || 0)}
                     className="w-16 h-16 text-center text-2xl"
                   />
                 </div>
@@ -231,56 +227,56 @@ export function QuickScoreUpdateDrawer({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Team 1 Goals */}
               <div className="space-y-3 border p-3 rounded-md">
-                <h3 className="font-semibold text-center text-sm">{match.team1.name} - Gols</h3> {/* Added text-sm */}
+                <h3 className="font-semibold text-center text-sm">{match.team1.name} - Gols</h3>
                 {team1Goals.map((goal, index) => (
                   <div key={goal.tempId} className="flex items-center gap-2">
                     <Input
                       placeholder="Nome do Jogador"
                       value={goal.player_name}
                       onChange={(e) => handleGoalChange('team1', goal.tempId, 'player_name', e.target.value)}
-                      className="flex-grow h-8 text-xs" // Made smaller
+                      className="flex-grow h-8 text-xs"
                     />
                     <Input
                       type="number"
                       placeholder="Camisa"
                       value={goal.jersey_number ?? ''}
                       onChange={(e) => handleGoalChange('team1', goal.tempId, 'jersey_number', parseInt(e.target.value, 10) || null)}
-                      className="w-16 h-8 text-xs" // Made smaller
+                      className="w-16 h-8 text-xs"
                     />
-                    <Button variant="ghost" size="icon" onClick={() => removeGoal('team1', goal.tempId)} className="h-8 w-8"> {/* Made smaller */}
+                    <Button variant="ghost" size="icon" onClick={() => removeGoal('team1', goal.tempId)} className="h-8 w-8">
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => addGoal('team1')} className="w-full h-8 text-xs"> {/* Made smaller */}
+                <Button variant="outline" size="sm" onClick={() => addGoal('team1')} className="w-full h-8 text-xs">
                   <Plus className="mr-2 h-3 w-3" /> Adicionar Gol
                 </Button>
               </div>
 
               {/* Team 2 Goals */}
               <div className="space-y-3 border p-3 rounded-md">
-                <h3 className="font-semibold text-center text-sm">{match.team2.name} - Gols</h3> {/* Added text-sm */}
+                <h3 className="font-semibold text-center text-sm">{match.team2.name} - Gols</h3>
                 {team2Goals.map((goal, index) => (
                   <div key={goal.tempId} className="flex items-center gap-2">
                     <Input
                       placeholder="Nome do Jogador"
                       value={goal.player_name}
                       onChange={(e) => handleGoalChange('team2', goal.tempId, 'player_name', e.target.value)}
-                      className="flex-grow h-8 text-xs" // Made smaller
+                      className="flex-grow h-8 text-xs"
                     />
                     <Input
                       type="number"
                       placeholder="Camisa"
                       value={goal.jersey_number ?? ''}
                       onChange={(e) => handleGoalChange('team2', goal.tempId, 'jersey_number', parseInt(e.target.value, 10) || null)}
-                      className="w-16 h-8 text-xs" // Made smaller
+                      className="w-16 h-8 text-xs"
                     />
-                    <Button variant="ghost" size="icon" onClick={() => removeGoal('team2', goal.tempId)} className="h-8 w-8"> {/* Made smaller */}
+                    <Button variant="ghost" size="icon" onClick={() => removeGoal('team2', goal.tempId)} className="h-8 w-8">
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" onClick={() => addGoal('team2')} className="w-full h-8 text-xs"> {/* Made smaller */}
+                <Button variant="outline" size="sm" onClick={() => addGoal('team2')} className="w-full h-8 text-xs">
                   <Plus className="mr-2 h-3 w-3" /> Adicionar Gol
                 </Button>
               </div>
