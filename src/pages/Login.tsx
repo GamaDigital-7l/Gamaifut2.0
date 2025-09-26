@@ -21,6 +21,7 @@ const Login = () => {
           providers={[]}
           view="sign_in" // Only show sign-in view
           theme="dark"
+          showLinks={false} // Explicitly hide all navigation links, including "Sign up"
         />
       </div>
     </div>
