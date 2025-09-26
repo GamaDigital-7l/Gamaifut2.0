@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { S3Bucket } from "https://deno.land/x/s3@0.6.0/mod.ts";
+import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.614.0"; // CORRIGIDO: Usar @aws-sdk/client-s3
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -128,14 +128,18 @@ serve(async (req) => {
       });
     }
 
-    const s3 = new S3Bucket({
-      endPoint: MINIO_ENDPOINT,
-      accessKey: MINIO_ACCESS_KEY,
-      secretKey: MINIO_SECRET_KEY,
-      bucket: MINIO_BUCKET_NAME,
-      region: "us-east-1",
+    // CORRIGIDO: Inicializar S3Client do @aws-sdk/client-s3
+    const s3Client = new S3Client({
+      endpoint: MINIO_ENDPOINT,
+      region: "us-east-1", // MinIO often uses a default region, adjust if yours is different
+      credentials: {
+        accessKeyId: MINIO_ACCESS_KEY,
+        secretAccessKey: MINIO_SECRET_KEY,
+      },
+      forcePathStyle: true, // Importante para MinIO
+      // sslEnabled: false, // Use this if your MinIO is on HTTP
     });
-    console.log('MinIO S3 client (S3Bucket) created.');
+    console.log('MinIO S3 client (@aws-sdk/client-s3) created.');
 
     const fileExt = file.name.split('.').pop();
     const objectKey = `${championshipId}/${crypto.randomUUID()}.${fileExt}`;
@@ -146,15 +150,17 @@ serve(async (req) => {
     console.log(`Pre-upload check: fileBuffer size=${fileBuffer.byteLength}, fileUint8Array length=${fileUint8Array.length}, file type=${file.type}`);
     console.log(`Attempting to upload file to MinIO: bucket=${MINIO_BUCKET_NAME}, key=${objectKey}`);
 
-    const uploadResult = await s3.putObject(objectKey, fileUint8Array, { // Pass Uint8Array
-      // Removendo Content-Type daqui para testar se a biblioteca infere corretamente
-      // headers: {
-      //   'Content-Type': file.type,
-      // },
+    // CORRIGIDO: Usar PutObjectCommand
+    const command = new PutObjectCommand({
+      Bucket: MINIO_BUCKET_NAME,
+      Key: objectKey,
+      Body: fileUint8Array,
+      ContentType: file.type,
     });
+
+    const uploadResult = await s3Client.send(command);
     console.log('MinIO upload result:', uploadResult);
     console.log('Post-upload check: Upload operation completed.');
-
 
     const publicUrl = `${MINIO_ENDPOINT}/${MINIO_BUCKET_NAME}/${objectKey}`;
     console.log('Generated public URL:', publicUrl);
