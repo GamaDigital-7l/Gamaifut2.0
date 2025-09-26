@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-// CORRIGIDO: Simplificar a importação do @aws-sdk/client-s3
-import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.614.0"; 
+// CORRIGIDO: Adicionar target=es2022 e deno-std para melhor compatibilidade com Deno
+import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.614.0?target=es2022&deno-std=0.190.0"; 
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -130,6 +130,7 @@ serve(async (req) => {
       });
     }
 
+    console.log('Attempting to initialize S3Client...'); // Log para depuração
     const s3Client = new S3Client({
       endpoint: MINIO_ENDPOINT,
       region: "us-east-1",
@@ -139,8 +140,9 @@ serve(async (req) => {
       },
       forcePathStyle: true,
       credentialDefaultProvider: () => async () => null, 
+      disableHostPrefix: true, // NOVO: Adicionado para evitar problemas de resolução de host
     });
-    console.log('MinIO S3 client (@aws-sdk/client-s3) created with explicit credentials.');
+    console.log('MinIO S3 client initialized.'); // Log para depuração
 
     const fileExt = file.name.split('.').pop();
     const objectKey = `${championshipId}/${crypto.randomUUID()}.${fileExt}`;
