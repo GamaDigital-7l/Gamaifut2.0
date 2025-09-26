@@ -14,6 +14,8 @@ import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
 import { Group, Round, Team, Match } from '@/types'; // Import types from centralized types
+import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile hook
+import { MatchCardMobile } from './MatchCardMobile'; // Import the new mobile component
 
 interface MatchCardProps {
   match: Match;
@@ -29,6 +31,27 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false, publicRoundId, publicRoundToken }: MatchCardProps) {
+  const isMobile = useIsMobile();
+
+  // If on mobile, render the dedicated mobile component
+  if (isMobile) {
+    return (
+      <MatchCardMobile
+        match={match}
+        onMatchUpdated={onMatchUpdated}
+        onMatchDeleted={onMatchDeleted}
+        isEven={isEven}
+        groups={groups}
+        rounds={rounds}
+        teams={teams}
+        isPublicView={isPublicView}
+        publicRoundId={publicRoundId}
+        publicRoundToken={publicRoundToken}
+      />
+    );
+  }
+
+  // Existing desktop/tablet layout
   const matchDate = match.match_date ? new Date(match.match_date) : null;
   const isPlayed = match.team1_score !== null && match.team2_score !== null;
 
@@ -40,7 +63,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
       "w-full",
       isEven ? "bg-card" : "bg-muted/50 dark:bg-muted/20"
     )}>
-      <CardContent className="p-2 sm:p-4"> {/* Reduced padding on mobile */}
+      <CardContent className="p-2 sm:p-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-muted-foreground mb-2 gap-1">
           <div className="flex items-center gap-1 flex-wrap">
             {match.location && (
@@ -68,20 +91,20 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-0.5 sm:gap-3"> {/* Reduced gap-1 to gap-0.5 */}
+        <div className="flex items-center justify-between gap-1 sm:gap-3">
           {/* Team 1 */}
           <div className="flex items-center gap-0.5 justify-end flex-1 min-w-0">
-            <span className="font-medium text-[0.6rem] sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span> {/* Changed text-[0.65rem] to text-[0.6rem] */}
+            <span className="font-medium text-[0.65rem] sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span>
             {match.team1.logo_url && (
               <img src={match.team1.logo_url} alt={match.team1.name} className="h-6 w-6 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" />
             )}
           </div>
 
           {/* Scores / Separator */}
-          <div className="flex items-center gap-0.5 sm:gap-3 text-sm sm:text-2xl font-bold flex-shrink-0"> {/* Changed text-base to text-sm */}
+          <div className="flex items-center gap-0.5 sm:gap-3 text-sm sm:text-2xl font-bold flex-shrink-0">
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
-            <div className="p-0 rounded-full bg-primary text-primary-foreground"> {/* Reduced p-0.5 to p-0 */}
-              <X className="h-2.5 w-2.5 sm:h-4 sm:w-4" /> {/* Reduced h-3 w-3 to h-2.5 w-2.5 */}
+            <div className="p-0 rounded-full bg-primary text-primary-foreground">
+              <X className="h-2.5 w-2.5 sm:h-4 sm:w-4" />
             </div>
             <span>{isPlayed ? (match.team2_score ?? '-') : ''}</span>
           </div>
@@ -91,7 +114,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             {match.team2.logo_url && (
               <img src={match.team2.logo_url} alt={match.team2.name} className="h-6 w-6 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" />
             )}
-            <span className="font-medium text-[0.6rem] sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span> {/* Changed text-[0.65rem] to text-[0.6rem] */}
+            <span className="font-medium text-[0.65rem] sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span>
           </div>
         </div>
 
@@ -148,7 +171,6 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
         )}
 
         <div className="flex justify-end items-center mt-2 gap-2">
-          {/* QuickScoreUpdateDrawer is always available, but its behavior changes based on isPublicView */}
           <QuickScoreUpdateDrawer
             match={match}
             onMatchUpdated={onMatchUpdated}
@@ -156,13 +178,12 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             publicRoundId={publicRoundId}
             publicRoundToken={publicRoundToken}
           >
-            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-[0.6rem] sm:text-sm"> {/* Changed text-[0.65rem] to text-[0.6rem] */}
+            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-[0.6rem] sm:text-sm">
               <Goal className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="text-[0.6rem]">Placar Rápido</span> {/* Changed text-[0.65rem] to text-[0.6rem] */}
+              <span className="text-[0.6rem]">Placar Rápido</span>
             </Button>
           </QuickScoreUpdateDrawer>
 
-          {/* Dropdown menu for authenticated actions (edit/delete) */}
           {!isPublicView && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
