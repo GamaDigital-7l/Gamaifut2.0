@@ -61,6 +61,8 @@ const OfficialChampionshipMatches = () => {
     enabled: !!championshipId,
   });
 
+  console.log('OfficialChampionshipMatches: Render. isLoading:', isLoading, 'Error:', error); // NEW LOG
+
   const { championship, teams, groups, rounds, matches } = data || {};
   const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all');
 

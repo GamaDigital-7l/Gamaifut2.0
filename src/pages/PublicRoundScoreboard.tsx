@@ -21,6 +21,8 @@ const PublicRoundScoreboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log('PublicRoundScoreboard: Render. Loading:', loading, 'Error:', error); // NEW LOG
+
   const fetchRoundData = useCallback(async () => {
     console.log('PublicRoundScoreboard: fetchRoundData called.');
     console.log('PublicRoundScoreboard: Params:', { championshipId, roundId, roundToken });
