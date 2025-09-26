@@ -14,6 +14,7 @@ const ChampionshipDetail = lazy(() => import("@/pages/ChampionshipDetail"));
 const ChampionshipTheme = lazy(() => import("@/pages/ChampionshipTheme"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
+const TopScorers = lazy(() => import("@/pages/TopScorers")); // NEW: Import TopScorers page
 const AdminTeamDetail = lazy(() => import("@/pages/AdminTeamDetail"));
 const PublicChampionshipView = lazy(() => import("@/pages/PublicChampionshipView"));
 const PublicTeamDetail = lazy(() => import("@/pages/PublicTeamDetail"));
@@ -38,6 +39,7 @@ interface SessionContextType {
 const SessionContext = createContext<SessionContextType>({ session: null, userProfile: null, loading: true });
 
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
+  let isMounted = true;
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true); // Start true
@@ -59,8 +61,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
       if (!isMounted) return;
 
@@ -162,6 +162,7 @@ export const AppRoutes = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/official-dashboard" element={<OfficialDashboard />} />
             <Route path="/official-championship-matches/:id" element={<OfficialChampionshipMatches />} /> {/* NEW ROUTE */}
+            <Route path="/top-scorers" element={<TopScorers />} /> {/* NEW ROUTE */}
             <Route path="/championship/:id" element={<ChampionshipDetail />} />
             <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
             <Route path="/profile" element={<Profile />} />
