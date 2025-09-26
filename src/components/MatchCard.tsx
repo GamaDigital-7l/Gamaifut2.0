@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { Group, Round, Team, Match } from '@/types'; // Import types from centralized types
 import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile hook
 import { MatchCardMobile } from './MatchCardMobile'; // Import the new mobile component
+import { useEffect } from 'react'; // Import useEffect
 
 interface MatchCardProps {
   match: Match;
@@ -32,6 +33,10 @@ interface MatchCardProps {
 
 export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, groups, rounds, teams, isPublicView = false, publicRoundId, publicRoundToken }: MatchCardProps) {
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    console.log(`MatchCard for match ${match.id}: isPublicView = ${isPublicView}`);
+  }, [match.id, isPublicView]);
 
   // If on mobile, render the dedicated mobile component
   if (isMobile) {
@@ -171,7 +176,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
         )}
 
         <div className="flex justify-end items-center mt-2 gap-2">
-          {!isPublicView && ( // Conditionally render QuickScoreUpdateDrawer
+          {isPublicView ? null : ( // Render only if NOT public view
             <QuickScoreUpdateDrawer
               match={match}
               onMatchUpdated={onMatchUpdated}
@@ -186,7 +191,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             </QuickScoreUpdateDrawer>
           )}
 
-          {!isPublicView && (
+          {isPublicView ? null : ( // Render only if NOT public view
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-6 w-6">
@@ -199,8 +204,8 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
                 </EditMatchDialog>
                 <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
-                </DeleteMatchDialog>
-              </DropdownMenuContent>
+                </DeleteMatchContent>
+              </DropdownMenu>
             </DropdownMenu>
           )}
         </div>

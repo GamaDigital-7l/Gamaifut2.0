@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
 import { Group, Round, Team, Match } from '@/types';
+import { useEffect } from 'react'; // Import useEffect
 
 interface MatchCardMobileProps {
   match: Match;
@@ -34,6 +35,10 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
 
   const team1Goals = match.goals.filter(g => g.team_id === match.team1_id);
   const team2Goals = match.goals.filter(g => g.team_id === match.team2_id);
+
+  useEffect(() => {
+    console.log(`MatchCardMobile for match ${match.id}: isPublicView = ${isPublicView}`);
+  }, [match.id, isPublicView]);
 
   return (
     <Card className={cn(
@@ -125,7 +130,7 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
 
         {/* Action Buttons */}
         <div className="flex justify-end items-center mt-3 gap-2 border-t pt-2">
-          {!isPublicView && ( // Conditionally render QuickScoreUpdateDrawer
+          {isPublicView ? null : ( // Render only if NOT public view
             <QuickScoreUpdateDrawer
               match={match}
               onMatchUpdated={onMatchUpdated}
@@ -140,7 +145,7 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
             </QuickScoreUpdateDrawer>
           )}
 
-          {!isPublicView && (
+          {isPublicView ? null : ( // Render only if NOT public view
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-6 w-6">
