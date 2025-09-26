@@ -140,7 +140,8 @@ export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChan
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
-                      </DropdownMenuContent>
+                      </AlertDialog>
+                    </DropdownMenuContent>
                   </DropdownMenu>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
