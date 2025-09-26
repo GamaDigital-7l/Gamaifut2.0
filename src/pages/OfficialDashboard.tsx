@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MatchCard } from '@/components/MatchCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { showError } from '@/utils/toast';
-import { Match, Group, Round } from '@/types';
+import { Match, Group, Round, Team } from '@/types';
 
 const OfficialDashboard = () => {
   const { session, userProfile } = useSession();
@@ -14,6 +14,7 @@ const OfficialDashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [allGroups, setAllGroups] = useState<Group[]>([]); // To pass to MatchCard
   const [allRounds, setAllRounds] = useState<Round[]>([]); // To pass to MatchCard
+  const [allTeams, setAllTeams] = useState<Team[]>([]); // Adicionado: Para passar para MatchCard
 
   const fetchAssignedMatches = useCallback(async () => {
     if (!session?.user?.id || (userProfile?.role !== 'official' && userProfile?.role !== 'admin')) {
@@ -28,18 +29,21 @@ const OfficialDashboard = () => {
 
     console.log('OfficialDashboard: Fetching matches for User ID:', session.user.id, 'with Role:', userProfile?.role); // DIAGNOSTIC LOG
 
-    // Fetch all groups and rounds for MatchCard to display names
-    const { data: groupsData, error: groupsError } = await supabase
-      .from('groups')
-      .select('*');
-    if (groupsError) console.error('Error fetching groups for official dashboard:', groupsError);
-    else setAllGroups(groupsData as Group[]);
+    // Fetch all groups, rounds, and teams for MatchCard to display names and logos
+    const [groupsRes, roundsRes, teamsRes] = await Promise.all([
+      supabase.from('groups').select('*'),
+      supabase.from('rounds').select('*'),
+      supabase.from('teams').select('*'), // Fetch all teams
+    ]);
 
-    const { data: roundsData, error: roundsError } = await supabase
-      .from('rounds')
-      .select('*');
-    if (roundsError) console.error('Error fetching rounds for official dashboard:', roundsError);
-    else setAllRounds(roundsData as Round[]);
+    if (groupsRes.error) console.error('Error fetching groups for official dashboard:', groupsRes.error);
+    else setAllGroups(groupsRes.data as Group[]);
+
+    if (roundsRes.error) console.error('Error fetching rounds for official dashboard:', roundsRes.error);
+    else setAllRounds(roundsRes.data as Round[]);
+
+    if (teamsRes.error) console.error('Error fetching teams for official dashboard:', teamsRes.error);
+    else setAllTeams(teamsRes.data as Team[]);
 
     const { data, error: matchesError } = await supabase
       .from('matches')
@@ -109,6 +113,7 @@ const OfficialDashboard = () => {
               isEven={index % 2 === 0}
               groups={allGroups}
               rounds={allRounds}
+              teams={allTeams} {/* Passando a prop teams */}
               isOfficialView={true} // Indicate that this card is in the official view
               isPublicView={false} // Explicitly set to false
             />

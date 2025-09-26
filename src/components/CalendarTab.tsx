@@ -5,7 +5,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { MatchCard } from './MatchCard'; // Re-use MatchCard for displaying details
-import { Match, Group, Round } from '@/types';
+import { Match, Group, Round, Team } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton'; // Importar Skeleton
 
 interface CalendarTabProps {
@@ -13,11 +13,12 @@ interface CalendarTabProps {
   matches: Match[]; // Pass matches directly to avoid re-fetching
   groups: Group[]; // Pass groups for MatchCard
   rounds: Round[]; // Pass rounds for MatchCard
+  teams: Team[]; // Adicionado: Passar todos os times para MatchCard
   isLoading: boolean; // Adicionado
   onDataChange: () => void; // Adicionado
 }
 
-export function CalendarTab({ championshipId, matches, groups, rounds, isLoading, onDataChange }: CalendarTabProps) {
+export function CalendarTab({ championshipId, matches, groups, rounds, teams, isLoading, onDataChange }: CalendarTabProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [matchesOnSelectedDate, setMatchesOnSelectedDate] = useState<Match[]>([]);
 
@@ -85,6 +86,7 @@ export function CalendarTab({ championshipId, matches, groups, rounds, isLoading
                   isEven={index % 2 === 0}
                   groups={groups}
                   rounds={rounds}
+                  teams={teams} {/* Passando a prop teams */}
                 />
               ))}
             </div>

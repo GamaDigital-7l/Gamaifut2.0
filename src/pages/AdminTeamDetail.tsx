@@ -18,6 +18,7 @@ const AdminTeamDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [allRounds, setAllRounds] = useState<Round[]>([]);
+  const [allTeams, setAllTeams] = useState<Team[]>([]); // Adicionado: Para passar para MatchCard
 
   const fetchTeamDetails = useCallback(async () => {
     if (!teamId) return;
@@ -42,18 +43,21 @@ const AdminTeamDetail = () => {
     }
     setTeam(teamData as Team);
 
-    // Fetch all groups and rounds for MatchCard
-    const { data: groupsData, error: groupsError } = await supabase
-      .from('groups')
-      .select('*');
-    if (groupsError) console.error('Error fetching groups for team detail:', groupsError);
-    else setAllGroups(groupsData as Group[]);
+    // Fetch all groups, rounds, and teams for MatchCard
+    const [groupsRes, roundsRes, teamsRes] = await Promise.all([
+      supabase.from('groups').select('*'),
+      supabase.from('rounds').select('*'),
+      supabase.from('teams').select('*'), // Fetch all teams
+    ]);
 
-    const { data: roundsData, error: roundsError } = await supabase
-      .from('rounds')
-      .select('*');
-    if (roundsError) console.error('Error fetching rounds for team detail:', roundsError);
-    else setAllRounds(roundsData as Round[]);
+    if (groupsRes.error) console.error('Error fetching groups for team detail:', groupsRes.error);
+    else setAllGroups(groupsRes.data as Group[]);
+
+    if (roundsRes.error) console.error('Error fetching rounds for team detail:', roundsRes.error);
+    else setAllRounds(roundsRes.data as Round[]);
+
+    if (teamsRes.error) console.error('Error fetching all teams for team detail:', teamsRes.error);
+    else setAllTeams(teamsRes.data as Team[]);
 
     // Fetch matches involving this team
     const { data: matchesData, error: matchesError } = await supabase
@@ -177,6 +181,7 @@ const AdminTeamDetail = () => {
                   isEven={index % 2 === 0}
                   groups={allGroups}
                   rounds={allRounds}
+                  teams={allTeams} {/* Passando a prop teams */}
                   isPublicView={false} // Explicitly set to false for admin view
                 />
               ))}
