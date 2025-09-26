@@ -1,11 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { S3Bucket } from "https://deno.land/x/s3@0.5.0/mod.ts"; // CORRIGIDO: Importar S3Bucket em vez de S3Client
+import { S3Bucket } from "https://deno.land/x/s3@0.5.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS', // Adicionado para CORS
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 serve(async (req) => {
@@ -15,7 +15,7 @@ serve(async (req) => {
 
   if (req.method === 'OPTIONS') {
     console.log('Handling OPTIONS request for CORS preflight.');
-    return new Response('ok', { headers: corsHeaders, status: 200 }); // CORRIGIDO: Retornar 'ok' com status 200
+    return new Response('ok', { headers: corsHeaders, status: 200 });
   }
 
   try {
@@ -30,7 +30,6 @@ serve(async (req) => {
       }
     );
 
-    // --- Authentication and Authorization Check ---
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       console.log('Auth Check Failed: No Authorization header.');
@@ -52,8 +51,6 @@ serve(async (req) => {
     }
     console.log('Invoker user ID:', invokerUser.id);
 
-    // Check if the user has permission to upload media (e.g., admin, official, or championship owner)
-    // This logic should mirror the RLS policy for 'media' table INSERT
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('role')
@@ -71,11 +68,10 @@ serve(async (req) => {
     const isUserAdmin = profile?.role === 'admin';
     const isUserOfficial = profile?.role === 'official';
 
-    // Parse multipart/form-data
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const championshipId = formData.get("championshipId") as string;
-    const userId = invokerUser.id; // The user performing the upload
+    const userId = invokerUser.id;
 
     if (!file || !championshipId || !userId) {
       console.log('Validation Failed: Missing file, championshipId, or userId in form data.');
@@ -85,7 +81,6 @@ serve(async (req) => {
       });
     }
 
-    // Additional authorization check for championship ownership/association
     const { data: championshipData, error: champError } = await supabaseClient
       .from('championships')
       .select('user_id')
@@ -120,7 +115,6 @@ serve(async (req) => {
     }
     console.log('User authorized to upload media.');
 
-    // MinIO Configuration
     const MINIO_ENDPOINT = Deno.env.get('MINIO_ENDPOINT');
     const MINIO_ACCESS_KEY = Deno.env.get('MINIO_ACCESS_KEY');
     const MINIO_SECRET_KEY = Deno.env.get('MINIO_SECRET_KEY');
@@ -134,31 +128,30 @@ serve(async (req) => {
       });
     }
 
-    // CORRIGIDO: Inicializar S3Bucket em vez de S3Client
     const s3 = new S3Bucket({
       endPoint: MINIO_ENDPOINT,
       accessKey: MINIO_ACCESS_KEY,
       secretKey: MINIO_SECRET_KEY,
-      bucket: MINIO_BUCKET_NAME, // O bucket é passado aqui
-      region: "us-east-1", // MinIO often uses a default region, adjust if yours is different
-      // For self-signed certs or HTTP, you might need to disable TLS verification
-      // ssl: false, // Use this if your MinIO is on HTTP
+      bucket: MINIO_BUCKET_NAME,
+      region: "us-east-1",
     });
     console.log('MinIO S3 client (S3Bucket) created.');
 
     const fileExt = file.name.split('.').pop();
-    const objectKey = `${championshipId}/${crypto.randomUUID()}.${fileExt}`; // Path in MinIO bucket
+    const objectKey = `${championshipId}/${crypto.randomUUID()}.${fileExt}`;
 
-    console.log(`Attempting to upload file to MinIO: bucket=${MINIO_BUCKET_NAME}, key=${objectKey}`);
-    // CORRIGIDO: Usar putObject diretamente no S3Bucket
-    const uploadResult = await s3.putObject(objectKey, file.stream(), {
+    // NOVO: Converter o arquivo para ArrayBuffer antes de enviar
+    const fileBuffer = await file.arrayBuffer();
+    console.log(`Attempting to upload file to MinIO: bucket=${MINIO_BUCKET_NAME}, key=${objectKey}, size=${fileBuffer.byteLength} bytes`);
+
+    const uploadResult = await s3.putObject(objectKey, fileBuffer, { // Passar o ArrayBuffer
       headers: {
         'Content-Type': file.type,
       },
     });
     console.log('MinIO upload result:', uploadResult);
 
-    const publicUrl = `${MINIO_ENDPOINT}/${MINIO_BUCKET_NAME}/${objectKey}`; // Construct public URL
+    const publicUrl = `${MINIO_ENDPOINT}/${MINIO_BUCKET_NAME}/${objectKey}`;
     console.log('Generated public URL:', publicUrl);
 
     console.log('--- Edge Function: upload-media-to-minio END (Success) ---');
