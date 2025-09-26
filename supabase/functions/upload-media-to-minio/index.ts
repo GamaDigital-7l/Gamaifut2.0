@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-// CORRIGIDO: Adicionar node: { fs: true } para shims de compatibilidade com fs
-import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.614.0?target=es2022&deno-std=0.190.0&node_builtin&node_modules_es_modules&node:fs"; 
+// CORRIGIDO: Simplificar a importação do @aws-sdk/client-s3
+import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.614.0"; 
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +13,7 @@ serve(async (req) => {
   console.log('--- Edge Function: upload-media-to-minio START ---');
   console.log('Request URL:', req.url);
   console.log('Request Method:', req.method);
+  console.log('Headers:', Object.fromEntries(req.headers.entries())); // Log all headers for debugging
 
   if (req.method === 'OPTIONS') {
     console.log('Handling OPTIONS request for CORS preflight.');
@@ -137,7 +138,6 @@ serve(async (req) => {
         secretAccessKey: MINIO_SECRET_KEY,
       },
       forcePathStyle: true,
-      // NOVO: Desabilitar o provedor de credenciais padrão baseado em arquivo
       credentialDefaultProvider: () => async () => null, 
     });
     console.log('MinIO S3 client (@aws-sdk/client-s3) created with explicit credentials.');
