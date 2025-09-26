@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Image, Video, Star, Users, CalendarIcon, LayoutGrid, Download, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { Image, Video, Star, Users, CalendarIcon, LayoutGrid, Download, MoreHorizontal, Edit, Trash2, X } from 'lucide-react'; // Adicionado 'X' para o botão de fechar
 import { Media, Match, Team, Round } from '@/types';
 import { cn } from '@/lib/utils';
 import {
@@ -28,9 +28,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
-import { useSession } from '@/components/SessionProvider'; // Import useSession
-import { EditMediaDialog } from './EditMediaDialog'; // Import new EditMediaDialog
-import { DeleteMediaDialog } from './DeleteMediaDialog'; // Import new DeleteMediaDialog
+import { useSession } from '@/components/SessionProvider';
+import { EditMediaDialog } from './EditMediaDialog';
+import { DeleteMediaDialog } from './DeleteMediaDialog';
 
 interface MediaGalleryProps {
   championshipId: string;
@@ -45,13 +45,11 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { userProfile, session } = useSession(); // Get user profile and session
+  const { userProfile, session } = useSession();
 
-  // State for full-screen dialog
   const [selectedMediaForFullscreen, setSelectedMediaForFullscreen] = useState<Media | null>(null);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
-  // Filter states
   const [filterType, setFilterType] = useState<'all' | 'image' | 'video'>('all');
   const [filterTeam, setFilterTeam] = useState<string>(teamId || 'all');
   const [filterRound, setFilterRound] = useState<string>('all');
@@ -143,29 +141,9 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
 
   const canManageMedia = (mediaItem: Media) => {
     if (!userProfile || !session) return false;
-    // Admin can manage all media
     if (userProfile.role === 'admin') return true;
-    // Championship owner can manage all media in their championship
-    // (Need to fetch championship owner ID, or assume media.user_id is owner if uploaded by owner)
-    // For simplicity, let's assume media.user_id is the uploader.
-    // We also need to check if the current user is an official for this championship.
-    // This would require fetching championship_users roles, which is not done here.
-    // For now, let's allow uploader, admin, and official (if media.user_id matches current user for official).
-    if (userProfile.id === mediaItem.user_id) return true; // Uploader can manage their own media
-
-    // More robust check: fetch championship owner and championship_users roles
-    // This would require a more complex query or passing championship owner ID as prop
-    // For now, let's keep it simple: admin, uploader, or official (if they uploaded it)
-    // A proper solution would involve checking championship_users table for 'official' or 'admin' role for the current championship.
-    // Given the current context, we'll rely on the `user_id` on the media item itself for non-admin roles.
-    // If the user is an official, they should be able to manage media for championships they are official for.
-    // This check is currently missing a direct way to know if the current user is an official for *this specific championship*.
-    // For now, we'll enable it for admin and the original uploader.
-    // To fully support officials, we'd need to pass `championshipOwnerId` and `userChampionshipRole` to MediaGallery.
-    // For this iteration, let's assume if `userProfile.role` is 'official' or 'admin', they can manage.
-    // This is a simplification and might need refinement for strict RLS.
-    if (userProfile.role === 'official' || userProfile.role === 'admin') return true;
-
+    if (userProfile.id === mediaItem.user_id) return true;
+    if (userProfile.role === 'official') return true; // Simplificação: oficiais podem gerenciar
     return false;
   };
 
@@ -335,12 +313,18 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
       {/* Full-screen Dialog for Media */}
       <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
         <DialogContent className="max-w-full h-full sm:max-w-full sm:h-full p-0 bg-black/90 flex items-center justify-center">
-          <DialogHeader className="absolute top-4 left-4 z-10">
-            <DialogTitle className="text-white text-lg">{selectedMediaForFullscreen?.description || 'Mídia'}</DialogTitle>
-            <DialogDescription className="text-gray-300 text-sm">
-              {getAssociatedText(selectedMediaForFullscreen)}
-            </DialogDescription>
-          </DialogHeader>
+          {/* Botão de fechar */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-10 text-white hover:bg-white/20"
+            onClick={() => setIsFullscreenOpen(false)}
+          >
+            <X className="h-6 w-6" />
+            <span className="sr-only">Fechar</span>
+          </Button>
+
+          {/* Removido DialogHeader com título e descrição */}
           {selectedMediaForFullscreen && (
             selectedMediaForFullscreen.type === 'image' ? (
               <img 
