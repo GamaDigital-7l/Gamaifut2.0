@@ -18,7 +18,7 @@ import { Group, Round, Team, Match } from '@/types'; // Import types from centra
 interface MatchCardProps {
   match: Match;
   onMatchUpdated: () => void;
-  onMatchDeleted: () => () => void;
+  onMatchDeleted: () => void;
   isEven: boolean;
   groups: Group[];
   rounds: Round[];
@@ -40,7 +40,7 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
       "w-full",
       isEven ? "bg-card" : "bg-muted/50 dark:bg-muted/20"
     )}>
-      <CardContent className="p-4">
+      <CardContent className="p-2 sm:p-4"> {/* Reduced padding on mobile */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-muted-foreground mb-2 gap-1">
           <div className="flex items-center gap-1 flex-wrap">
             {match.location && (
@@ -70,28 +70,28 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
 
         <div className="flex items-center justify-between gap-1 sm:gap-3">
           {/* Team 1 */}
-          <div className="flex items-center gap-1 justify-end flex-1 min-w-0">
-            <span className="font-medium text-xs sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span>
+          <div className="flex items-center gap-0.5 justify-end flex-1 min-w-0"> {/* Changed gap-1 to gap-0.5 */}
+            <span className="font-medium text-[0.65rem] sm:text-base text-right truncate" title={match.team1.name}>{match.team1.name}</span> {/* Changed text-xs to text-[0.65rem] */}
             {match.team1.logo_url && (
-              <img src={match.team1.logo_url} alt={match.team1.name} className="h-7 w-7 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" />
+              <img src={match.team1.logo_url} alt={match.team1.name} className="h-6 w-6 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" /> {/* Reduced h-7 w-7 to h-6 w-6 */}
             )}
           </div>
 
           {/* Scores / Separator */}
-          <div className="flex items-center gap-1 sm:gap-3 text-lg sm:text-2xl font-bold flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-3 text-base sm:text-2xl font-bold flex-shrink-0"> {/* Reduced text-lg to text-base */}
             <span>{isPlayed ? (match.team1_score ?? '-') : ''}</span>
-            <div className="p-1 rounded-full bg-primary text-primary-foreground">
+            <div className="p-0.5 rounded-full bg-primary text-primary-foreground"> {/* Reduced p-1 to p-0.5 */}
               <X className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
             <span>{isPlayed ? (match.team2_score ?? '-') : ''}</span>
           </div>
 
           {/* Team 2 */}
-          <div className="flex items-center gap-1 justify-start flex-1 min-w-0">
+          <div className="flex items-center gap-0.5 justify-start flex-1 min-w-0"> {/* Changed gap-1 to gap-0.5 */}
             {match.team2.logo_url && (
-              <img src={match.team2.logo_url} alt={match.team2.name} className="h-7 w-7 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" />
+              <img src={match.team2.logo_url} alt={match.team2.name} className="h-6 w-6 sm:h-8 sm:w-8 object-contain flex-shrink-0" loading="lazy" /> {/* Reduced h-7 w-7 to h-6 w-6 */}
             )}
-            <span className="font-medium text-xs sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span>
+            <span className="font-medium text-[0.65rem] sm:text-base text-left truncate" title={match.team2.name}>{match.team2.name}</span> {/* Changed text-xs to text-[0.65rem] */}
           </div>
         </div>
 
@@ -156,9 +156,9 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             publicRoundId={publicRoundId}
             publicRoundToken={publicRoundToken}
           >
-            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-xs sm:text-sm">
+            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-[0.65rem] sm:text-sm">
               <Goal className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="text-xs">Placar Rápido</span>
+              <span className="text-[0.65rem]">Placar Rápido</span>
             </Button>
           </QuickScoreUpdateDrawer>
 
