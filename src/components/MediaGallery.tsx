@@ -11,9 +11,22 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Image, Video, Star, Users, CalendarIcon, LayoutGrid } from 'lucide-react';
+import { Image, Video, Star, Users, CalendarIcon, LayoutGrid, Download, MoreHorizontal } from 'lucide-react'; // Importar Download e MoreHorizontal
 import { Media, Match, Team, Round } from '@/types';
 import { cn } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"; // Importar Dialog
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // Importar DropdownMenu
 
 interface MediaGalleryProps {
   championshipId: string;
@@ -26,6 +39,10 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
   const [mediaItems, setMediaItems] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // State for full-screen dialog
+  const [selectedMediaForFullscreen, setSelectedMediaForFullscreen] = useState<Media | null>(null);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
   // Filter states
   const [filterType, setFilterType] = useState<'all' | 'image' | 'video'>('all');
@@ -40,7 +57,6 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
 
     let query = supabase
       .from('media')
-      // CORRIGIDO: Simplificar a query para depurar o erro 400
       .select(`id, championship_id, user_id, type, url, thumbnail_url, description, tags, is_highlight, match_id, team_id, round_id, status, approved_by, approved_at, created_at`)
       .eq('championship_id', championshipId)
       .eq('status', 'approved') // Only show approved media
@@ -69,18 +85,17 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
       setError('Erro ao carregar mídias: ' + fetchError.message);
       setMediaItems([]);
     } else {
-      // Mapear os dados brutos para o tipo Media, adicionando os objetos aninhados manualmente
       const mappedData: Media[] = data.map(item => ({
         ...item,
         matches: matches.find(m => m.id === item.match_id) ? { team1: { name: matches.find(m => m.id === item.match_id)?.team1.name || '' }, team2: { name: matches.find(m => m.id === item.match_id)?.team2.name || '' } } : null,
         teams: teams.find(t => t.id === item.team_id) ? { name: teams.find(t => t.id === item.team_id)?.name || '' } : null,
         rounds: rounds.find(r => r.id === item.round_id) ? { name: rounds.find(r => r.id === item.round_id)?.name || '' } : null,
-        profiles: null, // Não estamos buscando profiles diretamente nesta query simplificada
+        profiles: null, 
       }));
       setMediaItems(mappedData);
     }
     setLoading(false);
-  }, [championshipId, filterType, filterTeam, filterRound, filterHighlight, searchTerm, matches, teams, rounds]); // Adicionar dependências para matches, teams, rounds
+  }, [championshipId, filterType, filterTeam, filterRound, filterHighlight, searchTerm, matches, teams, rounds]);
 
   useEffect(() => {
     fetchMedia();
@@ -98,6 +113,20 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
       parts.push(`Rodada: ${item.rounds.name}`);
     }
     return parts.join(' | ');
+  };
+
+  const handleMediaClick = (item: Media) => {
+    setSelectedMediaForFullscreen(item);
+    setIsFullscreenOpen(true);
+  };
+
+  const handleDownload = (url: string, filename: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -182,9 +211,20 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
               <Card key={item.id} className="overflow-hidden">
                 <div className="relative w-full h-48 bg-muted flex items-center justify-center">
                   {item.type === 'image' ? (
-                    <img src={item.url} alt={item.description || 'Mídia do Campeonato'} className="object-cover w-full h-full" loading="lazy" />
+                    <img 
+                      src={item.url} 
+                      alt={item.description || 'Mídia do Campeonato'} 
+                      className="object-cover w-full h-full cursor-pointer" 
+                      loading="lazy" 
+                      onClick={() => handleMediaClick(item)}
+                    />
                   ) : (
-                    <video src={item.url} controls className="object-cover w-full h-full" poster={item.thumbnail_url || undefined}>
+                    <video 
+                      src={item.url} 
+                      className="object-cover w-full h-full cursor-pointer" 
+                      poster={item.thumbnail_url || undefined}
+                      onClick={() => handleMediaClick(item)}
+                    >
                       Seu navegador não suporta o elemento de vídeo.
                     </video>
                   )}
@@ -195,6 +235,20 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
                   )}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 text-white text-xs">
                     {item.description && <p className="line-clamp-2">{item.description}</p>}
+                  </div>
+                  <div className="absolute top-2 right-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/20">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleDownload(item.url, item.url.split('/').pop() || 'download')}>
+                          <Download className="mr-2 h-4 w-4" /> Baixar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
                 <CardContent className="p-3 text-sm">
@@ -223,6 +277,36 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
           </div>
         )}
       </CardContent>
+
+      {/* Full-screen Dialog for Media */}
+      <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+        <DialogContent className="max-w-full h-full sm:max-w-full sm:h-full p-0 bg-black/90 flex items-center justify-center">
+          <DialogHeader className="absolute top-4 left-4 z-10">
+            <DialogTitle className="text-white text-lg">{selectedMediaForFullscreen?.description || 'Mídia'}</DialogTitle>
+            <DialogDescription className="text-gray-300 text-sm">
+              {getAssociatedText(selectedMediaForFullscreen!)}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedMediaForFullscreen && (
+            selectedMediaForFullscreen.type === 'image' ? (
+              <img 
+                src={selectedMediaForFullscreen.url} 
+                alt={selectedMediaForFullscreen.description || 'Mídia do Campeonato'} 
+                className="max-w-full max-h-full object-contain" 
+              />
+            ) : (
+              <video 
+                src={selectedMediaForFullscreen.url} 
+                controls 
+                autoPlay 
+                className="max-w-full max-h-full object-contain"
+              >
+                Seu navegador não suporta o elemento de vídeo.
+              </video>
+            )
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
