@@ -22,9 +22,13 @@ const PublicRoundScoreboard = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchRoundData = useCallback(async () => {
+    console.log('PublicRoundScoreboard: fetchRoundData called.');
+    console.log('PublicRoundScoreboard: Params:', { championshipId, roundId, roundToken });
+
     if (!championshipId || !roundId || !roundToken) {
-      setError('Informações da rodada incompletas.');
+      setError('Informações da rodada incompletas na URL.');
       setLoading(false);
+      console.error('PublicRoundScoreboard: Missing URL parameters.');
       return;
     }
 
@@ -40,22 +44,37 @@ const PublicRoundScoreboard = () => {
         .single();
 
       if (champError || !champData) {
+        console.error('PublicRoundScoreboard: Error fetching championship:', champError?.message);
         throw new Error('Campeonato não encontrado.');
       }
       setChampionship(champData as Championship);
+      console.log('PublicRoundScoreboard: Championship fetched:', champData.name);
 
       // Validate round and token
-      const { data: roundData, error: roundError } = await supabase
+      // First, try to fetch the round by ID only (to check basic RLS)
+      const { data: roundByIdData, error: roundByIdError } = await supabase
         .from('rounds')
         .select('id, name, public_edit_token')
         .eq('id', roundId)
-        .eq('public_edit_token', roundToken)
         .single();
 
-      if (roundError || !roundData) {
-        throw new Error('Rodada não encontrada ou token de edição inválido/expirado.');
+      if (roundByIdError) {
+        console.error('PublicRoundScoreboard: Error fetching round by ID (anonymous):', roundByIdError.message);
+        throw new Error('Erro ao carregar detalhes da rodada. Verifique as permissões.');
       }
-      setRound(roundData as Round);
+      if (!roundByIdData) {
+        console.error('PublicRoundScoreboard: No round data found for ID:', roundId);
+        throw new Error('Rodada não encontrada.');
+      }
+      console.log('PublicRoundScoreboard: Round fetched by ID:', roundByIdData.name, 'Token in DB:', roundByIdData.public_edit_token);
+
+      // Now, validate the token
+      if (roundByIdData.public_edit_token !== roundToken) {
+        console.error('PublicRoundScoreboard: Token mismatch. Expected:', roundByIdData.public_edit_token, 'Received:', roundToken);
+        throw new Error('Token de edição inválido/expirado.');
+      }
+      setRound(roundByIdData as Round);
+      console.log('PublicRoundScoreboard: Round fetched and token validated:', roundByIdData.name);
 
       // Fetch all teams, groups, and matches for this championship/round
       const [teamsRes, groupsRes, matchesRes] = await Promise.all([
@@ -70,19 +89,21 @@ const PublicRoundScoreboard = () => {
         `).eq('championship_id', championshipId).eq('round_id', roundId).order('match_date', { ascending: true }),
       ]);
 
-      if (teamsRes.error) throw new Error(teamsRes.error.message);
-      if (groupsRes.error) throw new Error(groupsRes.error.message);
-      if (matchesRes.error) throw new Error(matchesRes.error.message);
+      if (teamsRes.error) { console.error('PublicRoundScoreboard: Error fetching teams:', teamsRes.error.message); throw new Error(teamsRes.error.message); }
+      if (groupsRes.error) { console.error('PublicRoundScoreboard: Error fetching groups:', groupsRes.error.message); throw new Error(groupsRes.error.message); }
+      if (matchesRes.error) { console.error('PublicRoundScoreboard: Error fetching matches:', matchesRes.error.message); throw new Error(matchesRes.error.message); }
 
       setTeams(teamsRes.data as Team[]);
       setGroups(groupsRes.data as Group[]);
       setMatches(matchesRes.data as Match[]);
+      console.log('PublicRoundScoreboard: Teams, Groups, Matches fetched.');
 
     } catch (err: any) {
-      console.error('Error fetching public round data:', err.message);
+      console.error('PublicRoundScoreboard: Caught an error in fetchRoundData:', err.message);
       setError(err.message);
     } finally {
       setLoading(false);
+      console.log('PublicRoundScoreboard: Loading set to false.');
     }
   }, [championshipId, roundId, roundToken]);
 
