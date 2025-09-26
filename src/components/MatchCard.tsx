@@ -9,7 +9,7 @@ import {
 import { EditMatchDialog } from "./EditMatchDialog";
 import { DeleteMatchDialog } from "./DeleteMatchDialog";
 import { QuickScoreUpdateDrawer } from "./QuickScoreUpdateDrawer"; // Import the new drawer
-import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle, Goal, Shirt } from "lucide-react"; // Added Shirt icon
+import { MoreHorizontal, X, CalendarIcon, MapPin, SquareDot, MinusCircle, Goal, Shirt, Edit, Trash2 } from "lucide-react"; // Added Shirt icon
 import { format } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
@@ -176,11 +176,12 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
         )}
 
         <div className="flex justify-end items-center mt-2 gap-2">
-          {isPublicView ? null : ( // Render only if NOT public view
+          {/* Quick Score Update Drawer: Visible ONLY if it's a public view WITH a token */}
+          {isPublicView && publicRoundToken ? (
             <QuickScoreUpdateDrawer
               match={match}
               onMatchUpdated={onMatchUpdated}
-              isPublicView={isPublicView}
+              isPublicView={true}
               publicRoundId={publicRoundId}
               publicRoundToken={publicRoundToken}
             >
@@ -189,9 +190,10 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
                 <span className="text-[0.6rem]">Placar Rápido</span>
               </Button>
             </QuickScoreUpdateDrawer>
-          )}
+          ) : null}
 
-          {isPublicView ? null : ( // Render only if NOT public view
+          {/* Dropdown Menu for Edit/Delete: Visible ONLY if it's NOT a public view (i.e., authenticated user) */}
+          {!isPublicView ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-6 w-6">
@@ -200,14 +202,18 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <EditMatchDialog match={match} groups={groups} rounds={rounds} teams={teams} onMatchUpdated={onMatchUpdated}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar Detalhes</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <Edit className="mr-2 h-4 w-4" /> Editar Detalhes
+                  </DropdownMenuItem>
                 </EditMatchDialog>
                 <DeleteMatchDialog match={match} onMatchDeleted={onMatchDeleted}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">Excluir Partida</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                    <Trash2 className="mr-2 h-4 w-4" /> Excluir Partida
+                  </DropdownMenuItem>
                 </DeleteMatchDialog>
               </DropdownMenuContent>
             </DropdownMenu>
-          )}
+          ) : null}
         </div>
       </CardContent>
     </Card>
