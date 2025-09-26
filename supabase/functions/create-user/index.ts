@@ -74,6 +74,15 @@ serve(async (req) => {
     try {
       const rawBody = await req.text(); // Read as raw text first
       console.log('Raw request body received:', rawBody);
+
+      if (!rawBody) {
+        console.error('JSON parsing error: Request body is empty.');
+        return new Response(JSON.stringify({ error: 'Invalid JSON in request body: Body is empty' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
       parsedBody = JSON.parse(rawBody); // Then parse the text
       console.log('Successfully parsed request body. Parsed data:', parsedBody);
     } catch (jsonParseError: any) {
