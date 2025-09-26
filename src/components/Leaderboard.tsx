@@ -149,9 +149,7 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
   });
 
   // Placeholder for position change (requires historical data for real implementation)
-  // For now, we'll just show a static indicator or a dash.
   sortedStandings.forEach((standing, index) => {
-    // This is a placeholder. A real implementation would compare with previous round's standings.
     if (index % 3 === 0) standing.positionChange = 'up';
     else if (index % 3 === 1) standing.positionChange = 'down';
     else standing.positionChange = 'same';
@@ -160,56 +158,56 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
 
   return (
     <div>
-      <div className="rounded-md border overflow-x-auto"> {/* Ensure horizontal scroll */}
-        <Table className="min-w-full"> {/* Ensure table takes full width */}
+      <div className="rounded-md border overflow-x-auto"> {/* Ensure horizontal scroll as fallback */}
+        <Table className="min-w-full table-fixed"> {/* Use table-fixed for consistent column widths */}
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">Pos.</TableHead>
-              <TableHead className="min-w-[150px] px-2 py-2 whitespace-nowrap">Time</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">P</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">J</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">V</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">E</TableHead>
-              <TableHead className="w-[40px] text-center px-2 py-2 whitespace-nowrap">D</TableHead>
-              <TableHead className="w-[50px] text-center px-2 py-2 whitespace-nowrap">GP</TableHead>
-              <TableHead className="w-[50px] text-center px-2 py-2 whitespace-nowrap">GC</TableHead>
-              <TableHead className="w-[50px] text-center px-2 py-2 whitespace-nowrap">SG</TableHead>
-              <TableHead className="w-[60px] text-center px-2 py-2 whitespace-nowrap">%</TableHead>
-              <TableHead className="w-[100px] text-center px-2 py-2 whitespace-nowrap">Recentes</TableHead>
+              <TableHead className="w-[30px] text-center px-1 py-2 text-xs whitespace-nowrap">Pos.</TableHead>
+              <TableHead className="w-[150px] px-1 py-2 text-xs">Time</TableHead> {/* Fixed width for team name */}
+              <TableHead className="w-[30px] text-center px-1 py-2 text-xs whitespace-nowrap">P</TableHead>
+              <TableHead className="w-[30px] text-center px-1 py-2 text-xs whitespace-nowrap">J</TableHead>
+              <TableHead className="w-[30px] text-center px-1 py-2 text-xs whitespace-nowrap">V</TableHead>
+              <TableHead className="w-[30px] text-center px-1 py-2 text-xs whitespace-nowrap">E</TableHead>
+              <TableHead className="w-[30px] text-center px-1 py-2 text-xs whitespace-nowrap">D</TableHead>
+              <TableHead className="w-[40px] text-center px-1 py-2 text-xs whitespace-nowrap">GP</TableHead>
+              <TableHead className="w-[40px] text-center px-1 py-2 text-xs whitespace-nowrap">GC</TableHead>
+              <TableHead className="w-[40px] text-center px-1 py-2 text-xs whitespace-nowrap">SG</TableHead>
+              <TableHead className="w-[50px] text-center px-1 py-2 text-xs whitespace-nowrap">%</TableHead>
+              <TableHead className="w-[80px] text-center px-1 py-2 text-xs whitespace-nowrap">Recentes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedStandings.map((standing, index) => (
               <TableRow key={standing.teamId}>
-                <TableCell className="font-medium text-center px-2 py-2 whitespace-nowrap">{index + 1}</TableCell>
-                <TableCell className="flex items-center gap-2 px-2 py-2 whitespace-nowrap">
+                <TableCell className="font-medium text-center px-1 py-2 text-xs whitespace-nowrap">{index + 1}</TableCell>
+                <TableCell className="flex items-center gap-1 px-1 py-2"> {/* Removed whitespace-nowrap here */}
                   {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-6 w-6 object-contain flex-shrink-0" />}
-                  <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline truncate"> {/* Added truncate */}
+                  <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline text-xs leading-tight"> {/* Smaller font, tighter line height */}
                     {standing.teamName}
                   </Link>
                 </TableCell>
-                <TableCell className="text-center font-bold px-2 py-2 whitespace-nowrap">{standing.points}</TableCell>
-                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.played}</TableCell>
-                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.wins}</TableCell>
-                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.draws}</TableCell>
-                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.losses}</TableCell>
-                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.goalsFor}</TableCell>
-                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.goalsAgainst}</TableCell>
-                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.goalDifference}</TableCell>
-                <TableCell className="text-center px-2 py-2 whitespace-nowrap">{standing.percentage.toFixed(1)}%</TableCell>
-                <TableCell className="text-center px-2 py-2 whitespace-nowrap">
-                  <div className="flex justify-center gap-1">
+                <TableCell className="text-center font-bold px-1 py-2 text-xs whitespace-nowrap">{standing.points}</TableCell>
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.played}</TableCell>
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.wins}</TableCell>
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.draws}</TableCell>
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.losses}</TableCell>
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.goalsFor}</TableCell>
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.goalsAgainst}</TableCell>
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.goalDifference}</TableCell>
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.percentage.toFixed(1)}%</TableCell>
+                <TableCell className="text-center px-1 py-2 whitespace-nowrap">
+                  <div className="flex justify-center gap-0.5"> {/* Smaller gap for circles */}
                     {standing.recentForm.map((form, i) => (
                       <span
                         key={i}
-                        className={`w-4 h-4 flex items-center justify-center text-xs font-bold rounded-full
+                        className={`w-3 h-3 flex items-center justify-center text-xs font-bold rounded-full
                           ${form === 'W' ? 'bg-green-500' :
                             form === 'D' ? 'bg-gray-400' :
                             form === 'L' ? 'bg-red-500' :
                             'bg-gray-200'
                           }`}
                       >
-                        {/* Removed text content */}
+                        {/* Removed text content to make circles smaller */}
                       </span>
                     ))}
                   </div>
