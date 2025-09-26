@@ -113,7 +113,7 @@ const OfficialDashboard = () => {
               isEven={index % 2 === 0}
               groups={allGroups}
               rounds={allRounds}
-              teams={allTeams} {/* Passando a prop teams */}
+              teams={allTeams}
               isOfficialView={true} // Indicate that this card is in the official view
               isPublicView={false} // Explicitly set to false
             />
