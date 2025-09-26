@@ -37,9 +37,10 @@ export interface Round {
   type: 'group_stage' | 'round_of_16' | 'quarter_finals' | 'semi_finals' | 'final';
   championship_id: string;
   created_at: string;
+  public_edit_token: string | null; // Novo campo para o token de edição pública
 }
 
-// A representation of a team as returned in a match query
+-- A representation of a team as returned in a match query
 export interface MatchTeam {
   id: string;
   name: string;
