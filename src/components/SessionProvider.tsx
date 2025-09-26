@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext, Suspense, lazy } from 'react';
+import { createContext, useState, useEffect, useContext, Suspense, lazy, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
@@ -38,9 +38,9 @@ const SessionContext = createContext<SessionContextType>({ session: null, userPr
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Start true
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, avatar_url, role')
@@ -52,33 +52,31 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       return null;
     }
     return data as UserProfile;
-  };
+  }, []); // No dependencies needed for supabase client
 
   useEffect(() => {
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      if (session?.user) {
-        const profile = await fetchUserProfile(session.user.id);
-        setUserProfile(profile);
-      }
-      setLoading(false);
-    };
+    let isMounted = true; // Flag to prevent state updates on unmounted component
 
-    getInitialSession();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+      if (!isMounted) return;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      if (session?.user) {
-        const profile = await fetchUserProfile(session.user.id);
-        setUserProfile(profile);
+      console.log('onAuthStateChange event:', _event, 'session:', currentSession);
+      setSession(currentSession);
+      if (currentSession?.user) {
+        const profile = await fetchUserProfile(currentSession.user.id);
+        if (isMounted) setUserProfile(profile);
       } else {
-        setUserProfile(null);
+        if (isMounted) setUserProfile(null);
       }
+      if (isMounted) setLoading(false); // Always set loading to false after the first event
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [fetchUserProfile]); // fetchUserProfile is stable due to useCallback
 
   return (
     <SessionContext.Provider value={{ session, userProfile, loading }}>
