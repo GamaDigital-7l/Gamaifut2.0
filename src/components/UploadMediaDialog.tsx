@@ -28,7 +28,7 @@ import { format } from 'date-fns'; // Import format for match date display
 
 interface UploadMediaDialogProps {
   championshipId: string;
-  matches: Match[];
+  matches: Match[]; // Still needed for context, but not for direct association in this dialog
   teams: Team[];
   rounds: Round[];
   onMediaUploaded: () => void;
@@ -40,7 +40,7 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
   const [isHighlight, setIsHighlight] = useState(false);
-  const [selectedMatchId, setSelectedMatchId] = useState<string | undefined>(undefined);
+  // Removed selectedMatchId
   const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
   const [selectedRoundId, setSelectedRoundId] = useState<string | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,7 +53,7 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
       setDescription('');
       setTags('');
       setIsHighlight(false);
-      setSelectedMatchId(undefined);
+      // Removed setSelectedMatchId(undefined);
       setSelectedTeamId(undefined);
       setSelectedRoundId(undefined);
       setIsSubmitting(false);
@@ -77,7 +77,6 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
     const formData = new FormData();
     formData.append('file', file);
     formData.append('championshipId', champId);
-    // No need to append userId, it's derived from the session token in the Edge Function
 
     try {
       const edgeFunctionUrl = `https://rrwtsnecjuugqlwmpgzd.supabase.co/functions/v1/upload-media-to-minio`;
@@ -86,7 +85,6 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
-          // 'Content-Type': 'multipart/form-data' is automatically set by fetch when using FormData
         },
         body: formData,
       });
@@ -125,7 +123,6 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
     let fileUrl: string | null = null;
     let fileType: 'image' | 'video';
 
-    // Determine file type
     if (file.type.startsWith('image/')) {
       fileType = 'image';
     } else if (file.type.startsWith('video/')) {
@@ -136,15 +133,13 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
       return;
     }
 
-    // Upload file to MinIO via Supabase Edge Function
     fileUrl = await uploadFileToMinIOViaEdgeFunction(file, championshipId);
 
     if (!fileUrl) {
       setIsSubmitting(false);
-      return; // Error already shown by uploadFileToMinIOViaEdgeFunction
+      return;
     }
 
-    // Insert metadata into Supabase database
     const { error: dbError } = await supabase
       .from('media')
       .insert([{
@@ -155,19 +150,16 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
         description: description.trim() === '' ? null : description.trim(),
         tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ''),
         is_highlight: isHighlight,
-        match_id: selectedMatchId || null,
+        match_id: null, // Always null now, as we removed match selection
         team_id: selectedTeamId || null,
         round_id: selectedRoundId || null,
-        status: 'approved', // Default to approved for now, can be 'pending' for moderation
+        status: 'approved',
       }]);
 
     setIsSubmitting(false);
 
     if (dbError) {
       showError(`Erro ao salvar metadados da mídia: ${dbError.message}`);
-      // If metadata insertion fails, you might want to delete the file from MinIO.
-      // This would require another Edge Function or direct call to MinIO from here (less secure).
-      // For now, we'll leave it as a potential orphaned file.
     } else {
       showSuccess("Mídia enviada com sucesso!");
       setOpen(false);
@@ -226,21 +218,7 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
               <Label htmlFor="isHighlight">Marcar como Destaque</Label>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="match">Associar a um Jogo (Opcional)</Label>
-              <Select value={selectedMatchId} onValueChange={setSelectedMatchId}>
-                <SelectTrigger id="match">
-                  <SelectValue placeholder="Selecione um jogo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {matches.map(match => (
-                    <SelectItem key={match.id} value={match.id}>
-                      {match.team1.name} vs {match.team2.name} ({match.match_date ? format(new Date(match.match_date), 'dd/MM HH:mm') : 'Data Indefinida'})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Removed "Associar a um Jogo" section */}
 
             <div className="space-y-2">
               <Label htmlFor="team">Associar a um Time (Opcional)</Label>
@@ -249,6 +227,7 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
                   <SelectValue placeholder="Selecione um time" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="null">Nenhum</SelectItem> {/* Option to clear association */}
                   {teams.map(team => (
                     <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
                   ))}
@@ -263,6 +242,7 @@ export function UploadMediaDialog({ championshipId, matches, teams, rounds, onMe
                   <SelectValue placeholder="Selecione uma rodada" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="null">Nenhum</SelectItem> {/* Option to clear association */}
                   {rounds.map(round => (
                     <SelectItem key={round.id} value={round.id}>{round.name}</SelectItem>
                   ))}
