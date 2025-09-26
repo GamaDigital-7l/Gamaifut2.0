@@ -109,7 +109,8 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
     setFilterTeam(teamId || 'all');
   }, [teamId]);
 
-  const getAssociatedText = (item: Media) => {
+  const getAssociatedText = (item: Media | null) => { // Alterado para aceitar Media | null
+    if (!item) return ''; // Retorna string vazia se o item for null
     const parts = [];
     if (item.matches?.team1?.name && item.matches?.team2?.name) {
       parts.push(`${item.matches.team1.name} vs ${item.matches.team2.name}`);
@@ -293,7 +294,7 @@ export function MediaGallery({ championshipId, matches, teams, rounds, teamId }:
           <DialogHeader className="absolute top-4 left-4 z-10">
             <DialogTitle className="text-white text-lg">{selectedMediaForFullscreen?.description || 'Mídia'}</DialogTitle>
             <DialogDescription className="text-gray-300 text-sm">
-              {getAssociatedText(selectedMediaForFullscreen!)}
+              {getAssociatedText(selectedMediaForFullscreen)} {/* Removido '!' */}
             </DialogDescription>
           </DialogHeader>
           {selectedMediaForFullscreen && (
