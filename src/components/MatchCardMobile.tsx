@@ -125,18 +125,20 @@ export function MatchCardMobile({ match, onMatchUpdated, onMatchDeleted, isEven,
 
         {/* Action Buttons */}
         <div className="flex justify-end items-center mt-3 gap-2 border-t pt-2">
-          <QuickScoreUpdateDrawer
-            match={match}
-            onMatchUpdated={onMatchUpdated}
-            isPublicView={isPublicView}
-            publicRoundId={publicRoundId}
-            publicRoundToken={publicRoundToken}
-          >
-            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-[0.65rem]">
-              <Goal className="h-3 w-3" />
-              <span className="text-[0.65rem]">Placar Rápido</span>
-            </Button>
-          </QuickScoreUpdateDrawer>
+          {!isPublicView && ( // Conditionally render QuickScoreUpdateDrawer
+            <QuickScoreUpdateDrawer
+              match={match}
+              onMatchUpdated={onMatchUpdated}
+              isPublicView={isPublicView}
+              publicRoundId={publicRoundId}
+              publicRoundToken={publicRoundToken}
+            >
+              <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-[0.65rem]">
+                <Goal className="h-3 w-3" />
+                <span className="text-[0.65rem]">Placar Rápido</span>
+              </Button>
+            </QuickScoreUpdateDrawer>
+          )}
 
           {!isPublicView && (
             <DropdownMenu>

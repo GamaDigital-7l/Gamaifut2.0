@@ -171,18 +171,20 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
         )}
 
         <div className="flex justify-end items-center mt-2 gap-2">
-          <QuickScoreUpdateDrawer
-            match={match}
-            onMatchUpdated={onMatchUpdated}
-            isPublicView={isPublicView}
-            publicRoundId={publicRoundId}
-            publicRoundToken={publicRoundToken}
-          >
-            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-[0.6rem] sm:text-sm">
-              <Goal className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="text-[0.6rem]">Placar Rápido</span>
-            </Button>
-          </QuickScoreUpdateDrawer>
+          {!isPublicView && ( // Conditionally render QuickScoreUpdateDrawer
+            <QuickScoreUpdateDrawer
+              match={match}
+              onMatchUpdated={onMatchUpdated}
+              isPublicView={isPublicView}
+              publicRoundId={publicRoundId}
+              publicRoundToken={publicRoundToken}
+            >
+              <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto text-[0.6rem] sm:text-sm">
+                <Goal className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-[0.6rem]">Placar Rápido</span>
+              </Button>
+            </QuickScoreUpdateDrawer>
+          )}
 
           {!isPublicView && (
             <DropdownMenu>
