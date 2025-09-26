@@ -15,6 +15,18 @@ import {
 } from "@/components/ui/select";
 import { showSuccess, showError } from '@/utils/toast';
 import { CreateUserDialog } from '@/components/CreateUserDialog'; // Import the new dialog
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 interface Profile {
   id: string;
@@ -31,6 +43,7 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingRole, setIsUpdatingRole] = useState<string | null>(null); // To track which user's role is being updated
+  const [isDeletingUser, setIsDeletingUser] = useState<string | null>(null); // To track which user is being deleted
 
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
@@ -79,6 +92,11 @@ const UserManagement = () => {
       showError('Você não tem permissão para alterar funções de usuário.');
       return;
     }
+    if (userId === userProfile?.id) {
+      showError('Você não pode alterar sua própria função aqui.');
+      return;
+    }
+
     setIsUpdatingRole(userId);
     const { error } = await supabase
       .from('profiles')
@@ -105,10 +123,35 @@ const UserManagement = () => {
       return;
     }
 
-    // This operation requires service_role key, so it must be done via an Edge Function
-    showError("A exclusão de usuários exige uma função de backend segura (Edge Function).");
-    // For now, this button will just show an error.
-    // In a real implementation, you'd invoke an Edge Function here.
+    setIsDeletingUser(userId);
+    try {
+      const payload = { userIdToDelete: userId };
+      const stringifiedPayload = JSON.stringify(payload);
+
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: stringifiedPayload,
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.error) {
+        throw new Error(data.error);
+      }
+
+      showSuccess(`Usuário ${userName} excluído com sucesso!`);
+      fetchProfiles(); // Refresh the list
+    } catch (error: any) {
+      console.error('Client: Error deleting user:', error);
+      showError('Erro ao excluir usuário: ' + (error.message || 'Erro desconhecido'));
+    } finally {
+      setIsDeletingUser(null);
+    }
   };
 
   // Only allow 'admin' role to manage other users' roles and create users
@@ -178,14 +221,31 @@ const UserManagement = () => {
                       </SelectContent>
                     </Select>
                     {profile.id !== userProfile?.id && ( // Cannot delete own account
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        disabled={!canManageRoles}
-                        onClick={() => handleDeleteUser(profile.id, `${profile.first_name} ${profile.last_name}`)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            disabled={!canManageRoles || isDeletingUser === profile.id}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta ação não pode ser desfeita. Isso excluirá permanentemente o usuário "{profile.first_name} {profile.last_name}" e todos os seus dados associados.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteUser(profile.id, `${profile.first_name} ${profile.last_name}`)} disabled={isDeletingUser === profile.id}>
+                              {isDeletingUser === profile.id ? 'Excluindo...' : 'Excluir'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                   </div>
                 </div>
