@@ -48,6 +48,14 @@ export function QuickScoreUpdateDrawer({
   const [team2Goals, setTeam2Goals] = useState<GoalInput[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Helper function to truncate names
+  const truncateName = (name: string, maxLength: number = 12) => {
+    if (name.length > maxLength) {
+      return name.substring(0, maxLength - 3) + '...';
+    }
+    return name;
+  };
+
   useEffect(() => {
     if (open) {
       setTeam1Score(match.team1_score ?? 0);
@@ -196,7 +204,9 @@ export function QuickScoreUpdateDrawer({
             <div className="flex items-center justify-center space-x-2">
               {/* Team 1 Score */}
               <div className="flex-1 text-center space-y-2">
-                <Label htmlFor="team1-score" className="truncate text-sm">{match.team1.name}</Label>
+                <Label htmlFor="team1-score" className="truncate text-sm" title={match.team1.name}>
+                  {truncateName(match.team1.name)}
+                </Label>
                 <div className="flex items-center justify-center space-x-2">
                   <Input
                     id="team1-score"
@@ -210,7 +220,9 @@ export function QuickScoreUpdateDrawer({
               <span className="text-2xl font-bold">X</span>
               {/* Team 2 Score */}
               <div className="flex-1 text-center space-y-2">
-                <Label htmlFor="team2-score" className="truncate text-sm">{match.team2.name}</Label>
+                <Label htmlFor="team2-score" className="truncate text-sm" title={match.team2.name}>
+                  {truncateName(match.team2.name)}
+                </Label>
                 <div className="flex items-center justify-center space-x-2">
                   <Input
                     id="team2-score"
@@ -227,7 +239,7 @@ export function QuickScoreUpdateDrawer({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Team 1 Goals */}
               <div className="space-y-3 border p-3 rounded-md">
-                <h3 className="font-semibold text-center text-sm">{match.team1.name} - Gols</h3>
+                <h3 className="font-semibold text-center text-sm">{truncateName(match.team1.name)} - Gols</h3>
                 {team1Goals.map((goal, index) => (
                   <div key={goal.tempId} className="flex items-center gap-2">
                     <Input
@@ -255,7 +267,7 @@ export function QuickScoreUpdateDrawer({
 
               {/* Team 2 Goals */}
               <div className="space-y-3 border p-3 rounded-md">
-                <h3 className="font-semibold text-center text-sm">{match.team2.name} - Gols</h3>
+                <h3 className="font-semibold text-center text-sm">{truncateName(match.team2.name)} - Gols</h3>
                 {team2Goals.map((goal, index) => (
                   <div key={goal.tempId} className="flex items-center gap-2">
                     <Input
