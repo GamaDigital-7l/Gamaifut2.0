@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-// CORRIGIDO: Adicionar target=es2022 e deno-std para melhor compatibilidade com Deno
-import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.614.0?target=es2022&deno-std=0.190.0"; 
+// CORRIGIDO: Adicionar ?bundle para melhor compatibilidade e empacotamento
+import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.614.0?bundle"; 
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -133,14 +133,18 @@ serve(async (req) => {
     console.log('Attempting to initialize S3Client...'); // Log para depuração
     const s3Client = new S3Client({
       endpoint: MINIO_ENDPOINT,
-      region: "us-east-1",
+      region: "us-east-1", // Região é necessária, mas pode ser genérica para MinIO
       credentials: {
         accessKeyId: MINIO_ACCESS_KEY,
         secretAccessKey: MINIO_SECRET_KEY,
       },
       forcePathStyle: true,
-      credentialDefaultProvider: () => async () => null, 
-      disableHostPrefix: true, // NOVO: Adicionado para evitar problemas de resolução de host
+      // NOVO: Retornar as credenciais explícitas se o provedor for chamado
+      credentialDefaultProvider: () => async () => ({
+        accessKeyId: MINIO_ACCESS_KEY!, 
+        secretAccessKey: MINIO_SECRET_KEY!,
+      }),
+      disableHostPrefix: true, 
     });
     console.log('MinIO S3 client initialized.'); // Log para depuração
 
