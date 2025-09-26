@@ -25,7 +25,7 @@ export function PublicRoundsTab({ championshipId }: PublicRoundsTabProps) {
     setLoading(true);
     const { data, error } = await supabase
       .from('rounds')
-      .select('*')
+      .select('id, name, order_index, type, championship_id, created_at, public_edit_token') // Optimized select
       .eq('championship_id', championshipId)
       .order('order_index', { ascending: true })
       .order('name', { ascending: true });

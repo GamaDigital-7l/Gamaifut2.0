@@ -35,31 +35,7 @@ interface GroupsTabProps {
 }
 
 export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChange }: GroupsTabProps) {
-  // No longer fetching groups internally, relying on props
-  // const [groups, setGroups] = useState<Group[]>([]);
-  // const [loading, setLoading] = useState(true); // Use isLoading from props
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // const fetchGroups = useCallback(async () => {
-  //   setLoading(true);
-  //   const { data, error } = await supabase
-  //     .from('groups')
-  //     .select('*')
-  //     .eq('championship_id', championshipId)
-  //     .order('name', { ascending: true });
-
-  //   if (error) {
-  //     console.error('Error fetching groups:', error);
-  //     showError('Erro ao carregar grupos: ' + error.message);
-  //   } else {
-  //     setGroups(data as Group[]);
-  //   }
-  //   setLoading(false);
-  // }, [championshipId]);
-
-  // useEffect(() => {
-  //   fetchGroups();
-  // }, [fetchGroups]);
 
   const handleDeleteGroup = async (groupId: string, groupName: string) => {
     setIsDeleting(true);
@@ -164,8 +140,7 @@ export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChan
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
-                      </AlertDialog>
-                    </DropdownMenuContent>
+                      </DropdownMenuContent>
                   </DropdownMenu>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">

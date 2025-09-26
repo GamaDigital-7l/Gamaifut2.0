@@ -27,7 +27,7 @@ const ChampionshipTheme = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('championships')
-      .select('logo_url')
+      .select('logo_url') // Optimized select
       .eq('id', id)
       .single();
 

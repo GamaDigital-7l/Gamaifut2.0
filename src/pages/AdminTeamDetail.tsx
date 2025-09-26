@@ -29,9 +29,9 @@ const AdminTeamDetail = () => {
     const { data: teamData, error: teamError } = await supabase
       .from('teams')
       .select(`
-        *,
+        id, name, logo_url, championship_id, user_id, group_id,
         groups(name)
-      `)
+      `) // Optimized select
       .eq('id', teamId)
       .single();
 
@@ -45,9 +45,9 @@ const AdminTeamDetail = () => {
 
     // Fetch all groups, rounds, and teams for MatchCard
     const [groupsRes, roundsRes, teamsRes] = await Promise.all([
-      supabase.from('groups').select('*'),
-      supabase.from('rounds').select('*'),
-      supabase.from('teams').select('*'), // Fetch all teams
+      supabase.from('groups').select('id, name, championship_id, created_at'), // Optimized select
+      supabase.from('rounds').select('id, name, order_index, type, championship_id, created_at, public_edit_token'), // Optimized select
+      supabase.from('teams').select('id, name, logo_url, championship_id, user_id, group_id, groups(name)'), // Optimized select
     ]);
 
     if (groupsRes.error) console.error('Error fetching groups for team detail:', groupsRes.error);
@@ -63,13 +63,13 @@ const AdminTeamDetail = () => {
     const { data: matchesData, error: matchesError } = await supabase
       .from('matches')
       .select(`
-        *,
+        id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes,
         team1:teams!matches_team1_id_fkey(id, name, logo_url),
         team2:teams!matches_team2_id_fkey(id, name, logo_url),
         groups(name),
         rounds(name),
-        goals:match_goals(*)
-      `)
+        goals:match_goals(id, match_id, team_id, player_name, jersey_number)
+      `) // Optimized select for matches and goals
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .order('match_date', { ascending: true });
 

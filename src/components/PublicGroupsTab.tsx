@@ -31,7 +31,7 @@ export function PublicGroupsTab({ championshipId, teams }: PublicGroupsTabProps)
     setLoading(true);
     const { data, error } = await supabase
       .from('groups')
-      .select('*')
+      .select('id, name, championship_id, created_at') // Optimized select
       .eq('championship_id', championshipId)
       .order('name', { ascending: true });
 

@@ -19,25 +19,21 @@ const OfficialDashboard = () => {
     setLoading(true);
     let query = supabase
       .from('championships')
-      .select('id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order'); // Select all championship fields
+      .select('id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order'); // Optimized select
 
     if (userProfile?.role === 'user') {
-      // Regular users should not access this dashboard
       setChampionships([]);
       setLoading(false);
       return;
     } else if (userProfile?.role === 'official') {
-      // Officials can see championships they own or are associated with
-      // Apply the select first, then the OR filter
       query = supabase
         .from('championships')
         .select(`
           id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order,
           championship_users!inner(user_id, role_in_championship)
-        `)
-        .or(`user_id.eq.${userProfile.id},championship_users.user_id.eq.${userProfile.id}`);
+        `);
+      query = query.or(`user_id.eq.${userProfile.id},championship_users.user_id.eq.${userProfile.id}`);
     }
-    // Admins can see all championships (no additional filter needed for 'admin' role)
 
     const { data, error } = await query.order('created_at', { ascending: false });
 
@@ -45,7 +41,6 @@ const OfficialDashboard = () => {
       showError('Erro ao buscar campeonatos: ' + error.message);
       setChampionships([]);
     } else {
-      // If fetching with championship_users, data structure will be different
       if (userProfile?.role === 'official') {
         const uniqueChampionships = Array.from(new Map(
           data.map((item: any) => [item.id, {

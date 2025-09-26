@@ -6,7 +6,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowDown, ArrowUp, Minus } from "lucide-react"; // Import icons for position change
 import { Team, Match } from '@/types';
 import { Link } from 'react-router-dom'; // Import Link
 
@@ -31,7 +30,7 @@ interface Standing {
   goalDifference: number;
   percentage: number;
   recentForm: ('W' | 'D' | 'L' | '-')[]; // Last 5 games, '-' for unplayed
-  positionChange: 'up' | 'down' | 'same' | 'new' | null; // Placeholder for now
+  // Removed positionChange as it's a placeholder and adds complexity
 }
 
 export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin = 3 }: LeaderboardProps) {
@@ -57,7 +56,6 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
     goalDifference: 0,
     percentage: 0,
     recentForm: [],
-    positionChange: null, // Placeholder
   }));
 
   const standingsMap = new Map<string, Standing>(standings.map(s => [s.teamId, s]));
@@ -147,14 +145,6 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
     }
     return b.goalsFor - a.goalsFor;
   });
-
-  // Placeholder for position change (requires historical data for real implementation)
-  sortedStandings.forEach((standing, index) => {
-    if (index % 3 === 0) standing.positionChange = 'up';
-    else if (index % 3 === 1) standing.positionChange = 'down';
-    else standing.positionChange = 'same';
-  });
-
 
   return (
     <div>

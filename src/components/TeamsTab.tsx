@@ -25,20 +25,6 @@ interface TeamsTabProps {
 }
 
 export function TeamsTab({ championshipId, teams, groups, isLoading, onDataChange }: TeamsTabProps) {
-  // No longer fetching data internally, relying on props
-  // const queryClient = useQueryClient();
-  // const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
-  //   queryKey: ['teams', championshipId],
-  //   queryFn: () => fetchTeams(championshipId),
-  // });
-
-  // const { data: groups = [], isLoading: isLoadingGroups } = useQuery({
-  //   queryKey: ['groups', championshipId],
-  //   queryFn: () => fetchGroups(championshipId),
-  // });
-
-  // const isLoading = isLoadingTeams || isLoadingGroups; // Use isLoading from props
-
   return (
     <Card>
       <CardHeader>

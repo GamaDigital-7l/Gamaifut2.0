@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,11 +25,11 @@ const Index = () => {
   const [championships, setChampionships] = useState<ChampionshipResult[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchChampionships = async (term = '') => {
+  const fetchChampionships = useCallback(async (term = '') => {
     setLoading(true);
     let query = supabase
       .from('championships')
-      .select('id, name, description, city, state, logo_url')
+      .select('id, name, description, city, state, logo_url') // Optimized select
       .order('created_at', { ascending: false });
 
     if (term.trim()) {
@@ -45,11 +45,11 @@ const Index = () => {
       setChampionships(data as ChampionshipResult[]);
     }
     setLoading(false);
-  };
+  }, []); // Empty dependency array as term is passed as argument
 
   useEffect(() => {
     fetchChampionships(); // Fetch all on initial load
-  }, []);
+  }, [fetchChampionships]); // Dependency on useCallback
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();

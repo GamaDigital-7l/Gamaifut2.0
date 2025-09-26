@@ -60,7 +60,7 @@ export function ManageChampionshipAccessDialog({
         user_id,
         role_in_championship,
         profiles (id, first_name, last_name, avatar_url, role)
-      `) // Removido 'email' da seleção de profiles
+      `) // Optimized select for profiles
       .eq('championship_id', championshipId);
 
     if (error) {
@@ -68,13 +68,11 @@ export function ManageChampionshipAccessDialog({
       showError('Erro ao carregar usuários associados.');
       setAssociatedUsers([]);
     } else {
-      // A tipagem do Supabase pode retornar 'profiles' como um array mesmo em 1:1.
-      // Vamos garantir que seja um objeto único para cada ChampionshipUser.
       const formattedData = data.map((item: any) => ({
         user_id: item.user_id,
         role_in_championship: item.role_in_championship,
         profiles: Array.isArray(item.profiles) ? item.profiles[0] : item.profiles,
-      })).filter((item: any) => item.profiles !== null); // Filtrar se o perfil não for encontrado
+      })).filter((item: any) => item.profiles !== null);
 
       setAssociatedUsers(formattedData as ChampionshipUser[]);
     }
@@ -82,14 +80,13 @@ export function ManageChampionshipAccessDialog({
   }, [championshipId]);
 
   const fetchAvailableUsers = useCallback(async () => {
-    // Fetch all profiles that are not the championship owner and not already associated
     const associatedUserIds = associatedUsers.map(cu => cu.user_id);
     const excludedIds = [championshipOwnerId, ...associatedUserIds];
 
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, avatar_url, email')
-      .not('id', 'in', `(${excludedIds.join(',')})`) // Exclude owner and already associated users
+      .select('id, first_name, last_name, avatar_url, email') // Optimized select
+      .not('id', 'in', `(${excludedIds.join(',')})`)
       .order('first_name', { ascending: true });
 
     if (error) {
@@ -107,7 +104,7 @@ export function ManageChampionshipAccessDialog({
   }, [open, fetchAssociatedUsers]);
 
   useEffect(() => {
-    if (open && !isLoading) { // Only fetch available users once associated users are loaded
+    if (open && !isLoading) {
       fetchAvailableUsers();
     }
   }, [open, isLoading, associatedUsers, fetchAvailableUsers]);
@@ -123,7 +120,7 @@ export function ManageChampionshipAccessDialog({
       .insert([{
         championship_id: championshipId,
         user_id: selectedUserIdToAdd,
-        role_in_championship: 'viewer', // Default to viewer, can be changed later if needed
+        role_in_championship: 'viewer',
       }]);
 
     setIsAddingUser(false);
@@ -133,7 +130,7 @@ export function ManageChampionshipAccessDialog({
     } else {
       showSuccess('Usuário adicionado ao campeonato!');
       setSelectedUserIdToAdd(undefined);
-      fetchAssociatedUsers(); // Refresh list
+      fetchAssociatedUsers();
       onAccessChanged();
     }
   };
@@ -149,7 +146,7 @@ export function ManageChampionshipAccessDialog({
       showError(`Erro ao remover usuário ${userName}: ${error.message}`);
     } else {
       showSuccess(`Usuário ${userName} removido do campeonato.`);
-      fetchAssociatedUsers(); // Refresh list
+      fetchAssociatedUsers();
       onAccessChanged();
     }
   };

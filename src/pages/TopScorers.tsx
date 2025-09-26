@@ -23,7 +23,7 @@ const TopScorers = () => {
     setLoadingChampionships(true);
     const { data, error } = await supabase
       .from('championships')
-      .select('id, name')
+      .select('id, name') // Optimized select
       .order('name', { ascending: true });
 
     if (error) {

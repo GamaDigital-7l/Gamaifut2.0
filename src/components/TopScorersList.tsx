@@ -42,15 +42,14 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
         player_name,
         team_id,
         teams(
-          id, // Need team ID for filtering and linking
+          id,
           name,
           logo_url,
-          championships(id, name) // Select championship ID and name through the teams relationship
+          championships(id, name)
         )
       `);
 
     if (championshipId) {
-      // Apply filter directly in the Supabase query
       query = query.eq('teams.championships.id', championshipId);
     }
 
@@ -61,14 +60,12 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
       console.error('Error fetching top scorers:', error);
       setTopScorers([]);
     } else {
-      // Aggregate goals by player_name, team_id, championship_id
       const aggregatedGoals = new Map<string, TopScorer>();
 
       data.forEach((goal: any) => {
         const team = goal.teams;
-        const championship = team?.championships; // Access championship from nested teams
+        const championship = team?.championships;
 
-        // Only process if team and championship data are available
         if (team && championship) {
           const key = `${goal.player_name}-${team.id}-${championship.id}`;
           if (!aggregatedGoals.has(key)) {
@@ -78,8 +75,8 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
               team_id: team.id,
               team_name: team.name,
               team_logo_url: team.logo_url,
-              championship_id: championship.id, // Use championship.id
-              championship_name: championship.name, // Use championship.name
+              championship_id: championship.id,
+              championship_name: championship.name,
             });
           }
           aggregatedGoals.get(key)!.total_goals++;
@@ -90,7 +87,7 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
       setTopScorers(sortedScorers);
     }
     setLoading(false);
-  }, [championshipId]); // Re-run fetch when championshipId changes
+  }, [championshipId]);
 
   useEffect(() => {
     fetchTopScorers();
@@ -149,7 +146,7 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
                       >
                         {scorer.team_name}
                       </Link>
-                      {!championshipId && ( // Only show championship name if not already filtered by it
+                      {!championshipId && (
                         <span className="ml-1">({scorer.championship_name})</span>
                       )}
                     </p>

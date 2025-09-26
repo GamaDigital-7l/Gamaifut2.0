@@ -22,18 +22,18 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 // Combined fetch function for all championship data needed for this view
 const fetchChampionshipDataForOfficial = async (championshipId: string) => {
   const [champRes, teamsRes, groupsRes, roundsRes, matchesRes] = await Promise.all([
-    supabase.from('championships').select('id, name, logo_url').eq('id', championshipId).single(),
-    supabase.from('teams').select('id, name, logo_url, group_id').eq('championship_id', championshipId),
-    supabase.from('groups').select('id, name').eq('championship_id', championshipId),
-    supabase.from('rounds').select('id, name, order_index, type, public_edit_token').eq('championship_id', championshipId).order('order_index', { ascending: true }),
+    supabase.from('championships').select('id, name, logo_url').eq('id', championshipId).single(), // Optimized select
+    supabase.from('teams').select('id, name, logo_url, group_id').eq('championship_id', championshipId), // Optimized select
+    supabase.from('groups').select('id, name').eq('championship_id', championshipId), // Optimized select
+    supabase.from('rounds').select('id, name, order_index, type, public_edit_token').eq('championship_id', championshipId).order('order_index', { ascending: true }), // Optimized select
     supabase.from('matches').select(`
-      *,
+      id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes,
       team1:teams!matches_team1_id_fkey(id, name, logo_url),
       team2:teams!matches_team2_id_fkey(id, name, logo_url),
       groups(name),
       rounds(name),
-      goals:match_goals(*)
-    `).eq('championship_id', championshipId).order('match_date', { ascending: true }),
+      goals:match_goals(id, match_id, team_id, player_name, jersey_number)
+    `).eq('championship_id', championshipId).order('match_date', { ascending: true }), // Optimized select for matches and goals
   ]);
 
   if (champRes.error) throw new Error(champRes.error.message);

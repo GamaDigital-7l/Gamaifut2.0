@@ -19,7 +19,7 @@ import { Championship } from '@/types';
 const fetchChampionships = async () => {
   const { data, error } = await supabase
     .from('championships')
-    .select('*')
+    .select('id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order') // Optimized select
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return data;

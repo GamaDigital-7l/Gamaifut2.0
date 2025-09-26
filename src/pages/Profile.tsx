@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionProvider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,21 +15,14 @@ const Profile = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
 
-  useEffect(() => {
-    if (session) {
-      setUser(session.user);
-      getProfile();
-    }
-  }, [session]);
-
-  const getProfile = async () => {
+  const getProfile = useCallback(async () => {
     try {
       setLoading(true);
       if (!session?.user) throw new Error('No user on the session!');
 
       const { data, error, status } = await supabase
         .from('profiles')
-        .select(`first_name, last_name`)
+        .select(`first_name, last_name`) // Optimized select
         .eq('id', session.user.id)
         .single();
 
@@ -46,7 +39,14 @@ const Profile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session]); // Dependency on session
+
+  useEffect(() => {
+    if (session) {
+      setUser(session.user);
+      getProfile();
+    }
+  }, [session, getProfile]);
 
   const handleUpdateProfile = async (event: FormEvent) => {
     event.preventDefault();

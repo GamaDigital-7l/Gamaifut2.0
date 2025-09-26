@@ -26,7 +26,7 @@ export function SponsorDisplay({ championshipId }: SponsorDisplayProps) {
     setLoading(true);
     const { data, error } = await supabase
       .from('sponsors')
-      .select('*')
+      .select('id, name, level, logo_url, target_url, is_active') // Optimized select
       .eq('championship_id', championshipId)
       .eq('is_active', true)
       .order('level', { ascending: false }) // Ouro, Prata, Bronze

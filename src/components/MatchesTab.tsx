@@ -27,15 +27,6 @@ interface MatchesTabProps {
 }
 
 export function MatchesTab({ championshipId, teams, groups, rounds, matches, isLoading, onDataChange }: MatchesTabProps) {
-  // No longer fetching data internally, relying on props
-  // const queryClient = useQueryClient();
-  // const { data, isLoading } = useQuery({
-  //   queryKey: ['matchesTab', championshipId],
-  //   queryFn: () => fetchData(championshipId),
-  // });
-
-  // const { teams = [], groups = [], rounds = [], matches = [] } = data || {};
-
   const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all');
 
   const filteredMatches = selectedRoundFilter === 'all'

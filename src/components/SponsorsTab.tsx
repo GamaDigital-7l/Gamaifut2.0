@@ -37,7 +37,7 @@ export function SponsorsTab({ championshipId, onDataChange }: SponsorsTabProps) 
     setLoading(true);
     const { data, error } = await supabase
       .from('sponsors')
-      .select('*')
+      .select('id, name, level, logo_url, target_url, is_active') // Optimized select
       .eq('championship_id', championshipId)
       .order('created_at', { ascending: true });
 

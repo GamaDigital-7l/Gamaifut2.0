@@ -58,7 +58,7 @@ const UserManagement = () => {
         last_name,
         avatar_url,
         role
-      `)
+      `) // Optimized select
       .order('first_name', { ascending: true });
 
     if (profilesError) {
@@ -68,9 +68,6 @@ const UserManagement = () => {
       return;
     }
 
-    // For security, emails from auth.users are not directly accessible client-side.
-    // In a real app, you might fetch these via another secure Edge Function if needed.
-    // For now, we'll use a placeholder or assume email is not strictly needed here.
     const formattedData: Profile[] = profilesData.map((profile: any) => ({
       id: profile.id,
       first_name: profile.first_name,
@@ -154,7 +151,6 @@ const UserManagement = () => {
     }
   };
 
-  // Only allow 'admin' role to manage other users' roles and create users
   const canManageRoles = userProfile?.role === 'admin';
 
   return (

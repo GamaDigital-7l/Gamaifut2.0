@@ -43,7 +43,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchChampionshipLogo = useCallback(async (id: string) => {
     const { data, error } = await supabase
       .from('championships')
-      .select('logo_url')
+      .select('logo_url') // Optimized select
       .eq('id', id)
       .single();
 

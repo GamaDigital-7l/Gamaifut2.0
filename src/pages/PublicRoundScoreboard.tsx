@@ -41,7 +41,7 @@ const PublicRoundScoreboard = () => {
       // Fetch championship details
       const { data: champData, error: champError } = await supabase
         .from('championships')
-        .select('id, name, logo_url')
+        .select('id, name, logo_url') // Optimized select
         .eq('id', championshipId)
         .single();
 
@@ -56,7 +56,7 @@ const PublicRoundScoreboard = () => {
       // First, try to fetch the round by ID only (to check basic RLS)
       const { data: roundByIdData, error: roundByIdError } = await supabase
         .from('rounds')
-        .select('id, name, public_edit_token')
+        .select('id, name, public_edit_token') // Optimized select
         .eq('id', roundId)
         .single();
 
@@ -80,16 +80,16 @@ const PublicRoundScoreboard = () => {
 
       // Fetch all teams, groups, and matches for this championship/round
       const [teamsRes, groupsRes, matchesRes] = await Promise.all([
-        supabase.from('teams').select('id, name, logo_url, group_id').eq('championship_id', championshipId),
-        supabase.from('groups').select('id, name').eq('championship_id', championshipId),
+        supabase.from('teams').select('id, name, logo_url, group_id').eq('championship_id', championshipId), // Optimized select
+        supabase.from('groups').select('id, name').eq('championship_id', championshipId), // Optimized select
         supabase.from('matches').select(`
-          *,
+          id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes,
           team1:teams!matches_team1_id_fkey(id, name, logo_url),
           team2:teams!matches_team2_id_fkey(id, name, logo_url),
           groups(name),
           rounds(name),
-          goals:match_goals(*)
-        `).eq('championship_id', championshipId).eq('round_id', roundId).order('match_date', { ascending: true }),
+          goals:match_goals(id, match_id, team_id, player_name, jersey_number)
+        `).eq('championship_id', championshipId).eq('round_id', roundId).order('match_date', { ascending: true }), // Optimized select for matches and goals
       ]);
 
       if (teamsRes.error) { console.error('PublicRoundScoreboard: Error fetching teams:', teamsRes.error.message); throw new Error(teamsRes.error.message); }
