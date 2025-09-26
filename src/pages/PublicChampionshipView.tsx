@@ -15,6 +15,7 @@ import { PublicGroupsTab } from '@/components/PublicGroupsTab'; // Import new pu
 import { PublicRoundsTab } from '@/components/PublicRoundsTab'; // Import new public rounds tab
 import { CalendarTab } from '@/components/CalendarTab'; // Re-use CalendarTab
 import { StatisticsTab } from '@/components/StatisticsTab'; // Re-use StatisticsTab
+import { TopScorersList } from '@/components/TopScorersList'; // NEW: Import TopScorersList
 import {
   Select,
   SelectContent,
@@ -30,7 +31,8 @@ import {
   LayoutGrid, 
   Milestone, 
   Calendar as CalendarIconLucide, 
-  BarChart2 
+  BarChart2,
+  Goal // NEW: Import Goal icon
 } from 'lucide-react';
 import { Championship, Team, Match, Group, Round, Sponsor } from '@/types';
 
@@ -257,7 +259,7 @@ const PublicChampionshipView = () => {
 
           <Tabs defaultValue="teams" className="w-full mt-4">
             <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6"> {/* Adjusted grid-cols to 6 */}
                 <TabsTrigger value="teams">
                   <Users className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Times</span>
@@ -277,6 +279,10 @@ const PublicChampionshipView = () => {
                 <TabsTrigger value="statistics">
                   <BarChart2 className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Estatísticas</span>
+                </TabsTrigger>
+                <TabsTrigger value="top-scorers"> {/* NEW TAB TRIGGER */}
+                  <Goal className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Artilheiros</span>
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -341,6 +347,18 @@ const PublicChampionshipView = () => {
                 isLoading={loading} // Passando isLoading
                 onDataChange={() => {}} // Passando onDataChange (vazio para public view)
               />
+            </TabsContent>
+
+            <TabsContent value="top-scorers" className="mt-4"> {/* NEW TAB CONTENT */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Artilheiros do Campeonato</CardTitle>
+                  <CardDescription>Os jogadores com mais gols neste campeonato.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TopScorersList championshipId={championship.id} isPublicView={true} />
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
           
