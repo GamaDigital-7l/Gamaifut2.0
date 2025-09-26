@@ -40,13 +40,8 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
 
     let query = supabase
       .from('media')
-      .select(`
-        *,
-        matches(team1:teams!matches_team1_id_fkey(name), team2:teams!matches_team2_id_fkey(name)),
-        teams(name),
-        rounds(name),
-        profiles(first_name, last_name)
-      `)
+      // CORRIGIDO: Simplificar a query para depurar o erro 400
+      .select(`id, championship_id, user_id, type, url, thumbnail_url, description, tags, is_highlight, match_id, team_id, round_id, status, approved_by, approved_at, created_at`)
       .eq('championship_id', championshipId)
       .eq('status', 'approved') // Only show approved media
       .order('created_at', { ascending: false });
@@ -74,10 +69,18 @@ export function MediaGallery({ championshipId, matches, teams, rounds }: MediaGa
       setError('Erro ao carregar mídias: ' + fetchError.message);
       setMediaItems([]);
     } else {
-      setMediaItems(data as Media[]);
+      // Mapear os dados brutos para o tipo Media, adicionando os objetos aninhados manualmente
+      const mappedData: Media[] = data.map(item => ({
+        ...item,
+        matches: matches.find(m => m.id === item.match_id) ? { team1: { name: matches.find(m => m.id === item.match_id)?.team1.name || '' }, team2: { name: matches.find(m => m.id === item.match_id)?.team2.name || '' } } : null,
+        teams: teams.find(t => t.id === item.team_id) ? { name: teams.find(t => t.id === item.team_id)?.name || '' } : null,
+        rounds: rounds.find(r => r.id === item.round_id) ? { name: rounds.find(r => r.id === item.round_id)?.name || '' } : null,
+        profiles: null, // Não estamos buscando profiles diretamente nesta query simplificada
+      }));
+      setMediaItems(mappedData);
     }
     setLoading(false);
-  }, [championshipId, filterType, filterTeam, filterRound, filterHighlight, searchTerm]);
+  }, [championshipId, filterType, filterTeam, filterRound, filterHighlight, searchTerm, matches, teams, rounds]); // Adicionar dependências para matches, teams, rounds
 
   useEffect(() => {
     fetchMedia();
