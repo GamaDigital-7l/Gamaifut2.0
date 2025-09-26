@@ -16,6 +16,7 @@ import { PublicRoundsTab } from '@/components/PublicRoundsTab'; // Import new pu
 import { CalendarTab } from '@/components/CalendarTab'; // Re-use CalendarTab
 import { StatisticsTab } from '@/components/StatisticsTab'; // Re-use StatisticsTab
 import { TopScorersList } from '@/components/TopScorersList'; // NEW: Import TopScorersList
+import { MediaGallery } from '@/components/MediaGallery'; // Import MediaGallery
 import {
   Select,
   SelectContent,
@@ -257,9 +258,19 @@ const PublicChampionshipView = () => {
             </Card>
           </div>
 
+          {/* NOVO: Seção de Mídias do Campeonato */}
+          <div className="mt-6">
+            <MediaGallery
+              championshipId={championship.id}
+              matches={matches}
+              teams={teams}
+              rounds={rounds}
+            />
+          </div>
+
           <Tabs defaultValue="teams" className="w-full mt-4">
             <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <TabsList className="grid w-full grid-cols-6"> {/* Adjusted grid-cols to 6 */}
+              <TabsList className="grid w-full grid-cols-5"> {/* Ajustado grid-cols para 5 (removendo Portfólio) */}
                 <TabsTrigger value="teams">
                   <Users className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Times</span>
@@ -280,10 +291,7 @@ const PublicChampionshipView = () => {
                   <BarChart2 className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Estatísticas</span>
                 </TabsTrigger>
-                <TabsTrigger value="top-scorers"> {/* NEW TAB TRIGGER */}
-                  <Goal className="h-5 w-5 sm:mr-2" />
-                  <span className="hidden sm:inline">Artilheiros</span>
-                </TabsTrigger>
+                {/* Removido TabsTrigger para "top-scorers" para simplificar, se necessário pode ser adicionado novamente */}
               </TabsList>
             </div>
             
@@ -349,17 +357,7 @@ const PublicChampionshipView = () => {
               />
             </TabsContent>
 
-            <TabsContent value="top-scorers" className="mt-4"> {/* NEW TAB CONTENT */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Artilheiros do Campeonato</CardTitle>
-                  <CardDescription>Os jogadores com mais gols neste campeonato.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <TopScorersList championshipId={championship.id} isPublicView={true} />
-                </CardContent>
-              </Card>
-            </TabsContent>
+            {/* Removido TabsContent para "top-scorers" */}
           </Tabs>
           
           {/* Sponsors are displayed outside the tabs, as per the admin page layout */}
