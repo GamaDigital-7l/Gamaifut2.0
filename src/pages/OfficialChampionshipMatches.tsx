@@ -162,7 +162,7 @@ const OfficialChampionshipMatches = () => {
               <Button 
                 onClick={handleCopyPublicLink} 
                 disabled={!canGeneratePublicLink}
-                className="flex-shrink-0"
+                className="w-full sm:w-auto flex-shrink-0" // Ensure full width on mobile, auto on larger screens
               >
                 <LinkIcon className="mr-2 h-4 w-4" /> Gerar Link Público
               </Button>
