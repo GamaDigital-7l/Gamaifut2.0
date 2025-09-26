@@ -28,11 +28,14 @@ const OfficialDashboard = () => {
       return;
     } else if (userProfile?.role === 'official') {
       // Officials can see championships they own or are associated with
-      query = query.or(`user_id.eq.${userProfile.id},championship_users.user_id.eq.${userProfile.id}`);
-      query = query.select(`
-        id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order,
-        championship_users!inner(user_id, role_in_championship)
-      `);
+      // Apply the select first, then the OR filter
+      query = supabase
+        .from('championships')
+        .select(`
+          id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order,
+          championship_users!inner(user_id, role_in_championship)
+        `)
+        .or(`user_id.eq.${userProfile.id},championship_users.user_id.eq.${userProfile.id}`);
     }
     // Admins can see all championships (no additional filter needed for 'admin' role)
 

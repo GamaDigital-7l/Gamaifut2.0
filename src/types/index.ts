@@ -14,13 +14,11 @@ export interface Championship {
   tie_breaker_order: string[]; // Added for tie-breaker rules
 }
 
-export interface Team {
+// A representation of a team as returned in a match query
+export interface MatchTeam {
   id: string;
   name: string;
   logo_url: string | null;
-  group_id: string | null;
-  championship_id: string;
-  groups: { name: string } | null;
 }
 
 export interface Group {
@@ -38,12 +36,6 @@ export interface Round {
   championship_id: string;
   created_at: string;
   public_edit_token: string | null; // Novo campo para o token de edição pública
-}
-
-export interface MatchTeam {
-  id: string;
-  name: string;
-  logo_url: string | null;
 }
 
 export interface MatchGoal {
