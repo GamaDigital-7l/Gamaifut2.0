@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-// import { useParams } from 'react-router-dom'; // Temporariamente removido
+import { useParams } from 'react-router-dom'; // Re-adicionado useParams
 
 interface ThemeContextType {
   championshipLogoUrl: string | null;
@@ -13,11 +13,14 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [championshipLogoUrl, setChampionshipLogoUrl] = useState<string | null>(null);
-  const [globalThemeMode, setGlobalThemeMode] = useState<'light' | 'dark'>('dark');
-  // const { id: championshipIdFromParams } = useParams<{ id: string }>(); // Temporariamente removido
-
-  // Usar um valor padrão ou null para championshipIdFromParams enquanto o hook está removido
-  const championshipIdFromParams = undefined; 
+  const [globalThemeMode, setGlobalThemeMode] = useState<'light' | 'dark'>(() => {
+    // Initialize theme from localStorage or default to 'dark'
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('theme') as 'light' | 'dark') || 'dark';
+    }
+    return 'dark';
+  });
+  const { id: championshipIdFromParams } = useParams<{ id: string }>(); // Re-adicionado useParams
 
   const applyGlobalThemeToDocument = useCallback((mode: 'light' | 'dark') => {
     const root = document.documentElement;

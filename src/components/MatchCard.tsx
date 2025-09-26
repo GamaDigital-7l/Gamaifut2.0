@@ -156,9 +156,9 @@ export function MatchCard({ match, onMatchUpdated, onMatchDeleted, isEven, group
             publicRoundId={publicRoundId}
             publicRoundToken={publicRoundToken}
           >
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
+            <Button variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 h-auto">
               <Goal className="h-4 w-4" />
-              <span className="hidden sm:inline">Placar Rápido</span>
+              <span className="text-xs">Placar Rápido</span> {/* Always visible, smaller text */}
             </Button>
           </QuickScoreUpdateDrawer>
 
