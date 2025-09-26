@@ -179,23 +179,23 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
           <TableBody>
             {sortedStandings.map((standing, index) => (
               <TableRow key={standing.teamId}>
-                <TableCell className="font-medium text-center px-1 py-1 text-xs whitespace-nowrap">{index + 1}</TableCell>
-                <TableCell className="flex items-center gap-1 px-1 py-1">
+                <TableCell className="font-medium text-center px-1 py-2 text-xs whitespace-nowrap">{index + 1}</TableCell> {/* Increased py to match team name cell */}
+                <TableCell className="flex items-center gap-1 px-1 py-2"> {/* Increased py to allow two lines */}
                   {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-5 w-5 object-contain flex-shrink-0" />}
-                  <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline text-[0.65rem] leading-tight truncate"> {/* Smaller font, tighter line height, truncate */}
+                  <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline text-[0.65rem] leading-tight"> {/* Removed truncate, text will wrap */}
                     {standing.teamName}
                   </Link>
                 </TableCell>
-                <TableCell className="text-center font-bold px-1 py-1 text-xs whitespace-nowrap">{standing.points}</TableCell>
-                <TableCell className="text-center px-1 py-1 text-xs whitespace-nowrap">{standing.played}</TableCell>
-                <TableCell className="text-center px-1 py-1 text-xs whitespace-nowrap">{standing.wins}</TableCell>
-                <TableCell className="text-center px-1 py-1 text-xs whitespace-nowrap">{standing.draws}</TableCell>
-                <TableCell className="text-center px-1 py-1 text-xs whitespace-nowrap">{standing.losses}</TableCell>
-                <TableCell className="text-center px-1 py-1 text-xs whitespace-nowrap">{standing.goalsFor}</TableCell>
-                <TableCell className="text-center px-1 py-1 text-xs whitespace-nowrap">{standing.goalsAgainst}</TableCell>
-                <TableCell className="text-center px-1 py-1 text-xs whitespace-nowrap">{standing.goalDifference}</TableCell>
-                <TableCell className="text-center px-1 py-1 text-xs whitespace-nowrap">{standing.percentage.toFixed(1)}%</TableCell>
-                <TableCell className="text-center px-1 py-1 whitespace-nowrap">
+                <TableCell className="text-center font-bold px-1 py-2 text-xs whitespace-nowrap">{standing.points}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.played}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.wins}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.draws}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.losses}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.goalsFor}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.goalsAgainst}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.goalDifference}</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-1 py-2 text-xs whitespace-nowrap">{standing.percentage.toFixed(1)}%</TableCell> {/* Increased py */}
+                <TableCell className="text-center px-1 py-2 whitespace-nowrap"> {/* Increased py */}
                   <div className="flex justify-center gap-0.5"> {/* Smaller gap for circles */}
                     {standing.recentForm.map((form, i) => (
                       <span
