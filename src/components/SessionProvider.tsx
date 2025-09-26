@@ -39,7 +39,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true); // Start true
-  const [initialLoadHandled, setInitialLoadHandled] = useState(false); // New flag to ensure setLoading(false) is called only once
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     console.log('SessionProvider: Attempting to fetch user profile for ID:', userId);
@@ -71,17 +70,11 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         profile = await fetchUserProfile(currentSession.user.id);
       }
       if (isMounted) setUserProfile(profile);
-
-      // Ensure loading is set to false only once after the initial auth state is processed
-      if (!initialLoadHandled) {
-        // Add a small delay to ensure profile fetching has a moment to complete
-        setTimeout(() => {
-          if (isMounted) {
-            setLoading(false);
-            console.log('SessionProvider: Loading set to false.');
-          }
-        }, 300); // 300ms delay
-        setInitialLoadHandled(true); // Mark as handled
+      
+      // Set loading to false directly after processing the session
+      if (isMounted) {
+        setLoading(false);
+        console.log('SessionProvider: Loading set to false.');
       }
     });
 
@@ -90,7 +83,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile, initialLoadHandled]); // Add initialLoadHandled to dependencies
+  }, [fetchUserProfile]); // fetchUserProfile is stable due to useCallback
 
   return (
     <SessionContext.Provider value={{ session, userProfile, loading }}>
@@ -139,10 +132,7 @@ export const useSession = () => {
 
 const LoadingSpinner = () => (
   <div className="flex h-screen items-center justify-center bg-background text-foreground">
-    <div className="flex flex-col items-center space-y-4">
-      <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-primary border-t-primary-foreground"></div>
-      <p className="text-lg font-medium">Carregando...</p>
-    </div>
+    <p className="text-lg font-medium">Carregando aplicativo...</p>
   </div>
 );
 
