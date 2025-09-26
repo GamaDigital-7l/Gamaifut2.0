@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Navigate } from 'react-router-dom';
 import { useSession } from '@/components/SessionProvider';
 import { MadeWithDyad } from '@/components/made-with-dyad'; // Importar o componente da logo
-import { ptBR } from '@supabase/ui-locales'; // Importar a localização em português do pacote correto
+import ptBR from '@supabase/auth-ui-shared/locales/pt-BR'; // Importar a localização em português do caminho correto
 
 const Login = () => {
   const { session } = useSession();
