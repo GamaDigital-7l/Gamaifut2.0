@@ -62,7 +62,7 @@ const Index = () => {
       <main className="flex flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-10">
         <div className="grid w-full gap-6 text-center">
           <div className="flex justify-center">
-            <img src="/logo-gama.png" alt="Gama Creative Logo" className="h-24 w-auto" />
+            <img src="/logo-gama.png" alt="Gama Creative Logo" className="h-24 w-auto" loading="lazy" />
           </div>
           <h1 className="text-3xl font-semibold">Encontre Campeonatos</h1>
           <p className="text-muted-foreground">
@@ -110,7 +110,7 @@ const Index = () => {
                 <Card key={championship.id}>
                   <CardHeader className="flex-row items-center gap-4">
                     <Avatar className="h-10 w-10 rounded-sm">
-                      <AvatarImage src={championship.logo_url || undefined} alt={championship.name} />
+                      <AvatarImage src={championship.logo_url || undefined} alt={championship.name} loading="lazy" />
                       <AvatarFallback className="rounded-sm">
                         <Trophy className="h-5 w-5" />
                       </AvatarFallback>

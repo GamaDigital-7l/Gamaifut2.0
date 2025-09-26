@@ -160,7 +160,7 @@ const ChampionshipTheme = () => {
                     {logoUrl ? (
                       <div className="w-32 h-32 relative">
                         <AspectRatio ratio={1 / 1}>
-                          <img src={logoUrl} alt="Logo Preview" className="rounded-md object-contain" />
+                          <img src={logoUrl} alt="Logo Preview" className="rounded-md object-contain" loading="lazy" />
                         </AspectRatio>
                       </div>
                     ) : (

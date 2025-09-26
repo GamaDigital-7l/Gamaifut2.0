@@ -36,7 +36,7 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
   const fetchTopScorers = useCallback(async () => {
     setLoading(true);
     // Fetch all goals with nested team and championship data
-    const { data, error } = await supabase
+    let query = supabase
       .from('match_goals')
       .select(`
         player_name,
@@ -48,6 +48,13 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
           championships(id, name) // Select championship ID and name through the teams relationship
         )
       `);
+
+    if (championshipId) {
+      // Apply filter directly in the Supabase query
+      query = query.eq('teams.championships.id', championshipId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       showError('Erro ao carregar artilheiros: ' + error.message);
@@ -63,11 +70,6 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
 
         // Only process if team and championship data are available
         if (team && championship) {
-          // Apply client-side filter if championshipId prop is provided
-          if (championshipId && championship.id !== championshipId) {
-            return; // Skip this goal if it doesn't match the filter
-          }
-
           const key = `${goal.player_name}-${team.id}-${championship.id}`;
           if (!aggregatedGoals.has(key)) {
             aggregatedGoals.set(key, {
@@ -133,7 +135,7 @@ export function TopScorersList({ championshipId, isPublicView = false }: TopScor
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={scorer.team_logo_url || undefined} alt={scorer.team_name} />
+                    <AvatarImage src={scorer.team_logo_url || undefined} alt={scorer.team_name} loading="lazy" />
                     <AvatarFallback>
                       <Trophy className="h-4 w-4" />
                     </AvatarFallback>

@@ -111,7 +111,7 @@ export function SponsorsTab({ championshipId, onDataChange }: SponsorsTabProps) 
               <Card key={sponsor.id}>
                 <CardHeader className="flex flex-row items-center justify-between p-4">
                   <div className="flex items-center gap-4">
-                    {sponsor.logo_url && <img src={sponsor.logo_url} alt={sponsor.name} className="h-10 w-10 object-contain" />}
+                    {sponsor.logo_url && <img src={sponsor.logo_url} alt={sponsor.name} className="h-10 w-10 object-contain" loading="lazy" />}
                     <CardTitle className="text-base font-medium">{sponsor.name}</CardTitle>
                   </div>
                   <div className="flex items-center gap-4">

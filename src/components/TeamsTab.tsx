@@ -65,7 +65,7 @@ export function TeamsTab({ championshipId, teams, groups, isLoading, onDataChang
               <Card key={team.id}>
                 <CardHeader className="flex flex-row items-center justify-between p-4">
                   <div className="flex items-center gap-4">
-                    {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-10 w-10 object-contain" />}
+                    {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-10 w-10 object-contain" loading="lazy" />}
                     <CardTitle className="text-base font-medium">
                       <Link to={`/team/${team.id}`} className="hover:underline">{team.name}</Link>
                     </CardTitle>

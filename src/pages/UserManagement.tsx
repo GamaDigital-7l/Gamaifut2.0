@@ -197,7 +197,7 @@ const UserManagement = () => {
             <Card key={profile.id}>
               <CardHeader className="flex flex-row items-center gap-4 p-4">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={profile.avatar_url || undefined} alt={profile.first_name || 'User'} />
+                  <AvatarImage src={profile.avatar_url || undefined} alt={profile.first_name || 'User'} loading="lazy" />
                   <AvatarFallback>
                     <UserIcon className="h-6 w-6 text-gray-500" />
                   </AvatarFallback>

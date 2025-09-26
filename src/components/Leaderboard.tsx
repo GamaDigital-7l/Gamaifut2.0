@@ -170,7 +170,7 @@ export function Leaderboard({ teams, matches, isPublicView = false, pointsForWin
               <TableRow key={standing.teamId}>
                 <TableCell className="font-medium text-center px-0.5 py-2 text-[0.6rem] whitespace-nowrap">{index + 1}</TableCell>
                 <TableCell className="flex items-center gap-1 px-1 py-2 w-[120px]">
-                  {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-5 w-5 object-contain flex-shrink-0" />}
+                  {standing.logo_url && <img src={standing.logo_url} alt={standing.teamName} className="h-5 w-5 object-contain flex-shrink-0" loading="lazy" />}
                   <Link to={isPublicView ? `/public/team/${standing.teamId}` : `/team/${standing.teamId}`} className="hover:underline text-[0.65rem] leading-tight flex-1 min-w-0">
                     {standing.teamName}
                   </Link>

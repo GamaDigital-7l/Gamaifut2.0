@@ -133,7 +133,7 @@ const ChampionshipDetail = () => {
         {championship.logo_url && (
           <div className="w-32 h-32 relative flex-shrink-0">
             <AspectRatio ratio={1 / 1}>
-              <img src={championship.logo_url} alt={championship.name} className="rounded-md object-contain" />
+              <img src={championship.logo_url} alt={championship.name} className="rounded-md object-contain" loading="lazy" />
             </AspectRatio>
           </div>
         )}

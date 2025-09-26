@@ -72,7 +72,7 @@ export function SponsorDisplay({ championshipId }: SponsorDisplayProps) {
               >
                 <AspectRatio ratio={16 / 9} className="w-full max-w-[120px]"> {/* Tamanho uniforme para todos */}
                   {sponsor.logo_url ? (
-                    <img src={sponsor.logo_url} alt={sponsor.name} className="object-contain w-full h-full" />
+                    <img src={sponsor.logo_url} alt={sponsor.name} className="object-contain w-full h-full" loading="lazy" />
                   ) : (
                     <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 text-sm h-full">
                       {sponsor.name}

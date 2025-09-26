@@ -138,7 +138,7 @@ const PublicChampionshipView = () => {
             {championship.logo_url && (
               <div className="w-32 h-32 relative flex-shrink-0"> {/* Increased size */}
                 <AspectRatio ratio={1 / 1}>
-                  <img src={championship.logo_url} alt={championship.name} className="rounded-md object-contain" />
+                  <img src={championship.logo_url} alt={championship.name} className="rounded-md object-contain" loading="lazy" />
                 </AspectRatio>
               </div>
             )}
@@ -162,7 +162,7 @@ const PublicChampionshipView = () => {
                 )}
               >
                 <span className="text-xs text-muted-foreground hidden sm:inline">Patrocínio Master:</span>
-                <img src={masterSponsor.logo_url} alt={masterSponsor.name} className="h-8 w-auto object-contain" />
+                <img src={masterSponsor.logo_url} alt={masterSponsor.name} className="h-8 w-auto object-contain" loading="lazy" />
               </a>
             )}
           </div>
@@ -303,7 +303,7 @@ const PublicChampionshipView = () => {
                       {teams.map(team => (
                         <Link to={`/public/team/${team.id}`} key={team.id}>
                           <Card className="text-center p-4 hover:shadow-lg transition-shadow">
-                            {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-16 w-16 mx-auto object-contain mb-2" />}
+                            {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-16 w-16 mx-auto object-contain mb-2" loading="lazy" />}
                             <p className="font-semibold">{team.name}</p>
                             {team.group_id && (
                               <p className="text-sm text-muted-foreground">

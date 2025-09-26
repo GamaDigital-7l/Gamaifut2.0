@@ -110,7 +110,7 @@ const OfficialDashboard = () => {
             <Card key={championship.id} className="flex flex-col justify-between">
               <CardHeader className="flex-row items-center gap-4">
                 <Avatar className="h-10 w-10 rounded-sm">
-                  <AvatarImage src={championship.logo_url || undefined} alt={championship.name} />
+                  <AvatarImage src={championship.logo_url || undefined} alt={championship.name} loading="lazy" />
                   <AvatarFallback className="rounded-sm">
                     <Trophy className="h-5 w-5" />
                   </AvatarFallback>

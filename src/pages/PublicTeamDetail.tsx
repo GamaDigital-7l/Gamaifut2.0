@@ -114,7 +114,7 @@ const PublicTeamDetail = () => {
         <div className="grid w-full gap-6"> {/* Removed max-w-6xl and mx-auto */}
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20"> {/* Increased size */}
-              <AvatarImage src={team.logo_url || undefined} alt={team.name} />
+              <AvatarImage src={team.logo_url || undefined} alt={team.name} loading="lazy" />
               <AvatarFallback><Trophy className="h-10 w-10 text-gray-500" /></AvatarFallback>
             </Avatar>
             <div>

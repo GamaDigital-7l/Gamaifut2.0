@@ -179,7 +179,7 @@ export function ManageChampionshipAccessDialog({
                 <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={userProfile.avatar_url || undefined} alt={userProfile.first_name || 'Owner'} />
+                      <AvatarImage src={userProfile.avatar_url || undefined} alt={userProfile.first_name || 'Owner'} loading="lazy" />
                       <AvatarFallback><UserIcon className="h-4 w-4" /></AvatarFallback>
                     </Avatar>
                     <span className="font-medium">{userProfile.first_name} {userProfile.last_name} (Você)</span>
@@ -191,7 +191,7 @@ export function ManageChampionshipAccessDialog({
                 <div key={cu.user_id} className="flex items-center justify-between p-2 border rounded-md">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={cu.profiles.avatar_url || undefined} alt={cu.profiles.first_name || 'User'} />
+                      <AvatarImage src={cu.profiles.avatar_url || undefined} alt={cu.profiles.first_name || 'User'} loading="lazy" />
                       <AvatarFallback><UserIcon className="h-4 w-4" /></AvatarFallback>
                     </Avatar>
                     <span className="font-medium">{cu.profiles.first_name} {cu.profiles.last_name}</span>

@@ -134,7 +134,7 @@ const AdminTeamDetail = () => {
     <div className="space-y-6 p-4 lg:p-6">
       <div className="flex items-center gap-4">
         <Avatar className="h-20 w-20">
-          <AvatarImage src={team.logo_url || undefined} alt={team.name} />
+          <AvatarImage src={team.logo_url || undefined} alt={team.name} loading="lazy" />
           <AvatarFallback>
             <Trophy className="h-10 w-10 text-gray-500" />
           </AvatarFallback>

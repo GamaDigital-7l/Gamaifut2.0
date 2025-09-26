@@ -4,7 +4,7 @@ export const MadeWithDyad = () => {
       <span className="text-sm text-gray-500 dark:text-gray-400">
         Powered by
       </span>
-      <img src="/logo-gama.png" alt="Gama Creative Logo" className="h-12 w-auto" />
+      <img src="/logo-gama.png" alt="Gama Creative Logo" className="h-12 w-auto" loading="lazy" />
     </div>
   );
 };

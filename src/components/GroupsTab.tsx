@@ -176,7 +176,7 @@ export function GroupsTab({ championshipId, teams, groups, isLoading, onDataChan
                     <div className="flex flex-wrap gap-2">
                       {teams.filter(team => team.group_id === group.id).map(team => (
                         <Badge key={team.id} variant="secondary" className="flex items-center gap-1">
-                          {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-4 w-4 object-contain" />}
+                          {team.logo_url && <img src={team.logo_url} alt={team.name} className="h-4 w-4 object-contain" loading="lazy" />}
                           {team.name}
                         </Badge>
                       ))}

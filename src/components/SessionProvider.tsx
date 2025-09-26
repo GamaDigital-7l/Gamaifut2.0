@@ -39,10 +39,10 @@ interface SessionContextType {
 const SessionContext = createContext<SessionContextType>({ session: null, userProfile: null, loading: true });
 
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
-  let isMounted = true;
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true); // Start true
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false); // New state to track initial load
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     console.log('SessionProvider: Attempting to fetch user profile for ID:', userId);
@@ -61,7 +61,9 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+    let isMounted = true; // Flag to prevent state updates on unmounted component
+
+    const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
       if (!isMounted) return;
 
       console.log('SessionProvider: onAuthStateChange event:', _event, 'session:', currentSession);
@@ -73,19 +75,29 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       }
       if (isMounted) setUserProfile(profile);
       
-      // Set loading to false directly after processing the session
-      if (isMounted) {
+      // Only set loading to false once after the initial auth state is processed
+      if (!initialLoadComplete && isMounted) {
         setLoading(false);
-        console.log('SessionProvider: Loading set to false.');
+        setInitialLoadComplete(true);
+        console.log('SessionProvider: Initial loading set to false.');
+      }
+    };
+
+    // Fetch initial session and set up listener
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      if (isMounted) {
+        handleAuthStateChange('INITIAL_SESSION', initialSession);
       }
     });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
 
     // Cleanup function
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile]); // fetchUserProfile is stable due to useCallback
+  }, [fetchUserProfile, initialLoadComplete]); // initialLoadComplete is a dependency to ensure effect runs once for initial load
 
   return (
     <SessionContext.Provider value={{ session, userProfile, loading }}>
