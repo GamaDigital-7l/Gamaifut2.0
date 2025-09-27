@@ -53,6 +53,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
     if (error) {
       console.error('SessionProvider: Error fetching user profile:', error);
+      // Retornar null para indicar que o perfil não foi carregado
       return null;
     }
     console.log('SessionProvider: User profile fetched:', data);
@@ -99,7 +100,12 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       }
     }).catch(err => {
       console.error('SessionProvider: Error in supabase.auth.getSession():', err);
-      if (isMounted) setLoading(false); // Ensure loading is false even if initial session fetch fails
+      if (isMounted) {
+        setSession(null); // Ensure session is null on error
+        setUserProfile(null); // Ensure profile is null on error
+        setLoading(false); // Ensure loading is false even if initial session fetch fails
+        console.log('SessionProvider: Loading set to false after initial session fetch error.');
+      }
     });
 
     console.log('SessionProvider: Setting up onAuthStateChange listener...');
