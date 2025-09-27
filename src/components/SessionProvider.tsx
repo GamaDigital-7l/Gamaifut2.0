@@ -70,6 +70,8 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     } catch (err: any) {
       console.error('SessionProvider: Unexpected error in fetchUserProfile:', err.message);
       return null;
+    } finally {
+      console.log('SessionProvider: fetchUserProfile finished for ID:', userId); // Added log
     }
   }, []);
 
@@ -77,6 +79,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     let isMounted = true; // Flag to prevent state updates on unmounted component
     let loadingTimer: number;
     console.log('SessionProvider: useEffect mounted.');
+    setLoading(true); // Ensure loading is true when component mounts
 
     const finalizeLoading = () => {
       if (isMounted) {
@@ -92,7 +95,8 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       }
 
       console.log('SessionProvider: onAuthStateChange event:', _event, 'session:', currentSession ? 'present' : 'null');
-      setLoading(true); // Always set loading to true at the start of processing
+      // Do NOT set setLoading(true) here, it's already true from useEffect.
+      // This prevents race conditions where a later event sets loading to true again.
 
       const startTime = Date.now();
 
@@ -129,22 +133,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         }
       }
     };
-
-    console.log('SessionProvider: Calling supabase.auth.getSession()...');
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      console.log('SessionProvider: supabase.auth.getSession() returned. Initial session:', initialSession ? 'present' : 'null');
-      if (isMounted) {
-        handleAuthStateChange('INITIAL_SESSION', initialSession);
-      }
-    }).catch(err => {
-      console.error('SessionProvider: Error in supabase.auth.getSession():', err);
-      if (isMounted) {
-        setSession(null); // Ensure session is null on error
-        setUserProfile(null); // Ensure profile is null on error
-        setLoading(false); // Ensure loading is false even if initial session fetch fails
-        console.log('SessionProvider: Loading set to false after initial session fetch error.');
-      }
-    });
 
     console.log('SessionProvider: Setting up onAuthStateChange listener...');
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
