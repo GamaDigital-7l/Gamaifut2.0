@@ -42,7 +42,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true); // Start true
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false); // New state to track initial load
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     console.log('SessionProvider: Attempting to fetch user profile for ID:', userId);
@@ -67,6 +66,8 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       if (!isMounted) return;
 
       console.log('SessionProvider: onAuthStateChange event:', _event, 'session:', currentSession);
+      setLoading(true); // Set loading to true at the start of any auth state change processing
+
       setSession(currentSession);
 
       let profile: UserProfile | null = null;
@@ -75,12 +76,8 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       }
       if (isMounted) setUserProfile(profile);
       
-      // Only set loading to false once after the initial auth state is processed
-      if (!initialLoadComplete && isMounted) {
-        setLoading(false);
-        setInitialLoadComplete(true);
-        console.log('SessionProvider: Initial loading set to false.');
-      }
+      setLoading(false); // Set loading to false after all async operations are complete
+      console.log('SessionProvider: Loading set to false after auth state change.');
     };
 
     // Fetch initial session and set up listener
@@ -97,7 +94,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile, initialLoadComplete]); // initialLoadComplete is a dependency to ensure effect runs once for initial load
+  }, [fetchUserProfile]); // fetchUserProfile is the only dependency
 
   return (
     <SessionContext.Provider value={{ session, userProfile, loading }}>
