@@ -61,37 +61,55 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
   useEffect(() => {
     let isMounted = true; // Flag to prevent state updates on unmounted component
+    console.log('SessionProvider: useEffect mounted.');
 
     const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
-      if (!isMounted) return;
+      if (!isMounted) {
+        console.log('SessionProvider: handleAuthStateChange called on unmounted component, skipping.');
+        return;
+      }
 
-      console.log('SessionProvider: onAuthStateChange event:', _event, 'session:', currentSession);
+      console.log('SessionProvider: onAuthStateChange event:', _event, 'session:', currentSession ? 'present' : 'null');
       setLoading(true); // Set loading to true at the start of any auth state change processing
 
       setSession(currentSession);
 
       let profile: UserProfile | null = null;
       if (currentSession?.user) {
+        console.log('SessionProvider: User found in session, fetching profile...');
         profile = await fetchUserProfile(currentSession.user.id);
+      } else {
+        console.log('SessionProvider: No user in session.');
       }
-      if (isMounted) setUserProfile(profile);
+      
+      if (isMounted) {
+        setUserProfile(profile);
+        console.log('SessionProvider: User profile set:', profile);
+      }
       
       setLoading(false); // Set loading to false after all async operations are complete
       console.log('SessionProvider: Loading set to false after auth state change.');
     };
 
-    // Fetch initial session and set up listener
+    console.log('SessionProvider: Calling supabase.auth.getSession()...');
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      console.log('SessionProvider: supabase.auth.getSession() returned. Initial session:', initialSession ? 'present' : 'null');
       if (isMounted) {
         handleAuthStateChange('INITIAL_SESSION', initialSession);
       }
+    }).catch(err => {
+      console.error('SessionProvider: Error in supabase.auth.getSession():', err);
+      if (isMounted) setLoading(false); // Ensure loading is false even if initial session fetch fails
     });
 
+    console.log('SessionProvider: Setting up onAuthStateChange listener...');
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
+    console.log('SessionProvider: onAuthStateChange listener set up.');
 
     // Cleanup function
     return () => {
       isMounted = false;
+      console.log('SessionProvider: useEffect unmounted, unsubscribing from auth state changes.');
       subscription.unsubscribe();
     };
   }, [fetchUserProfile]); // fetchUserProfile is the only dependency
@@ -141,11 +159,14 @@ export const useSession = () => {
   return useContext(SessionContext);
 };
 
-const LoadingSpinner = () => (
-  <div className="flex h-screen items-center justify-center bg-background text-foreground">
-    <p className="text-lg font-medium">Carregando aplicativo...</p>
-  </div>
-);
+const LoadingSpinner = () => {
+  console.log('LoadingSpinner: Rendering...');
+  return (
+    <div className="flex h-screen items-center justify-center bg-background text-foreground">
+      <p className="text-lg font-medium">Carregando aplicativo...</p>
+    </div>
+  );
+};
 
 // We need to wrap the Routes with a component that can use the context
 export const AppRoutes = () => {
