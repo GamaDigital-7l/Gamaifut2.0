@@ -45,19 +45,29 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     console.log('SessionProvider: Attempting to fetch user profile for ID:', userId);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, first_name, last_name, avatar_url, role')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error, status } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, avatar_url, role')
+        .eq('id', userId)
+        .single();
 
-    if (error) {
-      console.error('SessionProvider: Error fetching user profile:', error);
-      // Retornar null para indicar que o perfil não foi carregado
+      if (error && status !== 406) { // 406 means no row found, which is not an error for .single()
+        console.error('SessionProvider: Error fetching user profile:', error);
+        return null;
+      }
+
+      if (data) {
+        console.log('SessionProvider: User profile fetched:', data);
+        return data as UserProfile;
+      } else {
+        console.log('SessionProvider: No user profile found for ID:', userId, 'Status:', status);
+        return null;
+      }
+    } catch (err: any) {
+      console.error('SessionProvider: Unexpected error in fetchUserProfile:', err.message);
       return null;
     }
-    console.log('SessionProvider: User profile fetched:', data);
-    return data as UserProfile;
   }, []);
 
   useEffect(() => {
@@ -73,23 +83,33 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       console.log('SessionProvider: onAuthStateChange event:', _event, 'session:', currentSession ? 'present' : 'null');
       setLoading(true); // Set loading to true at the start of any auth state change processing
 
-      setSession(currentSession);
+      try {
+        setSession(currentSession);
 
-      let profile: UserProfile | null = null;
-      if (currentSession?.user) {
-        console.log('SessionProvider: User found in session, fetching profile...');
-        profile = await fetchUserProfile(currentSession.user.id);
-      } else {
-        console.log('SessionProvider: No user in session.');
+        let profile: UserProfile | null = null;
+        if (currentSession?.user) {
+          console.log('SessionProvider: User found in session, fetching profile...');
+          profile = await fetchUserProfile(currentSession.user.id);
+        } else {
+          console.log('SessionProvider: No user in session.');
+        }
+        
+        if (isMounted) {
+          setUserProfile(profile);
+          console.log('SessionProvider: User profile set:', profile);
+        }
+      } catch (err: any) {
+        console.error('SessionProvider: Unexpected error in handleAuthStateChange:', err.message);
+        if (isMounted) {
+          setSession(null);
+          setUserProfile(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false); // Ensure loading is false after all async operations are complete
+          console.log('SessionProvider: Loading set to false after auth state change.');
+        }
       }
-      
-      if (isMounted) {
-        setUserProfile(profile);
-        console.log('SessionProvider: User profile set:', profile);
-      }
-      
-      setLoading(false); // Set loading to false after all async operations are complete
-      console.log('SessionProvider: Loading set to false after auth state change.');
     };
 
     console.log('SessionProvider: Calling supabase.auth.getSession()...');
