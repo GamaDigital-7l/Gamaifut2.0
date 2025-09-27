@@ -38,6 +38,9 @@ interface SessionContextType {
 
 const SessionContext = createContext<SessionContextType>({ session: null, userProfile: null, loading: true });
 
+// Minimum time the loading spinner should be visible to prevent flashes
+const MIN_LOADING_TIME = 300; // milliseconds
+
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -72,7 +75,15 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
   useEffect(() => {
     let isMounted = true; // Flag to prevent state updates on unmounted component
+    let loadingTimer: number;
     console.log('SessionProvider: useEffect mounted.');
+
+    const finalizeLoading = () => {
+      if (isMounted) {
+        setLoading(false);
+        console.log('SessionProvider: Loading set to false after all async operations and min time.');
+      }
+    };
 
     const handleAuthStateChange = async (_event: string, currentSession: Session | null) => {
       if (!isMounted) {
@@ -81,7 +92,9 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       }
 
       console.log('SessionProvider: onAuthStateChange event:', _event, 'session:', currentSession ? 'present' : 'null');
-      setLoading(true); // Set loading to true at the start of any auth state change processing
+      setLoading(true); // Always set loading to true at the start of processing
+
+      const startTime = Date.now();
 
       try {
         setSession(currentSession);
@@ -105,9 +118,14 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
           setUserProfile(null);
         }
       } finally {
-        if (isMounted) {
-          setLoading(false); // Ensure loading is false after all async operations are complete
-          console.log('SessionProvider: Loading set to false after auth state change.');
+        // Ensure loading is false after a minimum time
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = MIN_LOADING_TIME - elapsedTime;
+
+        if (remainingTime > 0) {
+          loadingTimer = setTimeout(finalizeLoading, remainingTime);
+        } else {
+          finalizeLoading();
         }
       }
     };
@@ -135,6 +153,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     // Cleanup function
     return () => {
       isMounted = false;
+      clearTimeout(loadingTimer); // Clear any pending loading timer
       console.log('SessionProvider: useEffect unmounted, unsubscribing from auth state changes.');
       subscription.unsubscribe();
     };

@@ -13,11 +13,11 @@ export default defineConfig(() => ({
     dyadComponentTagger(),
     react(),
     VitePWA({ // Configuração do VitePWA
-      registerType: 'autoUpdate',
+      registerType: 'autoUpdate', // Garante que o SW tente se atualizar automaticamente
       injectRegister: 'auto',
       workbox: {
-        clientsClaim: true,
-        skipWaiting: true,
+        clientsClaim: true, // Assume o controle de clientes não controlados imediatamente
+        skipWaiting: true, // Ativa o novo SW imediatamente após a instalação
         // Estratégias de cache para diferentes tipos de assets
         runtimeCaching: [
           {
