@@ -2,12 +2,9 @@ import { defineConfig } from "vite";
 import dyadComponentTagger from "@dyad-sh/react-vite-component-tagger";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { VitePWA } from 'vite-plugin-pwa';
-// As importações de plugins Workbox foram removidas daqui, pois são gerenciadas internamente pelo VitePWA.
-// import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-// import { ExpirationPlugin } from 'workbox-expiration';
+import { VitePWA } from 'vite-plugin-pwa'; // Importar VitePWA
 
-export default defineConfig(() => ({ // Removido 'async'
+export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
@@ -15,86 +12,64 @@ export default defineConfig(() => ({ // Removido 'async'
   plugins: [
     dyadComponentTagger(),
     react(),
-    VitePWA({
-      registerType: 'autoUpdate',
+    VitePWA({ // Configuração do VitePWA
+      registerType: 'autoUpdate', // Garante que o SW tente se atualizar automaticamente
       injectRegister: 'auto',
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.ts',
       workbox: {
-        clientsClaim: true,
-        skipWaiting: true,
-        cleanupOutdatedCaches: true,
+        clientsClaim: true, // Assume o controle de clientes não controlados imediatamente
+        skipWaiting: true, // Ativa o novo SW imediatamente após a instalação
+        // Estratégias de cache para diferentes tipos de assets
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname === '/',
-            handler: 'NetworkOnly',
+            urlPattern: ({ url }) => url.pathname.startsWith('/'), // Cache para o index.html e rotas
+            handler: 'NetworkFirst', // Prioriza a rede, mas serve do cache se offline
             options: {
-              cacheName: 'html-network-only',
-              plugins: [
-                {
-                  cacheableResponse: {
-                    statuses: [0, 200],
-                  },
-                },
-              ],
+              cacheName: 'html-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24, // 24 horas
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
           {
-            urlPattern: /\.(?:js|css|html|ico|png|svg|jpg|jpeg|gif|webp)$/i,
-            handler: 'StaleWhileRevalidate',
+            urlPattern: /\.(?:js|css|html|ico|png|svg|jpg|jpeg|gif|webp)$/i, // Cache para assets estáticos
+            handler: 'StaleWhileRevalidate', // Serve do cache enquanto revalida na rede
             options: {
               cacheName: 'assets-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 dias
               },
-              plugins: [
-                {
-                  cacheableResponse: {
-                    statuses: [0, 200],
-                  },
-                },
-              ],
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
           {
-            urlPattern: ({ url }) => url.origin === 'https://rrwtsnecjuugqlwmpgzd.supabase.co',
-            handler: 'NetworkFirst',
+            urlPattern: ({ url }) => url.origin === 'https://rrwtsnecjuugqlwmpgzd.supabase.co', // Cache para Supabase
+            handler: 'NetworkFirst', // Prioriza a rede para dados Supabase
             options: {
               cacheName: 'supabase-api-cache',
               expiration: {
                 maxEntries: 20,
-                maxAgeSeconds: 60 * 5, // 5 minutes
+                maxAgeSeconds: 60 * 5, // 5 minutos
               },
-              plugins: [
-                {
-                  expiration: {
-                    maxEntries: 20,
-                    maxAgeSeconds: 60 * 5, // 5 minutes
-                  },
-                },
-                {
-                  cacheableResponse: {
-                    statuses: [0, 200],
-                  },
-                },
-              ],
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
         ],
-        navigateFallback: null,
-      },
-      devOptions: {
-        enabled: true,
-        navigateFallback: null,
       },
       manifest: {
         name: 'Gama Creative Fut',
         short_name: 'GamaFut',
         description: 'Gerenciamento de Campeonatos de Futebol',
-        theme_color: '#1a202c',
-        background_color: '#1a202c',
+        theme_color: '#1a202c', // Cor do tema para o navegador
+        background_color: '#1a202c', // Cor de fundo para a tela inicial
         display: 'standalone',
         icons: [
           {
