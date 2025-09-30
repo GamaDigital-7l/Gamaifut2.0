@@ -151,7 +151,8 @@ const PublicChampionshipView = () => {
     );
   }
 
-  console.log('PublicChampionshipView: Rendering ChampionshipMatchSimulatorTab with matches:', matches); // ADDED LOG
+  console.log('PublicChampionshipView: Current activeTab state:', activeTab); // NEW LOG
+  console.log('PublicChampionshipView: Matches array passed to simulator:', matches); // NEW LOG
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -191,7 +192,10 @@ const PublicChampionshipView = () => {
             )}
             {/* NEW: Prominent button for Simulator */}
             <Button 
-              onClick={() => setActiveTab('simulator')} 
+              onClick={() => {
+                console.log('PublicChampionshipView: Simulator button clicked, setting activeTab to "simulator"'); // NEW LOG
+                setActiveTab('simulator');
+              }} 
               className="mt-4 w-full max-w-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <Calculator className="mr-2 h-5 w-5" /> Simular Resultados

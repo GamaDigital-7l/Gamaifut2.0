@@ -38,7 +38,8 @@ export function ChampionshipMatchSimulatorTab({
   matches,
   isLoading,
 }: ChampionshipMatchSimulatorTabProps) {
-  console.log('ChampionshipMatchSimulatorTab: Component Rendered. Matches prop:', matches); // ADDED LOG
+  console.log('ChampionshipMatchSimulatorTab: Component Rendered.'); // NEW LOG
+  console.log('ChampionshipMatchSimulatorTab: Received matches prop:', matches); // NEW LOG
 
   const [selectedGroupId, setSelectedGroupId] = useState<string | 'all'>('all');
   const [simulatedMatches, setSimulatedMatches] = useState<SimulatedMatch[]>([]);
