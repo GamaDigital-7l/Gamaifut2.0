@@ -100,6 +100,7 @@ const PublicChampionshipView = () => {
         rounds: Array.isArray(match.rounds) ? match.rounds[0] : match.rounds,
       })) as Match[];
       setMatches(transformedMatches); // Corrected type assertion
+      console.log('PublicChampionshipView: Fetched and transformed matches:', transformedMatches); // ADDED LOG
     }
 
     if (sponsorsRes.error) console.error('Error fetching master sponsor:', sponsorsRes.error);
@@ -148,6 +149,8 @@ const PublicChampionshipView = () => {
       </div>
     );
   }
+
+  console.log('PublicChampionshipView: Rendering ChampionshipMatchSimulatorTab with matches:', matches); // ADDED LOG
 
   return (
     <div className="flex min-h-screen w-full flex-col">

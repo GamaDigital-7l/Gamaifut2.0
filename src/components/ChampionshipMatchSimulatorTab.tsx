@@ -38,12 +38,16 @@ export function ChampionshipMatchSimulatorTab({
   matches,
   isLoading,
 }: ChampionshipMatchSimulatorTabProps) {
+  console.log('ChampionshipMatchSimulatorTab: Component Rendered. Matches prop:', matches); // ADDED LOG
+
   const [selectedGroupId, setSelectedGroupId] = useState<string | 'all'>('all');
   const [simulatedMatches, setSimulatedMatches] = useState<SimulatedMatch[]>([]);
 
   // Initialize simulated matches with only unplayed matches from props
   useEffect(() => {
+    console.log('ChampionshipMatchSimulatorTab: useEffect for matches prop changed. Original matches:', matches); // ADDED LOG
     const unplayedMatches = matches.filter(m => m.team1_score === null && m.team2_score === null);
+    console.log('ChampionshipMatchSimulatorTab: Unplayed matches found:', unplayedMatches); // ADDED LOG
     setSimulatedMatches(unplayedMatches.map(match => ({
       ...match,
       simulated_team1_score: null, // Start with null for unplayed matches
@@ -52,6 +56,7 @@ export function ChampionshipMatchSimulatorTab({
   }, [matches]); // Re-initialize if the original matches prop changes
 
   const handleScoreChange = useCallback((matchId: string, team: 'team1' | 'team2', score: number | null) => {
+    console.log(`ChampionshipMatchSimulatorTab: handleScoreChange for match ${matchId}, team ${team}, score ${score}`); // ADDED LOG
     setSimulatedMatches(prevMatches =>
       prevMatches.map(m =>
         m.id === matchId
@@ -62,15 +67,19 @@ export function ChampionshipMatchSimulatorTab({
   }, []);
 
   const filteredSimulatedMatches = useMemo(() => {
-    return simulatedMatches.filter(match =>
+    const filtered = simulatedMatches.filter(match =>
       selectedGroupId === 'all' || match.group_id === selectedGroupId
     );
+    console.log('ChampionshipMatchSimulatorTab: filteredSimulatedMatches recalculated:', filtered); // ADDED LOG
+    return filtered;
   }, [simulatedMatches, selectedGroupId]);
 
   const teamsForLeaderboard = useMemo(() => {
-    return selectedGroupId === 'all'
+    const filteredTeams = selectedGroupId === 'all'
       ? teams
       : teams.filter(team => team.group_id === selectedGroupId);
+    console.log('ChampionshipMatchSimulatorTab: teamsForLeaderboard recalculated:', filteredTeams); // ADDED LOG
+    return filteredTeams;
   }, [teams, selectedGroupId]);
 
   const matchesForLeaderboard = useMemo(() => {
@@ -84,9 +93,11 @@ export function ChampionshipMatchSimulatorTab({
         team2_score: match.simulated_team2_score,
       })),
     ];
-    return combinedMatches.filter(match =>
+    const filteredCombined = combined.filter(match =>
       selectedGroupId === 'all' || match.group_id === selectedGroupId
     );
+    console.log('ChampionshipMatchSimulatorTab: matchesForLeaderboard recalculated:', filteredCombined); // ADDED LOG
+    return filteredCombined;
   }, [matches, filteredSimulatedMatches, selectedGroupId]);
 
   if (isLoading) {
