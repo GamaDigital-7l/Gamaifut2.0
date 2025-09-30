@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react'; // Importar useMemo
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { CalendarTab } from '@/components/CalendarTab';
 import { StatisticsTab } from '@/components/StatisticsTab';
 import { TopScorersList } from '@/components/TopScorersList';
 import { MediaGallery } from '@/components/MediaGallery';
+import { ChampionshipMatchSimulatorTab } from '@/components/ChampionshipMatchSimulatorTab'; // NEW: Import the simulator tab
 import {
   Select,
   SelectContent,
@@ -33,7 +34,8 @@ import {
   Milestone, 
   Calendar as CalendarIconLucide, 
   BarChart2,
-  Goal 
+  Goal,
+  Calculator // NEW: Import Calculator icon for Simulator
 } from 'lucide-react';
 import { Championship, Team, Match, Group, Round, Sponsor } from '@/types';
 
@@ -48,6 +50,7 @@ const PublicChampionshipView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<string>('leaderboard'); // State to control active tab
   const { fetchChampionshipLogo } = useChampionshipTheme();
 
   const fetchData = useCallback(async () => {
@@ -167,6 +170,13 @@ const PublicChampionshipView = () => {
                 <img src={masterSponsor.logo_url} alt={masterSponsor.name} className="h-8 w-auto object-contain" loading="lazy" />
               </a>
             )}
+            {/* NEW: Prominent button for Simulator */}
+            <Button 
+              onClick={() => setActiveTab('simulator')} 
+              className="mt-4 w-full max-w-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <Calculator className="mr-2 h-5 w-5" /> Simular Resultados
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -266,9 +276,13 @@ const PublicChampionshipView = () => {
             />
           </div>
 
-          <Tabs defaultValue="teams" className="w-full mt-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4"> {/* Controlled Tabs */}
             <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6 sm:grid-cols-7 lg:grid-cols-8"> {/* Adjusted grid-cols */}
+                <TabsTrigger value="leaderboard">
+                  <BarChart2 className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Classificação</span>
+                </TabsTrigger>
                 <TabsTrigger value="teams">
                   <Users className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Times</span>
@@ -289,9 +303,51 @@ const PublicChampionshipView = () => {
                   <BarChart2 className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Estatísticas</span>
                 </TabsTrigger>
+                <TabsTrigger value="simulator"> {/* NEW TAB TRIGGER */}
+                  <Calculator className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Simulador</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             
+            <TabsContent value="leaderboard" className="mt-4">
+              {groups.length > 0 ? (
+                <div className="space-y-4">
+                  {groups.map(group => (
+                    <Card key={group.id}>
+                      <CardHeader>
+                        <CardTitle>Classificação - {group.name}</CardTitle>
+                        <CardDescription>Times do grupo {group.name}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Leaderboard 
+                          teams={teams.filter(team => team.group_id === group.id)} 
+                          matches={matches.filter(match => match.group_id === group.id)} 
+                          isPublicView={true}
+                          pointsForWin={championship.points_for_win}
+                        />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Classificação Geral</CardTitle>
+                    <CardDescription>Todos os times do campeonato.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Leaderboard 
+                      teams={teams} 
+                      matches={matches} 
+                      isPublicView={true} 
+                      pointsForWin={championship.points_for_win}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
             <TabsContent value="teams" className="mt-4">
               <Card>
                 <CardHeader>
@@ -351,6 +407,17 @@ const PublicChampionshipView = () => {
                 matches={matches} 
                 isLoading={loading}
                 onDataChange={() => {}}
+              />
+            </TabsContent>
+
+            <TabsContent value="simulator" className="mt-4"> {/* NEW SIMULATOR TAB CONTENT */}
+              <ChampionshipMatchSimulatorTab
+                championship={championship}
+                teams={teams}
+                groups={groups}
+                rounds={rounds}
+                matches={matches}
+                isLoading={loading}
               />
             </TabsContent>
           </Tabs>

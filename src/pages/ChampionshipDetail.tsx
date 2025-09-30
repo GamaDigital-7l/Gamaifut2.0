@@ -13,8 +13,8 @@ import {
   HeartHandshake,
   Settings,
   UserPlus,
-  Camera,
-  Calculator // NEW: Import Calculator icon for Simulator
+  Camera
+  // Removed Calculator icon for Simulator
 } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -39,7 +39,7 @@ import { ChampionshipSettingsTab } from '@/components/ChampionshipSettingsTab';
 import { ManageChampionshipAccessDialog } from '@/components/ManageChampionshipAccessDialog';
 import { UploadMediaDialog } from '@/components/UploadMediaDialog';
 import { MediaGallery } from '@/components/MediaGallery';
-import { ChampionshipMatchSimulatorTab } from '@/components/ChampionshipMatchSimulatorTab'; // NEW: Import the simulator tab
+// Removed ChampionshipMatchSimulatorTab import
 
 // Combined fetch function for all championship data
 const fetchChampionshipData = async (id: string) => {
@@ -167,7 +167,7 @@ const ChampionshipDetail = () => {
 
       <Tabs defaultValue="leaderboard" className="w-full">
         <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <TabsList className="grid w-full grid-cols-11"> {/* Adjusted grid-cols to 11 */}
+          <TabsList className="grid w-full grid-cols-10"> {/* Adjusted grid-cols to 10 */}
             <TabsTrigger value="leaderboard" className="md:col-span-1"><BarChart2 className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Classificação</span></TabsTrigger>
             <TabsTrigger value="matches" className="md:col-span-1"><CalendarIconLucide className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Jogos</span></TabsTrigger>
             <TabsTrigger value="teams" className="md:col-span-1"><Users className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Times</span></TabsTrigger>
@@ -177,7 +177,7 @@ const ChampionshipDetail = () => {
             <TabsTrigger value="statistics" className="md:col-span-1"><BarChart2 className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Estatísticas</span></TabsTrigger>
             <TabsTrigger value="sponsors" className="md:col-span-1"><HeartHandshake className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Patrocínios</span></TabsTrigger>
             <TabsTrigger value="portfolio" className="md:col-span-1"><Camera className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Portfólio</span></TabsTrigger>
-            <TabsTrigger value="simulator" className="md:col-span-1"><Calculator className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Simulador</span></TabsTrigger> {/* NEW TAB */}
+            {/* Removed Simulator Tab Trigger */}
             <TabsTrigger value="settings" className="md:col-span-1"><Settings className="h-5 w-5 sm:mr-2" /><span className="hidden sm:inline">Ajustes</span></TabsTrigger>
           </TabsList>
         </div>
@@ -276,16 +276,7 @@ const ChampionshipDetail = () => {
             rounds={rounds}
           />
         </TabsContent>
-        <TabsContent value="simulator" className="mt-4"> {/* NEW SIMULATOR TAB CONTENT */}
-          <ChampionshipMatchSimulatorTab
-            championship={championship}
-            teams={teams}
-            groups={groups}
-            rounds={rounds}
-            matches={matches}
-            isLoading={isLoading}
-          />
-        </TabsContent>
+        {/* Removed Simulator Tab Content */}
         <TabsContent value="settings" className="mt-4">
           <ChampionshipSettingsTab 
             championshipId={championship.id} 
