@@ -18,17 +18,14 @@ export default defineConfig(() => ({
       workbox: {
         clientsClaim: true, // Assume o controle de clientes não controlados imediatamente
         skipWaiting: true, // Ativa o novo SW imediatamente após a instalação
+        cleanupOutdatedCaches: true, // Limpa caches antigos automaticamente
         // Estratégias de cache para diferentes tipos de assets
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith('/'), // Cache para o index.html e rotas
-            handler: 'NetworkFirst', // Prioriza a rede, mas serve do cache se offline
+            urlPattern: ({ url }) => url.pathname === '/', // Especificamente para o index.html
+            handler: 'NetworkOnly', // Garante que index.html NUNCA seja servido do cache
             options: {
-              cacheName: 'html-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24, // 24 horas
-              },
+              cacheName: 'html-network-only',
               cacheableResponse: {
                 statuses: [0, 200],
               },
@@ -63,6 +60,7 @@ export default defineConfig(() => ({
             },
           },
         ],
+        navigateFallback: null, // Impede que index.html seja servido como fallback para navegação offline
       },
       manifest: {
         name: 'Gama Creative Fut',

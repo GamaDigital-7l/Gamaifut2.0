@@ -41,13 +41,16 @@ const SessionContext = createContext<SessionContextType>({ session: null, userPr
 
 // Minimum time the loading spinner should be visible to prevent flashes
 const MIN_LOADING_TIME = 300; // milliseconds
+const LOADING_TIMEOUT_MS = 15000; // 15 seconds before showing reload prompt
 
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
   let isMounted = true; // Flag to prevent state updates on unmounted component
   let loadingTimer: number;
+  let timeoutId: number; // For the loading timeout
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true); // Start true
+  const [showReloadPrompt, setShowReloadPrompt] = useState(false); // New state for reload prompt
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     console.log('SessionProvider: Attempting to fetch user profile for ID:', userId);
@@ -81,10 +84,12 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   useEffect(() => {
     console.log('SessionProvider: useEffect mounted.');
     setLoading(true); // Ensure loading is true when component mounts
+    setShowReloadPrompt(false); // Reset reload prompt on mount
 
     const finalizeLoading = () => {
       if (isMounted) {
         setLoading(false);
+        window.clearTimeout(timeoutId); // Clear the loading timeout
         console.log('SessionProvider: Loading set to false after all async operations and min time.');
       }
     };
@@ -96,9 +101,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       }
 
       console.log('SessionProvider: onAuthStateChange event:', _event, 'session:', currentSession ? 'present' : 'null');
-      // IMPORTANT: Do NOT set setLoading(true) here. It's already true from useEffect.
-      // This prevents resetting the loading state if onAuthStateChange fires multiple times.
-
+      
       const startTime = Date.now();
 
       try {
@@ -139,18 +142,43 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
     console.log('SessionProvider: onAuthStateChange listener set up.');
 
+    // Set a timeout to show the reload prompt if loading takes too long
+    timeoutId = window.setTimeout(() => {
+      if (isMounted && loading) { // Only show if still loading
+        console.log('SessionProvider: Loading timeout reached. Showing reload prompt.');
+        setShowReloadPrompt(true);
+      }
+    }, LOADING_TIMEOUT_MS);
+
     // Cleanup function
     return () => {
       isMounted = false;
       window.clearTimeout(loadingTimer); // Use window.clearTimeout
+      window.clearTimeout(timeoutId); // Clear the loading timeout
       console.log('SessionProvider: useEffect unmounted, unsubscribing from auth state changes.');
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile]); // fetchUserProfile is the only dependency
+  }, [fetchUserProfile, loading]); // Add 'loading' to dependencies to re-evaluate timeout if loading state changes
+
+  const handleReloadApp = () => {
+    console.log('SessionProvider: Reload App button clicked. Forcing full reload.');
+    window.location.reload(true); // true forces a reload from the server, bypassing cache
+  };
 
   return (
     <SessionContext.Provider value={{ session, userProfile, loading }}>
       {children}
+      {showReloadPrompt && (
+        <div className="fixed inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 p-4 text-center">
+          <p className="text-lg font-medium mb-4">O aplicativo está demorando para carregar.</p>
+          <button
+            onClick={handleReloadApp}
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-md shadow-lg hover:bg-primary/90 transition-colors"
+          >
+            Recarregar Aplicativo
+          </button>
+        </div>
+      )}
     </SessionContext.Provider>
   );
 };
@@ -198,7 +226,7 @@ export const useSession = () => {
 const LoadingSpinner = () => {
   console.log('LoadingSpinner: Rendering...');
   return (
-    <div className="flex h-screen items-center justify-center bg-background text-foreground">
+    <div className="fixed inset-0 flex h-screen items-center justify-center bg-background text-foreground z-50">
       <p className="text-lg font-medium">Carregando aplicativo...</p>
     </div>
   );
