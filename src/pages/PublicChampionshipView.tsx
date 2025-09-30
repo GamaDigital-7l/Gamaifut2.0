@@ -423,10 +423,8 @@ const PublicChampionshipView = () => {
                 onDataChange={() => {}}
               />
             </TabsContent>
-          </Tabs>
 
-          {activeTab === 'simulator' && (
-            <div className="mt-4">
+            <TabsContent value="simulator" className="mt-4"> {/* Simulator tab content */}
               <ChampionshipMatchSimulatorTab
                 championship={championship}
                 teams={teams}
@@ -435,8 +433,8 @@ const PublicChampionshipView = () => {
                 matches={matches}
                 isLoading={loading}
               />
-            </div>
-          )}
+            </TabsContent>
+          </Tabs>
           
           <SponsorDisplay championshipId={championship.id} />
         </div>
