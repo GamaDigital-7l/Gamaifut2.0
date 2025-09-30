@@ -185,15 +185,7 @@ const PublicChampionshipView = () => {
                 <img src={masterSponsor.logo_url} alt={masterSponsor.name} className="h-8 w-auto object-contain" loading="lazy" />
               </a>
             )}
-            <Button 
-              onClick={() => {
-                console.log('PublicChampionshipView: Botão "Simular Resultados" clicado. Definindo activeTab para "simulator".');
-                setActiveTab('simulator');
-              }} 
-              className="mt-4 w-full max-w-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              <Calculator className="mr-2 h-5 w-5" /> Simular Resultados
-            </Button>
+            {/* Removido o botão principal "Simular Resultados" */}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -293,10 +285,7 @@ const PublicChampionshipView = () => {
             />
           </div>
 
-          <Tabs value={activeTab} onValueChange={(value) => {
-            console.log('PublicChampionshipView: Tabs onValueChange triggered with value:', value);
-            setActiveTab(value);
-          }} className="w-full mt-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
             <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <TabsList className="grid w-full grid-cols-6 sm:grid-cols-7 lg:grid-cols-8">
                 <TabsTrigger value="leaderboard">
@@ -306,6 +295,10 @@ const PublicChampionshipView = () => {
                 <TabsTrigger value="teams">
                   <Users className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Times</span>
+                </TabsTrigger>
+                <TabsTrigger value="simulator"> {/* Simulador movido para cá */}
+                  <Calculator className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Simulador</span>
                 </TabsTrigger>
                 <TabsTrigger value="groups">
                   <LayoutGrid className="h-5 w-5 sm:mr-2" />
@@ -322,10 +315,6 @@ const PublicChampionshipView = () => {
                 <TabsTrigger value="statistics">
                   <BarChart2 className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Estatísticas</span>
-                </TabsTrigger>
-                <TabsTrigger value="simulator">
-                  <Calculator className="h-5 w-5 sm:mr-2" />
-                  <span className="hidden sm:inline">Simulador</span>
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -400,6 +389,17 @@ const PublicChampionshipView = () => {
               </Card>
             </TabsContent>
 
+            <TabsContent value="simulator" className="mt-4"> {/* Conteúdo do simulador */}
+              <ChampionshipMatchSimulatorTab
+                championship={championship}
+                teams={teams}
+                groups={groups}
+                rounds={rounds}
+                matches={matches}
+                isLoading={loading}
+              />
+            </TabsContent>
+
             <TabsContent value="groups" className="mt-4">
               <PublicGroupsTab championshipId={championship.id} teams={teams} />
             </TabsContent>
@@ -427,18 +427,6 @@ const PublicChampionshipView = () => {
                 matches={matches} 
                 isLoading={loading}
                 onDataChange={() => {}}
-              />
-            </TabsContent>
-
-            <TabsContent value="simulator" className="mt-4 bg-red-500"> {/* Re-added red background for debugging */}
-              {console.log('PublicChampionshipView: TabsContent "simulator" está sendo renderizado!')}
-              <ChampionshipMatchSimulatorTab
-                championship={championship}
-                teams={teams}
-                groups={groups}
-                rounds={rounds}
-                matches={matches}
-                isLoading={loading}
               />
             </TabsContent>
           </Tabs>
