@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { Plus, Trash2 } from 'lucide-react';
 import { Match, MatchGoal } from '@/types';
+import { Separator } from '@/components/ui/separator'; // Importar Separator
 
 interface QuickScoreUpdateDrawerProps {
   match: Match;
@@ -48,7 +49,7 @@ export function QuickScoreUpdateDrawer({
   const [team2Goals, setTeam2Goals] = useState<GoalInput[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Helper function to truncate names
+  // Helper function to truncate names (still useful for title attributes if needed)
   const truncateName = (name: string, maxLength: number = 12) => {
     if (name.length > maxLength) {
       return name.substring(0, maxLength - 3) + '...';
@@ -82,7 +83,7 @@ export function QuickScoreUpdateDrawer({
   };
 
   const removeGoal = (team: 'team1' | 'team2', tempId: string) => {
-    const setGoals = team === 'team1' ? setTeam1Goals : setTeam2Goals;
+    const setGoals = team === 'team1' ? setGoals : setTeam2Goals;
     setGoals(prev => prev.filter(goal => goal.tempId !== tempId));
   };
 
@@ -201,39 +202,47 @@ export function QuickScoreUpdateDrawer({
           </DrawerHeader>
           <div className="p-4 pb-0 space-y-6">
             {/* Score Section */}
-            <div className="flex items-center justify-center space-x-2">
+            <div className="flex items-center justify-center space-x-4"> {/* Increased space-x */}
               {/* Team 1 Score */}
               <div className="flex-1 text-center space-y-2">
-                <Label htmlFor="team1-score" className="truncate text-sm" title={match.team1.name}>
-                  {truncateName(match.team1.name)}
-                </Label>
-                <div className="flex items-center justify-center space-x-2">
-                  <Input
-                    id="team1-score"
-                    type="number"
-                    value={team1Score}
-                    onChange={(e) => setTeam1Score(parseInt(e.target.value, 10) || 0)}
-                    className="w-16 h-16 text-center text-2xl"
-                  />
+                <div className="flex items-center justify-center gap-2 mb-2"> {/* Added flex for logo and name */}
+                  {match.team1.logo_url && (
+                    <img src={match.team1.logo_url} alt={match.team1.name} className="h-8 w-8 object-contain" loading="lazy" />
+                  )}
+                  <Label htmlFor="team1-score" className="text-lg font-semibold truncate" title={match.team1.name}> {/* Larger font */}
+                    {match.team1.name}
+                  </Label>
                 </div>
+                <Input
+                  id="team1-score"
+                  type="number"
+                  value={team1Score}
+                  onChange={(e) => setTeam1Score(parseInt(e.target.value, 10) || 0)}
+                  className="w-20 h-20 text-center text-3xl" // Larger input
+                />
               </div>
-              <span className="text-2xl font-bold">X</span>
+              <span className="text-4xl font-bold text-muted-foreground">X</span> {/* Larger X */}
               {/* Team 2 Score */}
               <div className="flex-1 text-center space-y-2">
-                <Label htmlFor="team2-score" className="truncate text-sm" title={match.team2.name}>
-                  {truncateName(match.team2.name)}
-                </Label>
-                <div className="flex items-center justify-center space-x-2">
-                  <Input
-                    id="team2-score"
-                    type="number"
-                    value={team2Score}
-                    onChange={(e) => setTeam2Score(parseInt(e.target.value, 10) || 0)}
-                    className="w-16 h-16 text-center text-2xl"
-                  />
+                <div className="flex items-center justify-center gap-2 mb-2"> {/* Added flex for logo and name */}
+                  {match.team2.logo_url && (
+                    <img src={match.team2.logo_url} alt={match.team2.name} className="h-8 w-8 object-contain" loading="lazy" />
+                  )}
+                  <Label htmlFor="team2-score" className="text-lg font-semibold truncate" title={match.team2.name}> {/* Larger font */}
+                    {match.team2.name}
+                  </Label>
                 </div>
+                <Input
+                  id="team2-score"
+                  type="number"
+                  value={team2Score}
+                  onChange={(e) => setTeam2Score(parseInt(e.target.value, 10) || 0)}
+                  className="w-20 h-20 text-center text-3xl" // Larger input
+                />
               </div>
             </div>
+
+            <Separator className="my-6" /> {/* Add separator */}
 
             {/* Goal Scorers Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
