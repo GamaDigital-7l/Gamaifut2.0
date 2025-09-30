@@ -1,37 +1,17 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./globals.css";
-import { Workbox } from 'workbox-window'; // Import Workbox
+// Removido: import { Workbox } from 'workbox-window'; // Import Workbox
 
 // Render the React app
 createRoot(document.getElementById("root")!).render(<App />);
 
-// --- PWA Update Handling ---
-if ('serviceWorker' in navigator) {
-  const wb = new Workbox('/sw.js'); // Path to your service worker file
-
-  wb.addEventListener('waiting', () => {
-    // A new service worker is waiting to activate.
-    // This means a new version of your app is available.
-    console.log('PWA: New service worker is waiting. Prompting user to reload.');
-    if (confirm('Uma nova versão do aplicativo está disponível. Recarregar agora?')) {
-      wb.messageSkipWaiting(); // Tell the waiting service worker to activate
-      window.location.reload(); // Force a hard reload to get the new content
-    }
-  });
-
-  wb.addEventListener('externalwaiting', () => {
-    // Similar to 'waiting', but for service workers from other origins/scopes.
-    console.log('PWA: External service worker is waiting. Prompting user to reload.');
-    if (confirm('Uma nova versão do aplicativo está disponível. Recarregar agora?')) {
-      wb.messageSkipWaiting();
-      window.location.reload();
-    }
-  });
-
-  wb.register(); // Register the service worker
-  console.log('PWA: Service worker registered.');
-}
+// --- PWA Update Handling (Agora gerenciado pelo vite-plugin-pwa com injectRegister: 'auto') ---
+// O vite-plugin-pwa injetará um script que registra o Service Worker
+// e lida com as atualizações automaticamente.
+// Se você precisar de lógica personalizada para 'waiting' ou 'externalwaiting',
+// você pode adicionar um listener ao 'window.addEventListener('load', () => { ... })'
+// e usar 'navigator.serviceWorker.ready.then(registration => { ... })' para acessar o SW.
 
 // --- BFCache Handling ---
 window.addEventListener('pageshow', (event) => {
