@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Trophy } from 'lucide-react';
+import { Trophy, Calculator } from 'lucide-react'; // Added Calculator icon
 
 export const PublicHeader = () => {
   return (
@@ -9,9 +9,17 @@ export const PublicHeader = () => {
         <Trophy className="h-6 w-6" />
         <span className="">Gama Creative Fut</span>
       </Link>
-      <Link to="/login">
-        <Button variant="outline" className="text-foreground">Acessar Painel</Button>
-      </Link>
+      <div className="flex items-center gap-2">
+        <Link to="/simulate-results">
+          <Button variant="ghost" className="text-foreground flex items-center gap-1">
+            <Calculator className="h-4 w-4" />
+            <span className="hidden sm:inline">Simular Resultados</span>
+          </Button>
+        </Link>
+        <Link to="/login">
+          <Button variant="outline" className="text-foreground">Acessar Painel</Button>
+        </Link>
+      </div>
     </header>
   );
 };

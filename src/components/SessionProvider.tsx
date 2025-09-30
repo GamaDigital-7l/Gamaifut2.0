@@ -169,9 +169,10 @@ const useRedirects = () => {
     const isPublicRoute = location.pathname.startsWith('/public/');
     const isLoginRoute = location.pathname === '/login';
     const isIndexRoute = location.pathname === '/';
+    const isSimulateResultsRoute = location.pathname === '/simulate-results'; // NEW: Check for simulate results route
 
-    if (!session && !isPublicRoute && !isLoginRoute && !isIndexRoute) {
-      console.log('Redirects: No session, not public/login/index. Redirecting to /login');
+    if (!session && !isPublicRoute && !isLoginRoute && !isIndexRoute && !isSimulateResultsRoute) { // UPDATED: Include simulate results
+      console.log('Redirects: No session, not public/login/index/simulate-results. Redirecting to /login');
       navigate('/login');
     } else if (session && isLoginRoute) {
       console.log('Redirects: Has session, on login page. Redirecting to /dashboard');
@@ -220,13 +221,13 @@ export const AppRoutes = () => {
           <Route path="/public/championship/:id" element={<PublicChampionshipView />} />
           <Route path="/public/team/:teamId" element={<PublicTeamDetail />} />
           <Route path="/public/round/:championshipId/:roundId/:roundToken" element={<PublicRoundScoreboard />} />
+          <Route path="/simulate-results" element={<SimulateResults />} /> {/* MOVED: Now a public route */}
           
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/official-dashboard" element={<OfficialDashboard />} />
             <Route path="/official-championship-matches/:id" element={<OfficialChampionshipMatches />} />
             <Route path="/top-scorers" element={<TopScorers />} />
-            <Route path="/simulate-results" element={<SimulateResults />} /> {/* NEW ROUTE */}
             <Route path="/championship/:id" element={<ChampionshipDetail />} />
             <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
             <Route path="/profile" element={<Profile />} />

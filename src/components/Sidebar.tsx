@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, Home, ChevronLeft, ChevronRight, Users, ClipboardList, Goal, Calculator } from "lucide-react"; // Added Calculator icon
+import { Trophy, Home, ChevronLeft, ChevronRight, Users, ClipboardList, Goal } from "lucide-react"; // Removed Calculator icon
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useSession } from '@/components/SessionProvider'; // Import useSession
@@ -33,12 +33,13 @@ const Sidebar = ({ isCollapsed, toggleCollapsed, isMobileSheet }: SidebarProps) 
       label: "Artilheiros",
       roles: ['user', 'official', 'admin'], // Visible to all authenticated users
     },
-    {
-      href: "/simulate-results", // NEW: Link for Simulate Results
-      icon: <Calculator className="h-4 w-4" />,
-      label: "Simular Resultados",
-      roles: ['user', 'official', 'admin'], // Visible to all authenticated users
-    },
+    // Removed Simulate Results from sidebar as it's now a public route
+    // {
+    //   href: "/simulate-results",
+    //   icon: <Calculator className="h-4 w-4" />,
+    //   label: "Simular Resultados",
+    //   roles: ['user', 'official', 'admin'],
+    // },
     {
       href: "/users",
       icon: <Users className="h-4 w-4" />,
