@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 // import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 // import { ExpirationPlugin } from 'workbox-expiration';
 
-export default defineConfig(() => ({
+export default defineConfig(async () => ({ // Adicionado 'async' aqui
   server: {
     host: "::",
     port: 8080,
