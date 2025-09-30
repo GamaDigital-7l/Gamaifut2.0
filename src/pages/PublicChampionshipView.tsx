@@ -92,6 +92,7 @@ const PublicChampionshipView = () => {
 
     if (matchesRes.error) console.error('Error fetching matches:', matchesRes.error);
     else {
+      console.log('PublicChampionshipView: Raw matches data from Supabase:', matchesRes.data); // NEW LOG
       const transformedMatches = (matchesRes.data || []).map((match: any) => ({
         ...match,
         team1: Array.isArray(match.team1) ? match.team1[0] : match.team1,

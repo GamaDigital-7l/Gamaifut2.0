@@ -19,6 +19,7 @@ interface SimulatedMatchCardProps {
 }
 
 export const SimulatedMatchCard = memo(function SimulatedMatchCard({ match, onScoreChange, isEven }: SimulatedMatchCardProps) {
+  console.log('SimulatedMatchCard: Received match prop:', match); // ADDED LOG
   const matchDate = match.match_date ? new Date(match.match_date) : null;
 
   const handleTeam1ScoreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
