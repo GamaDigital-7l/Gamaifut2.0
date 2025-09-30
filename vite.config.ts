@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 // import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 // import { ExpirationPlugin } from 'workbox-expiration';
 
-export default defineConfig(async () => ({ // Adicionado 'async' aqui
+export default defineConfig(() => ({ // Removido 'async'
   server: {
     host: "::",
     port: 8080,
@@ -32,10 +32,11 @@ export default defineConfig(async () => ({ // Adicionado 'async' aqui
             options: {
               cacheName: 'html-network-only',
               plugins: [
-                // Instanciar CacheableResponsePlugin diretamente aqui
-                new (await import('workbox-cacheable-response')).CacheableResponsePlugin({
-                  statuses: [0, 200],
-                }),
+                {
+                  cacheableResponse: {
+                    statuses: [0, 200],
+                  },
+                },
               ],
             },
           },
@@ -49,10 +50,11 @@ export default defineConfig(async () => ({ // Adicionado 'async' aqui
                 maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
               },
               plugins: [
-                // Instanciar CacheableResponsePlugin diretamente aqui
-                new (await import('workbox-cacheable-response')).CacheableResponsePlugin({
-                  statuses: [0, 200],
-                }),
+                {
+                  cacheableResponse: {
+                    statuses: [0, 200],
+                  },
+                },
               ],
             },
           },
@@ -66,14 +68,17 @@ export default defineConfig(async () => ({ // Adicionado 'async' aqui
                 maxAgeSeconds: 60 * 5, // 5 minutes
               },
               plugins: [
-                // Instanciar ExpirationPlugin e CacheableResponsePlugin diretamente aqui
-                new (await import('workbox-expiration')).ExpirationPlugin({
-                  maxEntries: 20,
-                  maxAgeSeconds: 60 * 5, // 5 minutes
-                }),
-                new (await import('workbox-cacheable-response')).CacheableResponsePlugin({
-                  statuses: [0, 200],
-                }),
+                {
+                  expiration: {
+                    maxEntries: 20,
+                    maxAgeSeconds: 60 * 5, // 5 minutes
+                  },
+                },
+                {
+                  cacheableResponse: {
+                    statuses: [0, 200],
+                  },
+                },
               ],
             },
           },
