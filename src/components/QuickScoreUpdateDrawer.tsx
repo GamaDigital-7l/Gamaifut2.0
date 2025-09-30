@@ -83,8 +83,8 @@ export function QuickScoreUpdateDrawer({
   };
 
   const removeGoal = (team: 'team1' | 'team2', tempId: string) => {
-    const setGoals = team === 'team1' ? setGoals : setTeam2Goals;
-    setGoals(prev => prev.filter(goal => goal.tempId !== tempId));
+    const setGoalsFunc = team === 'team1' ? setTeam1Goals : setTeam2Goals; // Renamed to avoid conflict
+    setGoalsFunc(prev => prev.filter(goal => goal.tempId !== tempId));
   };
 
   const handleSubmit = async () => {
@@ -230,7 +230,7 @@ export function QuickScoreUpdateDrawer({
                       }
                     }
                   }}
-                  className="w-20 h-20 text-center text-3xl" // Larger input
+                  className="w-20 h-20 text-center text-3xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" // Larger input
                   placeholder="0" // Placeholder for empty state
                 />
               </div>
@@ -262,7 +262,7 @@ export function QuickScoreUpdateDrawer({
                       }
                     }
                   }}
-                  className="w-20 h-20 text-center text-3xl" // Larger input
+                  className="w-20 h-20 text-center text-3xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" // Larger input
                   placeholder="0" // Placeholder for empty state
                 />
               </div>
