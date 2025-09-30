@@ -20,7 +20,7 @@ const PublicChampionshipView = lazy(() => import("@/pages/PublicChampionshipView
 const PublicTeamDetail = lazy(() => import("@/pages/PublicTeamDetail"));
 const PublicRoundScoreboard = lazy(() => import("@/pages/PublicRoundScoreboard")); // Import new PublicRoundScoreboard
 const MainLayout = lazy(() => import("@/components/MainLayout"));
-
+const SimulateResults = lazy(() => import("@/pages/SimulateResults")); // NEW: Import SimulateResults
 
 interface UserProfile {
   id: string;
@@ -95,8 +95,8 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
       }
 
       console.log('SessionProvider: onAuthStateChange event:', _event, 'session:', currentSession ? 'present' : 'null');
-      // Do NOT set setLoading(true) here, it's already true from useEffect.
-      // This prevents race conditions where a later event sets loading to true again.
+      // IMPORTANT: Do NOT set setLoading(true) here. It's already true from useEffect.
+      // This prevents resetting the loading state if onAuthStateChange fires multiple times.
 
       const startTime = Date.now();
 
@@ -224,8 +224,9 @@ export const AppRoutes = () => {
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/official-dashboard" element={<OfficialDashboard />} />
-            <Route path="/official-championship-matches/:id" element={<OfficialChampionshipMatches />} /> {/* NEW ROUTE */}
-            <Route path="/top-scorers" element={<TopScorers />} /> {/* NEW ROUTE */}
+            <Route path="/official-championship-matches/:id" element={<OfficialChampionshipMatches />} />
+            <Route path="/top-scorers" element={<TopScorers />} />
+            <Route path="/simulate-results" element={<SimulateResults />} /> {/* NEW ROUTE */}
             <Route path="/championship/:id" element={<ChampionshipDetail />} />
             <Route path="/championship/:id/theme" element={<ChampionshipTheme />} />
             <Route path="/profile" element={<Profile />} />

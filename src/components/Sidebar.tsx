@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, Home, ChevronLeft, ChevronRight, Users, ClipboardList, Goal } from "lucide-react"; // Added Goal icon
+import { Trophy, Home, ChevronLeft, ChevronRight, Users, ClipboardList, Goal, Calculator } from "lucide-react"; // Added Calculator icon
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useSession } from '@/components/SessionProvider'; // Import useSession
@@ -31,6 +31,12 @@ const Sidebar = ({ isCollapsed, toggleCollapsed, isMobileSheet }: SidebarProps) 
       href: "/top-scorers", // New link for Top Scorers
       icon: <Goal className="h-4 w-4" />,
       label: "Artilheiros",
+      roles: ['user', 'official', 'admin'], // Visible to all authenticated users
+    },
+    {
+      href: "/simulate-results", // NEW: Link for Simulate Results
+      icon: <Calculator className="h-4 w-4" />,
+      label: "Simular Resultados",
       roles: ['user', 'official', 'admin'], // Visible to all authenticated users
     },
     {
