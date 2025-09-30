@@ -16,14 +16,14 @@ import { showError } from '@/utils/toast';
 import { SimulatedMatchCard } from '@/components/SimulatedMatchCard';
 import { Leaderboard } from '@/components/Leaderboard'; // Reusing existing Leaderboard
 
-console.log('SimulateResults.tsx: Module loaded.'); // NEW: Added console log
+console.log('MatchSimulator.tsx: Module loaded.'); // NEW: Updated console log
 
 interface SimulatedMatch extends Match {
   simulated_team1_score: number | null;
   simulated_team2_score: number | null;
 }
 
-const SimulateResults = () => {
+const MatchSimulator = () => {
   const [championships, setChampionships] = useState<Championship[]>([]);
   const [selectedChampionshipId, setSelectedChampionshipId] = useState<string | undefined>(undefined);
   const [loadingChampionships, setLoadingChampionships] = useState(true);
@@ -172,7 +172,7 @@ const SimulateResults = () => {
             {/* Simulated Matches Input */}
             <Card>
               <CardHeader>
-                <CardTitle>Partidas para Simular</CardDescription>
+                <CardTitle>Partidas para Simular</CardTitle>
                 <CardDescription>Altere os placares para ver o impacto na classificação.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -217,4 +217,4 @@ const SimulateResults = () => {
   );
 };
 
-export default SimulateResults;
+export default MatchSimulator;

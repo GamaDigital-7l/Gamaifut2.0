@@ -10,7 +10,7 @@ export const PublicHeader = () => {
         <span className="">Gama Creative Fut</span>
       </Link>
       <div className="flex items-center gap-2">
-        <Link to="/simulate-results">
+        <Link to="/match-simulator"> {/* UPDATED: Link to new MatchSimulator route */}
           <Button variant="ghost" className="text-foreground flex items-center gap-1">
             <Calculator className="h-4 w-4" />
             <span className="hidden sm:inline">Simular Resultados</span>

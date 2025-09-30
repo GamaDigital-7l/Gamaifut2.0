@@ -20,7 +20,7 @@ const PublicChampionshipView = lazy(() => import("@/pages/PublicChampionshipView
 const PublicTeamDetail = lazy(() => import("@/pages/PublicTeamDetail"));
 const PublicRoundScoreboard = lazy(() => import("@/pages/PublicRoundScoreboard")); // Import new PublicRoundScoreboard
 const MainLayout = lazy(() => import("@/components/MainLayout"));
-const SimulateResults = lazy(() => import("@/pages/SimulateResults")); // NEW: Import SimulateResults
+const MatchSimulator = lazy(() => import("@/pages/MatchSimulator")); // UPDATED: Renamed from SimulateResults
 
 interface UserProfile {
   id: string;
@@ -42,6 +42,8 @@ const SessionContext = createContext<SessionContextType>({ session: null, userPr
 const MIN_LOADING_TIME = 300; // milliseconds
 
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
+  let isMounted = true; // Flag to prevent state updates on unmounted component
+  let loadingTimer: number;
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true); // Start true
@@ -76,8 +78,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   }, []);
 
   useEffect(() => {
-    let isMounted = true; // Flag to prevent state updates on unmounted component
-    let loadingTimer: number;
     console.log('SessionProvider: useEffect mounted.');
     setLoading(true); // Ensure loading is true when component mounts
 
@@ -169,10 +169,10 @@ const useRedirects = () => {
     const isPublicRoute = location.pathname.startsWith('/public/');
     const isLoginRoute = location.pathname === '/login';
     const isIndexRoute = location.pathname === '/';
-    const isSimulateResultsRoute = location.pathname === '/simulate-results'; // NEW: Check for simulate results route
+    const isMatchSimulatorRoute = location.pathname === '/match-simulator'; // UPDATED: Check for match simulator route
 
-    if (!session && !isPublicRoute && !isLoginRoute && !isIndexRoute && !isSimulateResultsRoute) { // UPDATED: Include simulate results
-      console.log('Redirects: No session, not public/login/index/simulate-results. Redirecting to /login');
+    if (!session && !isPublicRoute && !isLoginRoute && !isIndexRoute && !isMatchSimulatorRoute) { // UPDATED: Include match simulator
+      console.log('Redirects: No session, not public/login/index/match-simulator. Redirecting to /login');
       navigate('/login');
     } else if (session && isLoginRoute) {
       console.log('Redirects: Has session, on login page. Redirecting to /dashboard');
@@ -221,7 +221,7 @@ export const AppRoutes = () => {
           <Route path="/public/championship/:id" element={<PublicChampionshipView />} />
           <Route path="/public/team/:teamId" element={<PublicTeamDetail />} />
           <Route path="/public/round/:championshipId/:roundId/:roundToken" element={<PublicRoundScoreboard />} />
-          <Route path="/simulate-results" element={<SimulateResults />} /> {/* MOVED: Now a public route */}
+          <Route path="/match-simulator" element={<MatchSimulator />} /> {/* UPDATED: New route for MatchSimulator */}
           
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
