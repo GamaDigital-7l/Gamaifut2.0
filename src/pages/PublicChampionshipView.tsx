@@ -17,7 +17,7 @@ import { CalendarTab } from '@/components/CalendarTab';
 import { StatisticsTab } from '@/components/StatisticsTab';
 import { TopScorersList } from '@/components/TopScorersList';
 import { MediaGallery } from '@/components/MediaGallery';
-import { ChampionshipMatchSimulatorTab } from '@/components/ChampionshipMatchSimulatorTab'; // NEW: Import the simulator tab
+import { ChampionshipMatchSimulatorTab } from '@/components/ChampionshipMatchSimulatorTab';
 import {
   Select,
   SelectContent,
@@ -35,7 +35,7 @@ import {
   Calendar as CalendarIconLucide, 
   BarChart2,
   Goal,
-  Calculator // NEW: Import Calculator icon for Simulator
+  Calculator
 } from 'lucide-react';
 import { Championship, Team, Match, Group, Round, Sponsor } from '@/types';
 
@@ -50,7 +50,7 @@ const PublicChampionshipView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<string>('leaderboard'); // State to control active tab
+  const [activeTab, setActiveTab] = useState<string>('leaderboard');
   const { fetchChampionshipLogo } = useChampionshipTheme();
 
   const fetchData = useCallback(async () => {
@@ -81,7 +81,7 @@ const PublicChampionshipView = () => {
         ...team,
         groups: Array.isArray(team.groups) ? team.groups[0] : team.groups,
       })) as Team[];
-      setTeams(transformedTeams); // Corrected type assertion
+      setTeams(transformedTeams);
     }
 
     if (groupsRes.error) console.error('Error fetching groups:', groupsRes.error);
@@ -92,7 +92,6 @@ const PublicChampionshipView = () => {
 
     if (matchesRes.error) console.error('Error fetching matches:', matchesRes.error);
     else {
-      console.log('PublicChampionshipView: Raw matches data from Supabase:', matchesRes.data); // NEW LOG
       const transformedMatches = (matchesRes.data || []).map((match: any) => ({
         ...match,
         team1: Array.isArray(match.team1) ? match.team1[0] : match.team1,
@@ -100,8 +99,7 @@ const PublicChampionshipView = () => {
         groups: Array.isArray(match.groups) ? match.groups[0] : match.groups,
         rounds: Array.isArray(match.rounds) ? match.rounds[0] : match.rounds,
       })) as Match[];
-      setMatches(transformedMatches); // Corrected type assertion
-      console.log('PublicChampionshipView: Fetched and transformed matches:', transformedMatches); // ADDED LOG
+      setMatches(transformedMatches);
     }
 
     if (sponsorsRes.error) console.error('Error fetching master sponsor:', sponsorsRes.error);
@@ -151,9 +149,6 @@ const PublicChampionshipView = () => {
     );
   }
 
-  console.log('PublicChampionshipView: Current activeTab state:', activeTab); // NEW LOG
-  console.log('PublicChampionshipView: Matches array passed to simulator:', matches); // NEW LOG
-
   return (
     <div className="flex min-h-screen w-full flex-col">
       <PublicHeader />
@@ -190,12 +185,8 @@ const PublicChampionshipView = () => {
                 <img src={masterSponsor.logo_url} alt={masterSponsor.name} className="h-8 w-auto object-contain" loading="lazy" />
               </a>
             )}
-            {/* NEW: Prominent button for Simulator */}
             <Button 
-              onClick={() => {
-                console.log('PublicChampionshipView: Simulator button clicked!'); // NEW LOG
-                setActiveTab('simulator');
-              }} 
+              onClick={() => setActiveTab('simulator')} 
               className="mt-4 w-full max-w-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <Calculator className="mr-2 h-5 w-5" /> Simular Resultados
@@ -299,12 +290,9 @@ const PublicChampionshipView = () => {
             />
           </div>
 
-          <Tabs value={activeTab} onValueChange={(value) => {
-            console.log('PublicChampionshipView: Tabs onValueChange triggered with value:', value); // NEW LOG
-            setActiveTab(value);
-          }} className="w-full mt-4"> {/* Controlled Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
             <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <TabsList className="grid w-full grid-cols-6 sm:grid-cols-7 lg:grid-cols-8"> {/* Adjusted grid-cols */}
+              <TabsList className="grid w-full grid-cols-6 sm:grid-cols-7 lg:grid-cols-8">
                 <TabsTrigger value="leaderboard">
                   <BarChart2 className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Classificação</span>
@@ -329,7 +317,7 @@ const PublicChampionshipView = () => {
                   <BarChart2 className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Estatísticas</span>
                 </TabsTrigger>
-                <TabsTrigger value="simulator"> {/* NEW TAB TRIGGER */}
+                <TabsTrigger value="simulator">
                   <Calculator className="h-5 w-5 sm:mr-2" />
                   <span className="hidden sm:inline">Simulador</span>
                 </TabsTrigger>
@@ -435,9 +423,10 @@ const PublicChampionshipView = () => {
                 onDataChange={() => {}}
               />
             </TabsContent>
+          </Tabs>
 
-            <TabsContent value="simulator" className="mt-4 bg-red-500"> {/* NEW SIMULATOR TAB CONTENT with red background */}
-              {console.log('PublicChampionshipView: Simulator TabsContent is rendering!')}
+          {activeTab === 'simulator' && (
+            <div className="mt-4">
               <ChampionshipMatchSimulatorTab
                 championship={championship}
                 teams={teams}
@@ -446,8 +435,8 @@ const PublicChampionshipView = () => {
                 matches={matches}
                 isLoading={loading}
               />
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
           
           <SponsorDisplay championshipId={championship.id} />
         </div>
