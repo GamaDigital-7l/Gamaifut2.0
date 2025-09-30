@@ -16,6 +16,8 @@ import { showError } from '@/utils/toast';
 import { SimulatedMatchCard } from '@/components/SimulatedMatchCard';
 import { Leaderboard } from '@/components/Leaderboard'; // Reusing existing Leaderboard
 
+console.log('SimulateResults.tsx: Module loaded.'); // NEW: Added console log
+
 interface SimulatedMatch extends Match {
   simulated_team1_score: number | null;
   simulated_team2_score: number | null;
