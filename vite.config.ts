@@ -3,9 +3,9 @@ import dyadComponentTagger from "@dyad-sh/react-vite-component-tagger";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { VitePWA } from 'vite-plugin-pwa';
-// Import Workbox plugins here as they are used in the VitePWA config for runtimeCaching
-import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-import { ExpirationPlugin } from 'workbox-expiration';
+// As importações de plugins Workbox foram removidas daqui, pois são gerenciadas internamente pelo VitePWA.
+// import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+// import { ExpirationPlugin } from 'workbox-expiration';
 
 export default defineConfig(() => ({
   server: {
@@ -18,14 +18,10 @@ export default defineConfig(() => ({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      // Use injectManifest strategy and point to the new sw.ts file
       strategies: 'injectManifest',
-      srcDir: 'src', // Source directory for the service worker
-      filename: 'sw.ts', // The name of your source service worker file
+      srcDir: 'src',
+      filename: 'sw.ts',
       workbox: {
-        // These options are for generateSW, but injectManifest still uses some of them
-        // like runtimeCaching. globDirectory/globPatterns are not needed for injectManifest
-        // as the precache manifest is injected into the src/sw.ts file.
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
@@ -36,7 +32,8 @@ export default defineConfig(() => ({
             options: {
               cacheName: 'html-network-only',
               plugins: [
-                new CacheableResponsePlugin({
+                // Instanciar CacheableResponsePlugin diretamente aqui
+                new (await import('workbox-cacheable-response')).CacheableResponsePlugin({
                   statuses: [0, 200],
                 }),
               ],
@@ -52,7 +49,8 @@ export default defineConfig(() => ({
                 maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
               },
               plugins: [
-                new CacheableResponsePlugin({
+                // Instanciar CacheableResponsePlugin diretamente aqui
+                new (await import('workbox-cacheable-response')).CacheableResponsePlugin({
                   statuses: [0, 200],
                 }),
               ],
@@ -68,19 +66,22 @@ export default defineConfig(() => ({
                 maxAgeSeconds: 60 * 5, // 5 minutes
               },
               plugins: [
-                new CacheableResponsePlugin({
+                // Instanciar ExpirationPlugin e CacheableResponsePlugin diretamente aqui
+                new (await import('workbox-expiration')).ExpirationPlugin({
+                  maxEntries: 20,
+                  maxAgeSeconds: 60 * 5, // 5 minutes
+                }),
+                new (await import('workbox-cacheable-response')).CacheableResponsePlugin({
                   statuses: [0, 200],
                 }),
               ],
             },
           },
         ],
-        // navigateFallback is not directly used in injectManifest, but good to keep consistent
         navigateFallback: null,
       },
       devOptions: {
         enabled: true,
-        // navigateFallback: null is still important for the dev server not to serve index.html for sw.js
         navigateFallback: null,
       },
       manifest: {
