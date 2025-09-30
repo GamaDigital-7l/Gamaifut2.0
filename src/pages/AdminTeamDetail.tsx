@@ -63,7 +63,12 @@ const AdminTeamDetail = () => {
         groups(name),
         rounds(name),
         goals:match_goals(id, match_id, team_id, player_name, jersey_number)
-      `).eq('championship_id', teamData.championship_id).or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`).order('match_date', { ascending: true }),
+      `)
+        .eq('championship_id', teamData.championship_id)
+        .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+        .order('round_id', { ascending: true, nullsFirst: true })
+        .order('match_date', { ascending: true, nullsFirst: true })
+        .order('created_at', { ascending: true }),
     ]);
 
     if (groupsRes.error) console.error('Error fetching groups for team detail:', groupsRes.error);

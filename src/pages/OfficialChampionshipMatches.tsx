@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,7 +33,11 @@ const fetchChampionshipDataForOfficial = async (championshipId: string) => {
       groups(name),
       rounds(name),
       goals:match_goals(id, match_id, team_id, player_name, jersey_number)
-    `).eq('championship_id', championshipId).order('match_date', { ascending: true }), // Optimized select for matches and goals
+    `)
+      .eq('championship_id', championshipId)
+      .order('round_id', { ascending: true, nullsFirst: true })
+      .order('match_date', { ascending: true, nullsFirst: true })
+      .order('created_at', { ascending: true }),
   ]);
 
   if (champRes.error) throw new Error(champRes.error.message);

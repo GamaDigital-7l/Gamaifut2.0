@@ -63,7 +63,11 @@ const PublicChampionshipView = () => {
       supabase.from('teams').select('id, name, logo_url, championship_id, user_id, group_id, groups(name)').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('groups').select('id, name, championship_id, created_at').eq('championship_id', id).order('name', { ascending: true }),
       supabase.from('rounds').select('id, name, order_index, type, championship_id, created_at, public_edit_token').eq('championship_id', id).order('order_index', { ascending: true }),
-      supabase.from('matches').select(`id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(id, match_id, team_id, player_name, jersey_number)`).eq('championship_id', id).order('match_date', { ascending: true }),
+      supabase.from('matches').select(`id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(id, match_id, team_id, player_name, jersey_number)`)
+        .eq('championship_id', id)
+        .order('round_id', { ascending: true, nullsFirst: true })
+        .order('match_date', { ascending: true, nullsFirst: true })
+        .order('created_at', { ascending: true }),
       supabase.from('sponsors').select('id, name, level, logo_url, target_url, is_active').eq('championship_id', id).eq('is_active', true).eq('level', 'ouro').order('created_at', { ascending: true }).limit(1)
     ]);
 

@@ -89,7 +89,11 @@ const PublicRoundScoreboard = () => {
           groups(name),
           rounds(name),
           goals:match_goals(id, match_id, team_id, player_name, jersey_number)
-        `).eq('championship_id', championshipId).eq('round_id', roundId).order('match_date', { ascending: true }), // Optimized select for matches and goals
+        `)
+          .eq('championship_id', championshipId)
+          .eq('round_id', roundId)
+          .order('match_date', { ascending: true, nullsFirst: true }) // Order by date
+          .order('created_at', { ascending: true }), // Then by creation time
       ]);
 
       if (teamsRes.error) { console.error('PublicRoundScoreboard: Error fetching teams:', teamsRes.error.message); throw new Error(teamsRes.error.message); }
