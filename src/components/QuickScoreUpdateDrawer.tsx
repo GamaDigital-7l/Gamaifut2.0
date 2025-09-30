@@ -215,7 +215,9 @@ export function QuickScoreUpdateDrawer({
                 </div>
                 <Input
                   id="team1-score"
-                  type="number"
+                  type="text" // Alterado para 'text'
+                  inputMode="numeric" // Sugere teclado numérico em mobile
+                  pattern="[0-9]*" // Permite apenas dígitos
                   value={team1Score !== null ? String(team1Score) : ''} // Convert to string or empty
                   onChange={(e) => {
                     const val = e.target.value;
@@ -245,7 +247,9 @@ export function QuickScoreUpdateDrawer({
                 </div>
                 <Input
                   id="team2-score"
-                  type="number"
+                  type="text" // Alterado para 'text'
+                  inputMode="numeric" // Sugere teclado numérico em mobile
+                  pattern="[0-9]*" // Permite apenas dígitos
                   value={team2Score !== null ? String(team2Score) : ''} // Convert to string or empty
                   onChange={(e) => {
                     const val = e.target.value;
