@@ -436,7 +436,8 @@ const PublicChampionshipView = () => {
               />
             </TabsContent>
 
-            <TabsContent value="simulator" className="mt-4"> {/* NEW SIMULATOR TAB CONTENT */}
+            <TabsContent value="simulator" className="mt-4 bg-red-500"> {/* NEW SIMULATOR TAB CONTENT with red background */}
+              {console.log('PublicChampionshipView: Simulator TabsContent is rendering!')}
               <ChampionshipMatchSimulatorTab
                 championship={championship}
                 teams={teams}
