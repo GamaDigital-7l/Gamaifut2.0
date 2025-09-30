@@ -43,8 +43,8 @@ export function QuickScoreUpdateDrawer({
   publicRoundToken,
 }: QuickScoreUpdateDrawerProps) {
   const [open, setOpen] = useState(false);
-  const [team1Score, setTeam1Score] = useState(match.team1_score ?? 0);
-  const [team2Score, setTeam2Score] = useState(match.team2_score ?? 0);
+  const [team1Score, setTeam1Score] = useState<number | null>(match.team1_score ?? null);
+  const [team2Score, setTeam2Score] = useState<number | null>(match.team2_score ?? null);
   const [team1Goals, setTeam1Goals] = useState<GoalInput[]>([]);
   const [team2Goals, setTeam2Goals] = useState<GoalInput[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,8 +59,8 @@ export function QuickScoreUpdateDrawer({
 
   useEffect(() => {
     if (open) {
-      setTeam1Score(match.team1_score ?? 0);
-      setTeam2Score(match.team2_score ?? 0);
+      setTeam1Score(match.team1_score ?? null);
+      setTeam2Score(match.team2_score ?? null);
       setTeam1Goals(match.goals.filter(g => g.team_id === match.team1_id).map(g => ({
         tempId: g.id, id: g.id, player_name: g.player_name, jersey_number: g.jersey_number
       })));
@@ -216,8 +216,11 @@ export function QuickScoreUpdateDrawer({
                 <Input
                   id="team1-score"
                   type="number"
-                  value={team1Score}
-                  onChange={(e) => setTeam1Score(parseInt(e.target.value, 10) || 0)}
+                  value={team1Score === null ? '' : team1Score} // Display empty string for null
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setTeam1Score(val === '' ? null : parseInt(val, 10));
+                  }}
                   className="w-20 h-20 text-center text-3xl" // Larger input
                 />
               </div>
@@ -235,8 +238,11 @@ export function QuickScoreUpdateDrawer({
                 <Input
                   id="team2-score"
                   type="number"
-                  value={team2Score}
-                  onChange={(e) => setTeam2Score(parseInt(e.target.value, 10) || 0)}
+                  value={team2Score === null ? '' : team2Score} // Display empty string for null
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setTeam2Score(val === '' ? null : parseInt(val, 10));
+                  }}
                   className="w-20 h-20 text-center text-3xl" // Larger input
                 />
               </div>
