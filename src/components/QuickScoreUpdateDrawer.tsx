@@ -219,7 +219,14 @@ export function QuickScoreUpdateDrawer({
                   value={team1Score !== null ? String(team1Score) : ''} // Convert to string or empty
                   onChange={(e) => {
                     const val = e.target.value;
-                    setTeam1Score(val === '' ? null : parseInt(val, 10));
+                    if (val === '') {
+                      setTeam1Score(null);
+                    } else {
+                      const numValue = parseInt(val, 10);
+                      if (!isNaN(numValue)) { // Only update if it's a valid number
+                        setTeam1Score(numValue);
+                      }
+                    }
                   }}
                   className="w-20 h-20 text-center text-3xl" // Larger input
                   placeholder="0" // Placeholder for empty state
@@ -242,7 +249,14 @@ export function QuickScoreUpdateDrawer({
                   value={team2Score !== null ? String(team2Score) : ''} // Convert to string or empty
                   onChange={(e) => {
                     const val = e.target.value;
-                    setTeam2Score(val === '' ? null : parseInt(val, 10));
+                    if (val === '') {
+                      setTeam2Score(null);
+                    } else {
+                      const numValue = parseInt(val, 10);
+                      if (!isNaN(numValue)) { // Only update if it's a valid number
+                        setTeam2Score(numValue);
+                      }
+                    }
                   }}
                   className="w-20 h-20 text-center text-3xl" // Larger input
                   placeholder="0" // Placeholder for empty state

@@ -23,12 +23,26 @@ export const SimulatedMatchCard = memo(function SimulatedMatchCard({ match, onSc
 
   const handleTeam1ScoreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    onScoreChange(match.id, 'team1', value === '' ? null : parseInt(value, 10));
+    if (value === '') {
+      onScoreChange(match.id, 'team1', null);
+    } else {
+      const numValue = parseInt(value, 10);
+      if (!isNaN(numValue)) { // Only update if it's a valid number
+        onScoreChange(match.id, 'team1', numValue);
+      }
+    }
   };
 
   const handleTeam2ScoreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    onScoreChange(match.id, 'team2', value === '' ? null : parseInt(value, 10));
+    if (value === '') {
+      onScoreChange(match.id, 'team2', null);
+    } else {
+      const numValue = parseInt(value, 10);
+      if (!isNaN(numValue)) { // Only update if it's a valid number
+        onScoreChange(match.id, 'team2', numValue);
+      }
+    }
   };
 
   return (
