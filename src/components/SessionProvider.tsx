@@ -162,7 +162,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
   const handleReloadApp = () => {
     console.log('SessionProvider: Reload App button clicked. Forcing full reload.');
-    window.location.reload(true); // true forces a reload from the server, bypassing cache
+    window.location.reload(); // Removed 'true' argument
   };
 
   return (

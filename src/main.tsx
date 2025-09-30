@@ -19,6 +19,6 @@ window.addEventListener('pageshow', (event) => {
     // Page was restored from BFCache.
     // Force a full reload to ensure fresh state and prevent issues.
     console.log('BFCache: Page restored from BFCache. Forcing full reload.');
-    window.location.reload(true); // true forces a reload from the server, bypassing cache
+    window.location.reload(); // Removed 'true' argument
   }
 });
