@@ -3,7 +3,7 @@ import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, NetworkFirst, NetworkOnly } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
-// Removido: import type { NetworkOnlyOptions, StaleWhileRevalidateOptions, NetworkFirstOptions } from 'workbox-strategies';
+// A linha 'import type { NetworkOnlyOptions, StaleWhileRevalidateOptions, NetworkFirstOptions } from 'workbox-strategies';' foi removida.
 
 /// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
