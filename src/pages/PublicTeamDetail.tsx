@@ -41,18 +41,29 @@ const PublicTeamDetail = () => {
       setLoading(false);
       return;
     }
-    setTeam(teamData as Team); // Corrected type assertion
+    
+    const transformedTeamData = {
+      ...teamData,
+      groups: Array.isArray(teamData.groups) ? teamData.groups[0] : teamData.groups,
+    } as Team;
+    setTeam(transformedTeamData); // Corrected type assertion
     fetchChampionshipLogo(teamData.championship_id);
 
     const [teamsRes, groupsRes, roundsRes, matchesRes] = await Promise.all([
       supabase.from('teams').select('id, name, logo_url, championship_id, user_id, group_id, groups(name)').eq('championship_id', teamData.championship_id),
       supabase.from('groups').select('id, name, championship_id, created_at').eq('championship_id', teamData.championship_id),
       supabase.from('rounds').select('id, name, order_index, type, championship_id, created_at, public_edit_token').eq('championship_id', teamData.championship_id),
-      supabase.from('matches').select(`id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(id, match_id, team_id, player_name, jersey_number)`).eq('championship_id', teamData.championship_id).or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`).order('match_date', { ascending: true }),
+      supabase.from('matches').select(`id, team1_id, team2_id, team1_score, team2_score, match_date, location, group_id, round_id, team1_yellow_cards, team2_yellow_cards, team1_red_cards, team2_red_cards, team1_fouls, team2_fouls, notes, team1:teams!matches_team1_id_fkey(id, name, logo_url), team2:teams!matches_team2_id_fkey(id, name, logo_url), groups(name), rounds(name), goals:match_goals(id, match_id, team_id, player_name, jersey_number)`).eq('championship_id', teamData.championship_id).or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`).order('match_date', { ascending: true }),
     ]);
 
     if (teamsRes.error) console.error('Error fetching all teams for public team detail:', teamsRes.error);
-    else setAllTeams(teamsRes.data as Team[]); // Corrected type assertion
+    else {
+      const transformedAllTeams = (teamsRes.data || []).map((team: any) => ({
+        ...team,
+        groups: Array.isArray(team.groups) ? team.groups[0] : team.groups,
+      })) as Team[];
+      setAllTeams(transformedAllTeams); // Corrected type assertion
+    }
 
     if (groupsRes.error) console.error('Error fetching groups for public team detail:', groupsRes.error);
     else setAllGroups(groupsRes.data as Group[]);
@@ -63,7 +74,14 @@ const PublicTeamDetail = () => {
     if (matchesRes.error) {
       setError('Erro ao carregar as partidas do time.');
     } else {
-      setMatches(matchesRes.data as Match[]); // Corrected type assertion
+      const transformedMatches = (matchesRes.data || []).map((match: any) => ({
+        ...match,
+        team1: Array.isArray(match.team1) ? match.team1[0] : match.team1,
+        team2: Array.isArray(match.team2) ? match.team2[0] : match.team2,
+        groups: Array.isArray(match.groups) ? match.groups[0] : match.groups,
+        rounds: Array.isArray(match.rounds) ? match.rounds[0] : match.rounds,
+      })) as Match[];
+      setMatches(transformedMatches); // Corrected type assertion
     }
 
     setLoading(false);

@@ -42,12 +42,20 @@ const fetchChampionshipDataForOfficial = async (championshipId: string) => {
   if (roundsRes.error) throw new Error(roundsRes.error.message);
   if (matchesRes.error) throw new Error(matchesRes.error.message);
 
+  const transformedMatches = (matchesRes.data || []).map((match: any) => ({
+    ...match,
+    team1: Array.isArray(match.team1) ? match.team1[0] : match.team1,
+    team2: Array.isArray(match.team2) ? match.team2[0] : match.team2,
+    groups: Array.isArray(match.groups) ? match.groups[0] : match.groups,
+    rounds: Array.isArray(match.rounds) ? match.rounds[0] : match.rounds,
+  })) as Match[];
+
   return {
     championship: champRes.data as Championship,
     teams: teamsRes.data as Team[],
     groups: groupsRes.data as Group[],
     rounds: roundsRes.data as Round[],
-    matches: matchesRes.data as Match[], // Corrected type assertion
+    matches: transformedMatches, // Corrected type assertion
   };
 };
 

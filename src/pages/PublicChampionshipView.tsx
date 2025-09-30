@@ -76,7 +76,13 @@ const PublicChampionshipView = () => {
     }
 
     if (teamsRes.error) console.error('Error fetching teams:', teamsRes.error);
-    else setTeams(teamsRes.data as Team[]); // Corrected type assertion
+    else {
+      const transformedTeams = (teamsRes.data || []).map((team: any) => ({
+        ...team,
+        groups: Array.isArray(team.groups) ? team.groups[0] : team.groups,
+      })) as Team[];
+      setTeams(transformedTeams); // Corrected type assertion
+    }
 
     if (groupsRes.error) console.error('Error fetching groups:', groupsRes.error);
     else setGroups(groupsRes.data as Group[]);
@@ -85,7 +91,16 @@ const PublicChampionshipView = () => {
     else setRounds(roundsRes.data as Round[]);
 
     if (matchesRes.error) console.error('Error fetching matches:', matchesRes.error);
-    else setMatches(matchesRes.data as Match[]); // Corrected type assertion
+    else {
+      const transformedMatches = (matchesRes.data || []).map((match: any) => ({
+        ...match,
+        team1: Array.isArray(match.team1) ? match.team1[0] : match.team1,
+        team2: Array.isArray(match.team2) ? match.team2[0] : match.team2,
+        groups: Array.isArray(match.groups) ? match.groups[0] : match.groups,
+        rounds: Array.isArray(match.rounds) ? match.rounds[0] : match.rounds,
+      })) as Match[];
+      setMatches(transformedMatches); // Corrected type assertion
+    }
 
     if (sponsorsRes.error) console.error('Error fetching master sponsor:', sponsorsRes.error);
     else if (sponsorsRes.data && sponsorsRes.data.length > 0) setMasterSponsor(sponsorsRes.data[0] as Sponsor);

@@ -98,7 +98,15 @@ const PublicRoundScoreboard = () => {
 
       setTeams(teamsRes.data as Team[]);
       setGroups(groupsRes.data as Group[]);
-      setMatches(matchesRes.data as Match[]); // Corrected type assertion
+      
+      const transformedMatches = (matchesRes.data || []).map((match: any) => ({
+        ...match,
+        team1: Array.isArray(match.team1) ? match.team1[0] : match.team1,
+        team2: Array.isArray(match.team2) ? match.team2[0] : match.team2,
+        groups: Array.isArray(match.groups) ? match.groups[0] : match.groups,
+        rounds: Array.isArray(match.rounds) ? match.rounds[0] : match.rounds,
+      })) as Match[];
+      setMatches(transformedMatches); // Corrected type assertion
       console.log('PublicRoundScoreboard: Teams, Groups, Matches fetched. Number of matches:', matchesRes.data?.length); // NEW LOG
 
     } catch (err: any) {
