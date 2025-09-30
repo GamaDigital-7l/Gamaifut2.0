@@ -93,7 +93,7 @@ export function ChampionshipMatchSimulatorTab({
         team2_score: match.simulated_team2_score,
       })),
     ];
-    const filteredCombined = combined.filter(match =>
+    const filteredCombined = combinedMatches.filter(match => // CORRIGIDO: 'combined' para 'combinedMatches'
       selectedGroupId === 'all' || match.group_id === selectedGroupId
     );
     console.log('ChampionshipMatchSimulatorTab: matchesForLeaderboard recalculated:', filteredCombined); // ADDED LOG
