@@ -186,7 +186,10 @@ const PublicChampionshipView = () => {
               </a>
             )}
             <Button 
-              onClick={() => setActiveTab('simulator')} 
+              onClick={() => {
+                console.log('PublicChampionshipView: Botão "Simular Resultados" clicado. Definindo activeTab para "simulator".');
+                setActiveTab('simulator');
+              }} 
               className="mt-4 w-full max-w-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <Calculator className="mr-2 h-5 w-5" /> Simular Resultados
@@ -290,7 +293,10 @@ const PublicChampionshipView = () => {
             />
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
+          <Tabs value={activeTab} onValueChange={(value) => {
+            console.log('PublicChampionshipView: Tabs onValueChange triggered with value:', value);
+            setActiveTab(value);
+          }} className="w-full mt-4">
             <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <TabsList className="grid w-full grid-cols-6 sm:grid-cols-7 lg:grid-cols-8">
                 <TabsTrigger value="leaderboard">
@@ -424,7 +430,8 @@ const PublicChampionshipView = () => {
               />
             </TabsContent>
 
-            <TabsContent value="simulator" className="mt-4"> {/* Simulator tab content */}
+            <TabsContent value="simulator" className="mt-4 bg-red-500"> {/* Re-added red background for debugging */}
+              {console.log('PublicChampionshipView: TabsContent "simulator" está sendo renderizado!')}
               <ChampionshipMatchSimulatorTab
                 championship={championship}
                 teams={teams}
