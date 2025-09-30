@@ -193,7 +193,7 @@ const PublicChampionshipView = () => {
             {/* NEW: Prominent button for Simulator */}
             <Button 
               onClick={() => {
-                console.log('PublicChampionshipView: Simulator button clicked, setting activeTab to "simulator"'); // NEW LOG
+                console.log('PublicChampionshipView: Simulator button clicked!'); // NEW LOG
                 setActiveTab('simulator');
               }} 
               className="mt-4 w-full max-w-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
@@ -299,7 +299,10 @@ const PublicChampionshipView = () => {
             />
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4"> {/* Controlled Tabs */}
+          <Tabs value={activeTab} onValueChange={(value) => {
+            console.log('PublicChampionshipView: Tabs onValueChange triggered with value:', value); // NEW LOG
+            setActiveTab(value);
+          }} className="w-full mt-4"> {/* Controlled Tabs */}
             <div className="relative w-full overflow-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <TabsList className="grid w-full grid-cols-6 sm:grid-cols-7 lg:grid-cols-8"> {/* Adjusted grid-cols */}
                 <TabsTrigger value="leaderboard">
