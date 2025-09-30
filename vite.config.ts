@@ -62,6 +62,10 @@ export default defineConfig(() => ({
         ],
         navigateFallback: null, // Impede que index.html seja servido como fallback para navegação offline
       },
+      devOptions: { // Configurações específicas para o ambiente de desenvolvimento
+        enabled: true, // Garante que o PWA esteja ativo no desenvolvimento
+        navigateFallback: null, // ESSENCIAL: Impede que o dev server sirva index.html para sw.js
+      },
       manifest: {
         name: 'Gama Creative Fut',
         short_name: 'GamaFut',
