@@ -216,12 +216,13 @@ export function QuickScoreUpdateDrawer({
                 <Input
                   id="team1-score"
                   type="number"
-                  value={team1Score === null ? '' : team1Score} // Display empty string for null
+                  value={team1Score !== null ? String(team1Score) : ''} // Convert to string or empty
                   onChange={(e) => {
                     const val = e.target.value;
                     setTeam1Score(val === '' ? null : parseInt(val, 10));
                   }}
                   className="w-20 h-20 text-center text-3xl" // Larger input
+                  placeholder="0" // Placeholder for empty state
                 />
               </div>
               <span className="text-4xl font-bold text-muted-foreground">X</span> {/* Larger X */}
@@ -238,12 +239,13 @@ export function QuickScoreUpdateDrawer({
                 <Input
                   id="team2-score"
                   type="number"
-                  value={team2Score === null ? '' : team2Score} // Display empty string for null
+                  value={team2Score !== null ? String(team2Score) : ''} // Convert to string or empty
                   onChange={(e) => {
                     const val = e.target.value;
                     setTeam2Score(val === '' ? null : parseInt(val, 10));
                   }}
                   className="w-20 h-20 text-center text-3xl" // Larger input
+                  placeholder="0" // Placeholder for empty state
                 />
               </div>
             </div>

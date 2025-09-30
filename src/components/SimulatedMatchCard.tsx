@@ -75,20 +75,22 @@ export const SimulatedMatchCard = memo(function SimulatedMatchCard({ match, onSc
           <div className="flex items-center justify-center text-sm font-bold gap-1">
             <Input
               type="number"
-              value={match.simulated_team1_score === null ? '' : match.simulated_team1_score}
+              value={match.simulated_team1_score !== null ? String(match.simulated_team1_score) : ''}
               onChange={handleTeam1ScoreChange}
               className="w-10 h-8 text-center text-sm"
               min="0"
+              placeholder="0"
             />
             <div className="p-0 rounded-full bg-primary text-primary-foreground">
               <X className="h-2.5 w-2.5" />
             </div>
             <Input
               type="number"
-              value={match.simulated_team2_score === null ? '' : match.simulated_team2_score}
+              value={match.simulated_team2_score !== null ? String(match.simulated_team2_score) : ''}
               onChange={handleTeam2ScoreChange}
               className="w-10 h-8 text-center text-sm"
               min="0"
+              placeholder="0"
             />
           </div>
 
