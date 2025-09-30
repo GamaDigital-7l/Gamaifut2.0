@@ -17,18 +17,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Championship } from '@/types';
 
-const fetchChampionships = async () => {
+const fetchChampionships = async (): Promise<Championship[]> => { // Explicitly type the return
   const { data, error } = await supabase
     .from('championships')
-    .select('id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order')
+    .select('id, name, description, city, state, logo_url, user_id, points_for_win, sport_type, gender, age_category, tie_breaker_order, created_at') // Added created_at
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
-  return data;
+  return data as Championship[]; // Cast to Championship[]
 };
 
 const Dashboard = () => {
   const queryClient = useQueryClient();
-  const { data: championships = [], isLoading } = useQuery<Championship[]>({
+  const { data: championships = [], isLoading } = useQuery<Championship[]>({ // Explicitly type data
     queryKey: ['championships'],
     queryFn: fetchChampionships,
   });

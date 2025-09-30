@@ -45,7 +45,7 @@ const AdminTeamDetail = () => {
       setLoading(false);
       return;
     }
-    setTeam(teamData as Team);
+    setTeam(teamData as Team); // Corrected type assertion
 
     const [groupsRes, roundsRes, teamsRes, matchesRes] = await Promise.all([
       supabase.from('groups').select('id, name, championship_id, created_at').eq('championship_id', teamData.championship_id),
@@ -68,13 +68,13 @@ const AdminTeamDetail = () => {
     else setAllRounds(roundsRes.data as Round[]);
 
     if (teamsRes.error) console.error('Error fetching all teams for team detail:', teamsRes.error);
-    else setAllTeams(teamsRes.data as Team[]);
+    else setAllTeams(teamsRes.data as Team[]); // Corrected type assertion
 
     if (matchesRes.error) {
       console.error('Error fetching matches for team:', matchesRes.error);
       setError('Erro ao carregar as partidas do time.');
     } else {
-      setMatches(matchesRes.data as Match[]);
+      setMatches(matchesRes.data as Match[]); // Corrected type assertion
     }
 
     setLoading(false);

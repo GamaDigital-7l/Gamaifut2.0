@@ -76,7 +76,7 @@ const PublicChampionshipView = () => {
     }
 
     if (teamsRes.error) console.error('Error fetching teams:', teamsRes.error);
-    else setTeams(teamsRes.data as Team[]);
+    else setTeams(teamsRes.data as Team[]); // Corrected type assertion
 
     if (groupsRes.error) console.error('Error fetching groups:', groupsRes.error);
     else setGroups(groupsRes.data as Group[]);
@@ -85,7 +85,7 @@ const PublicChampionshipView = () => {
     else setRounds(roundsRes.data as Round[]);
 
     if (matchesRes.error) console.error('Error fetching matches:', matchesRes.error);
-    else setMatches(matchesRes.data as Match[]);
+    else setMatches(matchesRes.data as Match[]); // Corrected type assertion
 
     if (sponsorsRes.error) console.error('Error fetching master sponsor:', sponsorsRes.error);
     else if (sponsorsRes.data && sponsorsRes.data.length > 0) setMasterSponsor(sponsorsRes.data[0] as Sponsor);

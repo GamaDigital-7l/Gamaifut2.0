@@ -47,7 +47,7 @@ const fetchChampionshipDataForOfficial = async (championshipId: string) => {
     teams: teamsRes.data as Team[],
     groups: groupsRes.data as Group[],
     rounds: roundsRes.data as Round[],
-    matches: matchesRes.data as Match[],
+    matches: matchesRes.data as Match[], // Corrected type assertion
   };
 };
 

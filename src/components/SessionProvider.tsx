@@ -128,7 +128,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         const remainingTime = MIN_LOADING_TIME - elapsedTime;
 
         if (remainingTime > 0) {
-          loadingTimer = setTimeout(finalizeLoading, remainingTime);
+          loadingTimer = window.setTimeout(finalizeLoading, remainingTime); // Use window.setTimeout
         } else {
           finalizeLoading();
         }
@@ -142,7 +142,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     // Cleanup function
     return () => {
       isMounted = false;
-      clearTimeout(loadingTimer); // Clear any pending loading timer
+      window.clearTimeout(loadingTimer); // Use window.clearTimeout
       console.log('SessionProvider: useEffect unmounted, unsubscribing from auth state changes.');
       subscription.unsubscribe();
     };
