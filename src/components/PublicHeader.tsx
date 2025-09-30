@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Trophy, Calculator } from 'lucide-react'; // Added Calculator icon
+import { Trophy } from 'lucide-react'; // Removed Calculator icon
 
 export const PublicHeader = () => {
   return (
@@ -10,12 +10,7 @@ export const PublicHeader = () => {
         <span className="">Gama Creative Fut</span>
       </Link>
       <div className="flex items-center gap-2">
-        <Link to="/match-simulator"> {/* UPDATED: Link to new MatchSimulator route */}
-          <Button variant="ghost" className="text-foreground flex items-center gap-1">
-            <Calculator className="h-4 w-4" />
-            <span className="hidden sm:inline">Simular Resultados</span>
-          </Button>
-        </Link>
+        {/* Removed the link to /match-simulator */}
         <Link to="/login">
           <Button variant="outline" className="text-foreground">Acessar Painel</Button>
         </Link>

@@ -20,7 +20,8 @@ const PublicChampionshipView = lazy(() => import("@/pages/PublicChampionshipView
 const PublicTeamDetail = lazy(() => import("@/pages/PublicTeamDetail"));
 const PublicRoundScoreboard = lazy(() => import("@/pages/PublicRoundScoreboard")); // Import new PublicRoundScoreboard
 const MainLayout = lazy(() => import("@/components/MainLayout"));
-const MatchSimulator = lazy(() => import("@/pages/MatchSimulator")); // UPDATED: Renamed from SimulateResults
+// Removed MatchSimulator import as it's no longer a standalone page
+// const MatchSimulator = lazy(() => import("@/pages/MatchSimulator")); 
 
 interface UserProfile {
   id: string;
@@ -169,10 +170,11 @@ const useRedirects = () => {
     const isPublicRoute = location.pathname.startsWith('/public/');
     const isLoginRoute = location.pathname === '/login';
     const isIndexRoute = location.pathname === '/';
-    const isMatchSimulatorRoute = location.pathname === '/match-simulator'; // UPDATED: Check for match simulator route
+    // Removed isMatchSimulatorRoute check as it's no longer a standalone route
+    // const isMatchSimulatorRoute = location.pathname === '/match-simulator'; 
 
-    if (!session && !isPublicRoute && !isLoginRoute && !isIndexRoute && !isMatchSimulatorRoute) { // UPDATED: Include match simulator
-      console.log('Redirects: No session, not public/login/index/match-simulator. Redirecting to /login');
+    if (!session && !isPublicRoute && !isLoginRoute && !isIndexRoute) { // UPDATED: Removed match simulator
+      console.log('Redirects: No session, not public/login/index. Redirecting to /login');
       navigate('/login');
     } else if (session && isLoginRoute) {
       console.log('Redirects: Has session, on login page. Redirecting to /dashboard');
@@ -221,7 +223,7 @@ export const AppRoutes = () => {
           <Route path="/public/championship/:id" element={<PublicChampionshipView />} />
           <Route path="/public/team/:teamId" element={<PublicTeamDetail />} />
           <Route path="/public/round/:championshipId/:roundId/:roundToken" element={<PublicRoundScoreboard />} />
-          <Route path="/match-simulator" element={<MatchSimulator />} /> {/* UPDATED: New route for MatchSimulator */}
+          {/* Removed MatchSimulator route */}
           
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
